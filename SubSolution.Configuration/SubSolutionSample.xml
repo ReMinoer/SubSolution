@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SubSolutionConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SubSolutionConfiguration.xsd">
+    <Root RemoveUniqueItemFolders="true" ConflictProjectsOutputDirectory="External/.Conflicts/">
+        <SubSolutions CreateRootFolder="true" CreateFolders="true" />
+        <Projects />
+    </Root>
+</SubSolutionConfiguration>

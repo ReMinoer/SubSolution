@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using SubSolution.Configuration.FileSystems;
+
+namespace SubSolution.FileSystems.Base
+{
+    public abstract class SubSolutionFileSystemBase : ISubSolutionFileSystem
+    {
+        public abstract string GetFileNameWithoutExtension(string fileName);
+        public abstract string? GetParentDirectoryPath(string path);
+        public abstract string Combine(string firstPath, string secondPath);
+        public abstract string[] SplitPath(string path);
+        public abstract Stream OpenStream(string filePath);
+
+        public string MakeRelativePath(string rootPath, string filePath)
+        {
+            var rootPathSplit = SplitPath(rootPath);
+            var filePathSplit = SplitPath(filePath);
+
+            int commonPartsCount = rootPathSplit.Zip(filePathSplit, (x, y) => x == y).TakeWhile(x => x).Count();
+            int backMoveCount = rootPathSplit.Length - commonPartsCount;
+
+            return Enumerable.Repeat("..", backMoveCount).Concat(filePathSplit[commonPartsCount..]).Aggregate(Combine);
+        }
+
+        public IEnumerable<string> GetFilesMatchingGlobPattern(string directoryPath, string globPattern)
+        {
+            var directoryInfo = GetDirectoryInfo(directoryPath);
+
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddInclude(globPattern);
+
+            return matcher.Execute(directoryInfo).Files.Select(x => x.Path);
+        }
+
+        protected abstract DirectoryInfoBase? GetDirectoryInfo(string root);
+    }
+}

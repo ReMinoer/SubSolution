@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="SubSolutionConfiguration">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>Root element of a SubSolution configuration.</xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element name="Root" type="SolutionRootConfiguration">
+                    <xs:annotation>
+                        <xs:documentation>Root of the solution.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="SolutionName" type="FileName">
+                <xs:annotation>
+                    <xs:documentation>Solution output file name (without extension).</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="OutputDirectory" type="DirectoryPath">
+                <xs:annotation>
+                    <xs:documentation>Solution output directory path.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="WorkspaceDirectory" type="DirectoryPath">
+                <xs:annotation>
+                    <xs:documentation>Workspace directory used as root for configuration paths.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="SolutionRootConfiguration">
+        <xs:annotation>
+            <xs:documentation>Represent a solution root.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionItemsSourceBase">
+                <xs:sequence>
+                    <xs:element ref="SolutionItems" minOccurs="0" maxOccurs="unbounded" />
+                </xs:sequence>
+                <xs:attribute name="CollapseEmptyFolders" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to collapse empty folder with its child folders. Propagate to sub-folders.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="RemoveUniqueItemFolders" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to remove folder with an unique item. Propagate to sub-folders.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="ConflictProjectsOutputDirectory" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>Output directory used to create conflict solving projects.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="SolutionItems" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Solution item source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Folder" type="SolutionFolderConfiguration" substitutionGroup="SolutionItems">
+        <xs:annotation>
+            <xs:documentation>Solution folder.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SolutionFiles" abstract="true" substitutionGroup="SolutionItems">
+        <xs:annotation>
+            <xs:documentation>Solution file source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Projects" type="ProjectsSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of projects.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Files" type="FilesSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of files.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SubSolutions" type="SubSolutionsSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of files coming from a set of SubSolution configurations.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="SolutionFolderConfiguration">
+        <xs:annotation>
+            <xs:documentation>Represent a solution folder.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionRootConfiguration">
+                <xs:attribute name="Name" type="SolutionFolderName" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Name of the solution folder.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionItemsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Base representation of a set of solution items.</xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionFilesSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Base representation of a set of solution files.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionItemsSourceBase">
+                <xs:attribute ref="Path" />
+                <xs:attribute name="CreateFolders" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to create folders matching file system hierarchy.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:attribute name="Path" type="PathGlobPattern">
+        <xs:annotation>
+            <xs:documentation>Path used to filter files. Use a glob pattern to match multiple files.</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+
+    <xs:complexType name="ProjectsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of projects.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionFilesSourceBase" />
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="FilesSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of files.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionFilesSourceBase">
+                <xs:attribute ref="Path" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SubSolutionsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a SubSolution configuration used as file source.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionFilesSourceBase">
+                <xs:attribute name="CreateRootFolder" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to create a dedicated folder for each SubSolution. Folder name will be its SolutionName.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="PathGlobPattern">
+        <xs:annotation>
+            <xs:documentation>Path glob pattern.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DirectoryPath">
+        <xs:annotation>
+            <xs:documentation>Directory path.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FileName">
+        <xs:annotation>
+            <xs:documentation>File name.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SolutionFolderName">
+        <xs:annotation>
+            <xs:documentation>Solution folder name.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z]+" />
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

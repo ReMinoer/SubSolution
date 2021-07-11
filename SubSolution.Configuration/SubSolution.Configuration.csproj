@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="XObjectsCore" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SubSolutionConfiguration.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="linqtoxsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot;" />
+  </Target>
+
+</Project>
