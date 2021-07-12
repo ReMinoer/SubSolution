@@ -1,0 +1,4 @@
+[submodule "External/ReSharperSharedConfig"]
+	path = External/ReSharperSharedConfig
+	url = https://github.com/ReMinoer/ReSharperSharedConfig.git
+	branch = master
