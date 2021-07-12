@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using NUnit.Framework;
 using SubSolution.Builders;
 using SubSolution.Configuration;
 using SubSolution.FileSystems;
-using static FluentAssertions.FluentActions;
 
 namespace SubSolution.Tests
 {
@@ -17,15 +14,23 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private MemorySolutionBuilder Process(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
-            => SubSolutionEngine.Process(configuration, _ => new MemorySolutionBuilder(), WorkspaceDirectoryPath, GetMockFileSystem(haveSubSolutions));
-        private MemorySolutionBuilder Process(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
-            => SubSolutionEngine.Process(configuration, _ => new MemorySolutionBuilder(), workspaceDirectoryPath, GetMockFileSystem(haveSubSolutions));
+        private SolutionBuilder Process(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+            => SubSolutionEngine.Process(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", GetMockFileSystem(configuration, haveSubSolutions));
+        private SolutionBuilder Process(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+            => SubSolutionEngine.Process(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
 
-        private MockSubSolutionFileSystem GetMockFileSystem(bool haveSubSolutions)
+        private MockSubSolutionFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)
         {
             var mockFileSystem = new MockSubSolutionFileSystem();
-            var relativeFilePath = new List<string>
+            var relativeFilePath = new List<string>();
+            
+            if (configurationContent is not null)
+            {
+                relativeFilePath.Add("MyApplication.subsln");
+                AddConfigurationToFileSystem(mockFileSystem, @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
+            }
+
+            relativeFilePath.AddRange(new[]
             {
                 @"tools\submit.bat",
                 @"tools\debug\Debug.exe",
@@ -36,7 +41,7 @@ namespace SubSolution.Tests
                 @"src\Executables\MyApplication.Console\Program.cs",
                 @"src\Executables\MyApplication.Console\MyApplication.Console.csproj",
                 @"src\Executables\MyApplication.Console\bin\MyApplication.Console.exe",
-            };
+            });
 
             if (haveSubSolutions)
             {
@@ -102,7 +107,7 @@ namespace SubSolution.Tests
             }
         };
 
-        private void CheckFolderContainsMyFramework(MemorySolutionBuilder.Folder rootFolder, bool only = false)
+        private void CheckFolderContainsMyFramework(SolutionBuilder.Folder rootFolder, bool only = false)
         {
             rootFolder.ProjectPaths.Should().Contain("external/MyFramework/src/MyFramework/MyFramework.csproj");
 
@@ -149,7 +154,7 @@ namespace SubSolution.Tests
             }
         };
 
-        private void CheckFolderContainsMySubModule(MemorySolutionBuilder.Folder rootFolder, bool only = false)
+        private void CheckFolderContainsMySubModule(SolutionBuilder.Folder rootFolder, bool only = false)
         {
             rootFolder.ProjectPaths.Should().Contain("external/MyFramework/external/MySubModule/src/MySubModule/MySubModule.csproj");
 
@@ -159,39 +164,6 @@ namespace SubSolution.Tests
                 rootFolder.ProjectPaths.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().BeEmpty();
             }
-        }
-
-        [Test]
-        public void ProcessEmptyConfiguration()
-        {
-            var configuration = new SubSolutionConfiguration();
-            MemorySolutionBuilder solution = Process(configuration);
-
-            solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
-            solution.Root.SubFolders.Should().BeEmpty();
-        }
-
-        [Test]
-        public void ProcessWithConfigurationWorkspaceDirectory()
-        {
-            var configuration = new SubSolutionConfiguration
-            {
-                WorkspaceDirectory = WorkspaceDirectoryPath
-            };
-
-            MemorySolutionBuilder solution = Process(configuration, workspaceDirectoryPath: null);
-
-            solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
-            solution.Root.SubFolders.Should().BeEmpty();
-        }
-
-        [Test]
-        public void ThrowOnProcessWithoutAnyWorkspaceDirectory()
-        {
-            var configuration = new SubSolutionConfiguration();
-            Invoking(() => Process(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
         }
     }
 }

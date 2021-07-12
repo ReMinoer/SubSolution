@@ -1,48 +1,45 @@
 ﻿using System;
+using System.IO;
 using SubSolution.Builders;
 using SubSolution.Configuration;
 using SubSolution.Configuration.FileSystems;
+using SubSolution.FileSystems;
 
 namespace SubSolution
 {
     static public class SubSolutionEngine
     {
-        static public SolutionBuilder Process(string configurationFilePath) => Process(configurationFilePath, SolutionBuilder.FromPath);
-
-        static public TSolutionBuilder Process<TSolutionBuilder>(string configurationFilePath, Func<string, TSolutionBuilder> getSolutionBuilder,
-            ISubSolutionFileSystem? fileSystem = null)
-            where TSolutionBuilder : ISolutionBuilder
+        static public SolutionBuilder Process(string configurationFilePath, ISubSolutionFileSystem? fileSystem = null)
         {
-            var configuration = SubSolutionConfiguration.Load(configurationFilePath);
+            SubSolutionConfiguration configuration;
 
-            var solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, configurationFilePath, fileSystem);
-            var workspaceDirectoryPath = configuration.ComputeWorkspaceDirectoryPath(configurationFilePath, fileSystem);
+            using (Stream configurationStream = (fileSystem ?? StandardSubSolutionFileSystem.Instance).OpenStream(configurationFilePath))
+            using (TextReader configurationReader = new StreamReader(configurationStream))
+            {
+                configuration = SubSolutionConfiguration.Load(configurationReader);
+            }
 
-            return Process(configuration, getSolutionBuilder, solutionPath, workspaceDirectoryPath, fileSystem);
+            string solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, configurationFilePath, fileSystem);
+            string workspaceDirectoryPath = configuration.ComputeWorkspaceDirectoryPath(configurationFilePath, fileSystem);
+
+            return Process(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, fileSystem);
         }
 
-        static public TSolutionBuilder Process<TSolutionBuilder>(SubSolutionConfiguration configuration, Func<string, TSolutionBuilder> getSolutionBuilder,
-            string? defaultWorkspaceDirectory = null,
-            ISubSolutionFileSystem? fileSystem = null)
-            where TSolutionBuilder : ISolutionBuilder
+        static public SolutionBuilder Process(SubSolutionConfiguration configuration, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
         {
-            var solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, nameof(SubSolution));
-            var workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
+            string solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, nameof(SubSolution), fileSystem);
+            string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
 
             if (workspaceDirectoryPath is null)
                 throw new ArgumentNullException(nameof(defaultWorkspaceDirectory), "configuration.WorkspaceDirectory or defaultWorkspaceDirectory must be not null.");
             
-            return Process(configuration, getSolutionBuilder, solutionPath, workspaceDirectoryPath, fileSystem);
+            return Process(configuration, null, solutionPath, workspaceDirectoryPath, fileSystem);
         }
         
-        static private TSolutionBuilder Process<TSolutionBuilder>(SubSolutionConfiguration configuration, Func<string, TSolutionBuilder> getSolutionBuilder,
-            string solutionPath,
-            string workspaceDirectoryPath,
-            ISubSolutionFileSystem? fileSystem = null)
-            where TSolutionBuilder : ISolutionBuilder
+        static private SolutionBuilder Process(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, ISubSolutionFileSystem? fileSystem)
         {
-            var solutionBuilder = getSolutionBuilder(solutionPath);
-            var solutionBuildContext = new SolutionBuildContext(solutionBuilder, workspaceDirectoryPath, fileSystem: fileSystem);
+            var solutionBuilder = new SolutionBuilder(solutionPath);
+            var solutionBuildContext = new SolutionBuildContext(solutionBuilder, workspaceDirectoryPath, configurationFilePath, fileSystem: fileSystem);
 
             configuration.Root?.AddToSolution(solutionBuildContext);
             return solutionBuilder;

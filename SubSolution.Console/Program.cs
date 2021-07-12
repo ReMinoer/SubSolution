@@ -1,4 +1,8 @@
-﻿namespace SubSolution.Console
+﻿using System.Diagnostics.CodeAnalysis;
+
+[assembly: ExcludeFromCodeCoverage]
+
+namespace SubSolution.Console
 {
     static class Program
     {

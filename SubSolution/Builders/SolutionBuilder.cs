@@ -1,26 +1,48 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 using SubSolution.Configuration;
 
 namespace SubSolution.Builders
 {
     public class SolutionBuilder : ISolutionBuilder
     {
-        static public SolutionBuilder FromPath(string solutionPath) => FromStream(File.OpenRead(solutionPath));
-        static public SolutionBuilder FromStream(Stream solutionStream) => new SolutionBuilder(solutionStream);
+        public string SolutionOutputPath { get; }
+        public Folder Root { get; }
 
-        private SolutionBuilder(Stream solutionStream)
+        public SolutionBuilder(string solutionOutputPath)
         {
-            throw new System.NotImplementedException();
+            SolutionOutputPath = solutionOutputPath;
+            Root = new Folder();
         }
 
-        public void AddFile(string filePath, string[] solutionFolderPath)
+        public void AddFile(string filePath, string[] solutionFolderPath) => GetSolutionFolder(solutionFolderPath).FilePaths.Add(filePath);
+        public void AddProject(string projectPath, string[] solutionFolderPath) => GetSolutionFolder(solutionFolderPath).ProjectPaths.Add(projectPath);
+
+        private Folder GetSolutionFolder(string[] solutionFolderPath)
         {
-            throw new System.NotImplementedException();
+            Folder currentFolder = Root;
+            foreach (string solutionFolderName in solutionFolderPath)
+            {
+                if (!currentFolder.SubFolders.TryGetValue(solutionFolderName, out Folder subFolder))
+                    currentFolder.SubFolders[solutionFolderName] = subFolder = new Folder();
+
+                currentFolder = subFolder;
+            }
+
+            return currentFolder;
         }
 
-        public void AddProject(string projectPath, string[] solutionFolderPath)
+        public class Folder
         {
-            throw new System.NotImplementedException();
+            public HashSet<string> FilePaths { get; }
+            public HashSet<string> ProjectPaths { get; }
+            public Dictionary<string, Folder> SubFolders { get; }
+
+            public Folder()
+            {
+                FilePaths = new HashSet<string>();
+                ProjectPaths = new HashSet<string>();
+                SubFolders = new Dictionary<string, Folder>();
+            }
         }
     }
 }

@@ -1,12 +1,11 @@
-﻿using System; 
-using System.IO;
+﻿using System.IO;
 using SubSolution.Configuration.FileSystems;
 
 namespace SubSolution.Configuration
 {
     public partial class SubSolutionConfiguration
     {
-        public string ComputeSolutionName(string configurationFilePath, IConfigurationFileSystem? fileSystem = null)
+        public string ComputeSolutionName(string configurationFilePath, IConfigurationFileSystem? fileSystem)
         {
             if (SolutionName == null)
                 return (fileSystem ?? StandardFileSystem.Instance).GetFileNameWithoutExtension(configurationFilePath);
@@ -17,21 +16,17 @@ namespace SubSolution.Configuration
             return SolutionName;
         }
 
-        public string ComputeSolutionPath(string defaultOutputDirectory, string configurationFilePath, IConfigurationFileSystem? fileSystem = null)
+        public string ComputeSolutionPath(string defaultOutputDirectory, string configurationFilePath, IConfigurationFileSystem? fileSystem)
         {
             string outputDirectory = OutputDirectory ?? defaultOutputDirectory;
-            string solutionFileName = ComputeSolutionName(configurationFilePath) + ".sln";
+            string solutionFileName = ComputeSolutionName(configurationFilePath, fileSystem) + ".sln";
 
             return (fileSystem ?? StandardFileSystem.Instance).Combine(outputDirectory, solutionFileName);
         }
 
-        public string ComputeWorkspaceDirectoryPath(string configurationFilePath, IConfigurationFileSystem? fileSystem = null)
+        public string ComputeWorkspaceDirectoryPath(string configurationFilePath, IConfigurationFileSystem? fileSystem)
         {
-            var configurationFolderPath = (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(configurationFilePath);
-            if (configurationFolderPath is null)
-                throw new ArgumentException($"\"{configurationFolderPath}\" has no directory.");
-
-            return WorkspaceDirectory ?? configurationFolderPath;
+            return WorkspaceDirectory ?? (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(configurationFilePath)!;
         }
     }
 
@@ -70,8 +65,6 @@ namespace SubSolution.Configuration
                 globPattern += "*." + DefaultFileExtension;
             else if (globPattern.EndsWith("**"))
                 globPattern += "/*." + DefaultFileExtension;
-            else if(globPattern.EndsWith("*") && !globPattern.EndsWith(".*"))
-                globPattern += "." + DefaultFileExtension;
 
             foreach (string matchingFilePath in context.FileSystem.GetFilesMatchingGlobPattern(context.CurrentWorkspaceDirectoryPath, globPattern))
                 AddFoldersAndFileToSolution(matchingFilePath, context);
@@ -121,7 +114,16 @@ namespace SubSolution.Configuration
     public partial class SubSolutionsSource
     {
         protected override string DefaultFileExtension => "subsln";
-        
+
+        protected override void AddFoldersAndFileToSolution(string relativeFilePath, ISolutionBuildContext context)
+        {
+            string filePath = context.FileSystem.Combine(context.CurrentWorkspaceDirectoryPath, relativeFilePath);
+            if (!context.KnownConfigurationFilePaths.Add(filePath))
+                return;
+
+            base.AddFoldersAndFileToSolution(relativeFilePath, context);
+        }
+
         protected override void AddFileToSolution(string relativeFilePath, ISolutionBuildContext context)
         {
             string filePath = context.FileSystem.Combine(context.CurrentWorkspaceDirectoryPath, relativeFilePath);
@@ -131,13 +133,13 @@ namespace SubSolution.Configuration
             using (TextReader configurationReader = new StreamReader(configurationStream))
                 configuration = SubSolutionConfiguration.Load(configurationReader);
 
-            var workspaceDirectoryPath = configuration.ComputeWorkspaceDirectoryPath(filePath);
+            var workspaceDirectoryPath = configuration.ComputeWorkspaceDirectoryPath(filePath, context.FileSystem);
 
             if (CreateRootFolder ?? false)
-                context = context.GetSubFolderContext(configuration.ComputeSolutionName(filePath));
+                context = context.GetSubFolderContext(configuration.ComputeSolutionName(filePath, context.FileSystem));
 
             context = context.GetNewWorkspaceDirectoryContext(workspaceDirectoryPath);
-
+            
             configuration.Root.AddToSolution(context);
         }
     }

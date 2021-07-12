@@ -25,7 +25,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            MemorySolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = Process(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();

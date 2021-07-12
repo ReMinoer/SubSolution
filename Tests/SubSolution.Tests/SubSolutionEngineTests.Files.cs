@@ -25,7 +25,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            MemorySolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = Process(configuration);
 
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -56,7 +56,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            MemorySolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = Process(configuration);
 
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -84,7 +84,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            MemorySolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = Process(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();

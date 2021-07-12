@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace SubSolution.FileSystems
 {
+    [ExcludeFromCodeCoverage]
     internal class MockFileInfo : FileInfoBase
     {
         public override string FullName { get; }

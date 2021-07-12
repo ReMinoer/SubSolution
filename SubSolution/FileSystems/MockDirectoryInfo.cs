@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace SubSolution.FileSystems
 {
+    [ExcludeFromCodeCoverage]
     internal class MockDirectoryInfo : DirectoryInfoBase
     {
-        public const char DirectorySeparator = MockSubSolutionFileSystem.DirectorySeparator;
+        private const char DirectorySeparator = MockSubSolutionFileSystem.DirectorySeparator;
 
         private readonly MockDirectoryInfo? _parentDirectoryInfo;
         private readonly Dictionary<string, MockDirectoryInfo> _subDirectories;

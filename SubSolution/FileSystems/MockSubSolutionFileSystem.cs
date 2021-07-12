@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
@@ -6,6 +7,7 @@ using SubSolution.FileSystems.Base;
 
 namespace SubSolution.FileSystems
 {
+    [ExcludeFromCodeCoverage]
     public class MockSubSolutionFileSystem : SubSolutionFileSystemBase
     {
         // Do not use System.IO !

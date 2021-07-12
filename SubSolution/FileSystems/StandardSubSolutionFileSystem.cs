@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using SubSolution.Configuration.FileSystems;
@@ -6,6 +7,7 @@ using SubSolution.FileSystems.Base;
 
 namespace SubSolution.FileSystems
 {
+    [ExcludeFromCodeCoverage]
     public class StandardSubSolutionFileSystem : SubSolutionFileSystemBase
     {
         static private StandardSubSolutionFileSystem? _instance;

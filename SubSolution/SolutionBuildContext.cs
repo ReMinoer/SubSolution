@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SubSolution.Configuration;
 using SubSolution.Configuration.FileSystems;
 using SubSolution.FileSystems;
@@ -11,25 +12,34 @@ namespace SubSolution
         public string OriginWorkspaceDirectoryPath { get; }
         public string CurrentWorkspaceDirectoryPath { get; }
         public string[] CurrentFolderPath { get; }
+        public ISet<string> KnownConfigurationFilePaths { get; }
         public ISubSolutionFileSystem FileSystem { get; }
 
-        public SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
+        private SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, ISet<string> parsedConfigurationFilePaths, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
         {
             SolutionBuilder = solutionBuilder;
             OriginWorkspaceDirectoryPath = originWorkspaceDirectoryPath;
             CurrentWorkspaceDirectoryPath = currentWorkspaceDirectoryPath ?? originWorkspaceDirectoryPath;
             CurrentFolderPath = currentFolderPath ?? Array.Empty<string>();
+            KnownConfigurationFilePaths = parsedConfigurationFilePaths;
             FileSystem = fileSystem ?? StandardSubSolutionFileSystem.Instance;
+        }
+
+        public SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, string? configurationFilePath, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
+            : this(solutionBuilder, originWorkspaceDirectoryPath, new HashSet<string>(), currentWorkspaceDirectoryPath, currentFolderPath, fileSystem)
+        {
+            if (configurationFilePath != null)
+                KnownConfigurationFilePaths.Add(configurationFilePath);
         }
 
         public ISolutionBuildContext GetSubFolderContext(params string[] relativeFolderPath)
         {
-            return new SolutionBuildContext(SolutionBuilder, OriginWorkspaceDirectoryPath, CurrentWorkspaceDirectoryPath, CombineSolutionFolderPaths(CurrentFolderPath, relativeFolderPath), FileSystem);
+            return new SolutionBuildContext(SolutionBuilder, OriginWorkspaceDirectoryPath, KnownConfigurationFilePaths, CurrentWorkspaceDirectoryPath, CombineSolutionFolderPaths(CurrentFolderPath, relativeFolderPath), FileSystem);
         }
 
         public ISolutionBuildContext GetNewWorkspaceDirectoryContext(string workspaceDirectoryPath)
         {
-            return new SolutionBuildContext(SolutionBuilder, OriginWorkspaceDirectoryPath, workspaceDirectoryPath, CurrentFolderPath, FileSystem);
+            return new SolutionBuildContext(SolutionBuilder, OriginWorkspaceDirectoryPath, KnownConfigurationFilePaths, workspaceDirectoryPath, CurrentFolderPath, FileSystem);
         }
 
         static private string[] CombineSolutionFolderPaths(string[] firstPath, string[] secondPath)

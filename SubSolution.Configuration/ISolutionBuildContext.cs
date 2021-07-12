@@ -1,4 +1,5 @@
-﻿using SubSolution.Configuration.FileSystems;
+﻿using System.Collections.Generic;
+using SubSolution.Configuration.FileSystems;
 
 namespace SubSolution.Configuration
 {
@@ -8,6 +9,7 @@ namespace SubSolution.Configuration
         string OriginWorkspaceDirectoryPath { get; }
         string CurrentWorkspaceDirectoryPath { get; }
         string[] CurrentFolderPath { get; }
+        ISet<string> KnownConfigurationFilePaths { get; }
         ISubSolutionFileSystem FileSystem { get; }
         ISolutionBuildContext GetSubFolderContext(params string[] relativeFolderPath);
         ISolutionBuildContext GetNewWorkspaceDirectoryContext(string workspaceDirectoryPath);

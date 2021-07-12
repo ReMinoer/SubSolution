@@ -1,8 +1,9 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace SubSolution.Configuration.FileSystems
 {
+    [ExcludeFromCodeCoverage]
     public class StandardFileSystem : IConfigurationFileSystem
     {
         static private StandardFileSystem? _instance;
