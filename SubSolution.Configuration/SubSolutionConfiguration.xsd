@@ -31,6 +31,48 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="SolutionItems" type="SolutionItemsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Solution item source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SolutionRoot" type="SolutionRootConfiguration" abstract="true" substitutionGroup="SolutionItems">
+        <xs:annotation>
+            <xs:documentation>Solution root.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Folder" type="SolutionFolderConfiguration" substitutionGroup="SolutionRoot">
+        <xs:annotation>
+            <xs:documentation>Solution folder.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SolutionFiles" type="SolutionFilesSourceBase" abstract="true" substitutionGroup="SolutionItems">
+        <xs:annotation>
+            <xs:documentation>Solution file source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Projects" type="ProjectsSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of projects.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Files" type="FilesSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of files.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SubSolutions" type="SubSolutionsSource" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Set of files coming from a set of SubSolution configurations.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="SolutionItemsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Base representation of a set of solution items.</xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
+
     <xs:complexType name="SolutionRootConfiguration">
         <xs:annotation>
             <xs:documentation>Represent a solution root.</xs:documentation>
@@ -59,37 +101,6 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:element name="SolutionItems" abstract="true">
-        <xs:annotation>
-            <xs:documentation>Solution item source.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="Folder" type="SolutionFolderConfiguration" substitutionGroup="SolutionItems">
-        <xs:annotation>
-            <xs:documentation>Solution folder.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="SolutionFiles" abstract="true" substitutionGroup="SolutionItems">
-        <xs:annotation>
-            <xs:documentation>Solution file source.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="Projects" type="ProjectsSource" substitutionGroup="SolutionFiles">
-        <xs:annotation>
-            <xs:documentation>Set of projects.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="Files" type="FilesSource" substitutionGroup="SolutionFiles">
-        <xs:annotation>
-            <xs:documentation>Set of files.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="SubSolutions" type="SubSolutionsSource" substitutionGroup="SolutionFiles">
-        <xs:annotation>
-            <xs:documentation>Set of files coming from a set of SubSolution configurations.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-
     <xs:complexType name="SolutionFolderConfiguration">
         <xs:annotation>
             <xs:documentation>Represent a solution folder.</xs:documentation>
@@ -103,12 +114,6 @@
                 </xs:attribute>
             </xs:extension>
         </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="SolutionItemsSourceBase" abstract="true">
-        <xs:annotation>
-            <xs:documentation>Base representation of a set of solution items.</xs:documentation>
-        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="SolutionFilesSourceBase" abstract="true">

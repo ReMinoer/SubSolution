@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System; 
 using System.IO;
 using SubSolution.Configuration.FileSystems;
 
@@ -150,75 +149,21 @@ namespace SubSolution.Configuration
 
     public partial class Folder
     {
-        public IList<SolutionItems>? SolutionItems
-        {
-            get => Content.SolutionItems;
-            set => Content.SolutionItems = value;
-        }
-
-        public bool? CollapseEmptyFolders
-        {
-            get => Content.CollapseEmptyFolders;
-            set => Content.CollapseEmptyFolders = value;
-        }
-
-        public bool? RemoveUniqueItemFolders
-        {
-            get => Content.RemoveUniqueItemFolders;
-            set => Content.RemoveUniqueItemFolders = value;
-        }
-
-        public Uri? ConflictProjectsOutputDirectory
-        {
-            get => Content.ConflictProjectsOutputDirectory;
-            set => Content.ConflictProjectsOutputDirectory = value;
-        }
-
         public override void AddToSolution(ISolutionBuildContext context) => Content.AddToSolution(context);
     }
 
     public partial class Files
     {
-        public bool? CreateFolders
-        {
-            get => Content.CreateFolders;
-            set => Content.CreateFolders = value;
-        }
-
         public override void AddToSolution(ISolutionBuildContext context) => Content.AddToSolution(context);
     }
 
     public partial class Projects
     {
-        public string? Path
-        {
-            get => Content.Path;
-            set => Content.Path = value;
-        }
-
-        public bool? CreateFolders
-        {
-            get => Content.CreateFolders;
-            set => Content.CreateFolders = value;
-        }
-
         public override void AddToSolution(ISolutionBuildContext context) => Content.AddToSolution(context);
     }
 
     public partial class SubSolutions
     {
-        public string? Path
-        {
-            get => Content.Path;
-            set => Content.Path = value;
-        }
-
-        public bool? CreateFolders
-        {
-            get => Content.CreateFolders;
-            set => Content.CreateFolders = value;
-        }
-
         public override void AddToSolution(ISolutionBuildContext context) => Content.AddToSolution(context);
     }
 }
