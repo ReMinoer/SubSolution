@@ -15,7 +15,7 @@
     </None>
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+  <Target Name="PreBuild" BeforeTargets="PrepareForBuild">
     <Exec Command="linqtoxsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot;" />
   </Target>
 
