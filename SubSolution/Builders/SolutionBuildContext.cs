@@ -4,7 +4,7 @@ using SubSolution.Configuration;
 using SubSolution.Configuration.FileSystems;
 using SubSolution.FileSystems;
 
-namespace SubSolution
+namespace SubSolution.Builders
 {
     public class SolutionBuildContext : ISolutionBuildContext
     {
@@ -15,7 +15,7 @@ namespace SubSolution
         public ISet<string> KnownConfigurationFilePaths { get; }
         public ISubSolutionFileSystem FileSystem { get; }
 
-        private SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, ISet<string> parsedConfigurationFilePaths, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
+        private SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, ISet<string> parsedConfigurationFilePaths, string? currentWorkspaceDirectoryPath, string[]? currentFolderPath, ISubSolutionFileSystem? fileSystem)
         {
             SolutionBuilder = solutionBuilder;
             OriginWorkspaceDirectoryPath = originWorkspaceDirectoryPath;
@@ -25,7 +25,7 @@ namespace SubSolution
             FileSystem = fileSystem ?? StandardSubSolutionFileSystem.Instance;
         }
 
-        public SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, string? configurationFilePath, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
+        public SolutionBuildContext(ISolutionBuilder solutionBuilder, string originWorkspaceDirectoryPath, string? configurationFilePath = null, string? currentWorkspaceDirectoryPath = null, string[]? currentFolderPath = null, ISubSolutionFileSystem? fileSystem = null)
             : this(solutionBuilder, originWorkspaceDirectoryPath, new HashSet<string>(), currentWorkspaceDirectoryPath, currentFolderPath, fileSystem)
         {
             if (configurationFilePath != null)

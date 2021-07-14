@@ -14,10 +14,10 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private SolutionBuilder Process(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
-            => SubSolutionEngine.Process(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", GetMockFileSystem(configuration, haveSubSolutions));
-        private SolutionBuilder Process(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
-            => SubSolutionEngine.Process(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
+        private SolutionBuilder ProcessConfigurationMockFile(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+            => SubSolutionEngine.ProcessConfigurationFile(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", GetMockFileSystem(configuration, haveSubSolutions));
+        private SolutionBuilder ProcessConfiguration(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+            => SubSolutionEngine.ProcessConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
 
         private MockSubSolutionFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)
         {

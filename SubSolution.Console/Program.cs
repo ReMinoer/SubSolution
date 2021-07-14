@@ -8,7 +8,7 @@ namespace SubSolution.Console
     {
         static void Main(string[] args)
         {
-            SubSolutionEngine.Process(args[0]);
+            SubSolutionEngine.ProcessConfigurationFile(args[0]);
         }
     }
 }

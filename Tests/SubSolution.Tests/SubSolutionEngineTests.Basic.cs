@@ -13,7 +13,7 @@ namespace SubSolution.Tests
         public void ProcessEmptyConfiguration()
         {
             var configuration = new SubSolutionConfiguration();
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
             
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
@@ -28,24 +28,24 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName"
             };
 
-            SolutionBuilder solution = Process(configuration);
-            solution.SolutionOutputPath.Should().EndWith("MyCustomSolutionName.sln");
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
 
             configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName.sln"
             };
 
-            solution = Process(configuration);
-            solution.SolutionOutputPath.Should().EndWith("MyCustomSolutionName.sln");
+            solution = ProcessConfigurationMockFile(configuration);
+            solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
 
             configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName.txt"
             };
 
-            solution = Process(configuration);
-            solution.SolutionOutputPath.Should().EndWith("MyCustomSolutionName.txt.sln");
+            solution = ProcessConfigurationMockFile(configuration);
+            solution.OutputPath.Should().EndWith("MyCustomSolutionName.txt.sln");
         }
 
         [Test]
@@ -57,9 +57,9 @@ namespace SubSolution.Tests
                 OutputDirectory = "MySolutions/MyCustomSolutions"
             };
 
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
 
-            solution.SolutionOutputPath.Should().EndWith("MySolutions/MyCustomSolutions/MyCustomSolutionName.sln");
+            solution.OutputPath.Should().EndWith("MySolutions/MyCustomSolutions/MyCustomSolutionName.sln");
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -73,7 +73,7 @@ namespace SubSolution.Tests
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
 
-            SolutionBuilder solution = Process(configuration, workspaceDirectoryPath: null);
+            SolutionBuilder solution = ProcessConfiguration(configuration, workspaceDirectoryPath: null);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
@@ -84,7 +84,7 @@ namespace SubSolution.Tests
         public void ThrowOnProcessWithoutAnyWorkspaceDirectory()
         {
             var configuration = new SubSolutionConfiguration();
-            Invoking(() => Process(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
+            Invoking(() => ProcessConfiguration(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
         }
 
 

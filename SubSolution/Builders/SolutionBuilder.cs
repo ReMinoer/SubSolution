@@ -1,17 +1,22 @@
 ﻿using System.Collections.Generic;
 using SubSolution.Configuration;
+using SubSolution.Configuration.FileSystems;
+using SubSolution.Utils;
 
 namespace SubSolution.Builders
 {
-    public class SolutionBuilder : ISolutionBuilder
+    public class SolutionBuilder : ISolutionBuilder, ISolutionOutputFile
     {
-        public string SolutionOutputPath { get; }
-        public Folder Root { get; }
+        public IConfigurationFileSystem FileSystem { get; }
+        public string OutputPath { get; }
 
-        public SolutionBuilder(string solutionOutputPath)
+        public Folder Root { get; } = new Folder();
+        ISolutionFolder ISolution.Root => Root;
+
+        public SolutionBuilder(string outputPath, IConfigurationFileSystem? fileSystem = null)
         {
-            SolutionOutputPath = solutionOutputPath;
-            Root = new Folder();
+            OutputPath = outputPath;
+            FileSystem = fileSystem ?? StandardFileSystem.Instance;
         }
 
         public void AddFile(string filePath, string[] solutionFolderPath) => GetSolutionFolder(solutionFolderPath).FilePaths.Add(filePath);
@@ -31,17 +36,30 @@ namespace SubSolution.Builders
             return currentFolder;
         }
 
-        public class Folder
+        public class Folder : ISolutionFolder
         {
             public HashSet<string> FilePaths { get; }
             public HashSet<string> ProjectPaths { get; }
             public Dictionary<string, Folder> SubFolders { get; }
 
+            private readonly ReadOnlyCollection<string> _readOnlyFilePaths;
+            private readonly ReadOnlyCollection<string> _readOnlyProjectPaths;
+            private readonly ICovariantReadOnlyDictionary<string, ISolutionFolder> _readOnlySubFolders;
+
+            IReadOnlyCollection<string> ISolutionFolder.FilePaths => _readOnlyFilePaths;
+            IReadOnlyCollection<string> ISolutionFolder.ProjectPaths => _readOnlyProjectPaths;
+            ICovariantReadOnlyDictionary<string, ISolutionFolder> ISolutionFolder.SubFolders => _readOnlySubFolders;
+
             public Folder()
             {
                 FilePaths = new HashSet<string>();
+                _readOnlyFilePaths = new ReadOnlyCollection<string>(FilePaths);
+
                 ProjectPaths = new HashSet<string>();
+                _readOnlyProjectPaths = new ReadOnlyCollection<string>(ProjectPaths);
+
                 SubFolders = new Dictionary<string, Folder>();
+                _readOnlySubFolders = new CovariantReadOnlyDictionary<string, Folder>(SubFolders);
             }
         }
     }

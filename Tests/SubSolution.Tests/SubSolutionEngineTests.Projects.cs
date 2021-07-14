@@ -22,7 +22,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -50,7 +50,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -80,7 +80,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -108,7 +108,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();

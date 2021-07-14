@@ -9,7 +9,7 @@ namespace SubSolution
 {
     static public class SubSolutionEngine
     {
-        static public SolutionBuilder Process(string configurationFilePath, ISubSolutionFileSystem? fileSystem = null)
+        static public SolutionBuilder ProcessConfigurationFile(string configurationFilePath, ISubSolutionFileSystem? fileSystem = null)
         {
             SubSolutionConfiguration configuration;
 
@@ -25,7 +25,7 @@ namespace SubSolution
             return Process(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, fileSystem);
         }
 
-        static public SolutionBuilder Process(SubSolutionConfiguration configuration, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
+        static public SolutionBuilder ProcessConfiguration(SubSolutionConfiguration configuration, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
         {
             string solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, nameof(SubSolution), fileSystem);
             string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
@@ -38,7 +38,7 @@ namespace SubSolution
         
         static private SolutionBuilder Process(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, ISubSolutionFileSystem? fileSystem)
         {
-            var solutionBuilder = new SolutionBuilder(solutionPath);
+            var solutionBuilder = new SolutionBuilder(solutionPath, fileSystem);
             var solutionBuildContext = new SolutionBuildContext(solutionBuilder, workspaceDirectoryPath, configurationFilePath, fileSystem: fileSystem);
 
             configuration.Root?.AddToSolution(solutionBuildContext);

@@ -22,7 +22,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration, haveSubSolutions: true);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
             CheckFolderContainsMySubModule(solution.Root);
@@ -42,7 +42,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration, haveSubSolutions: true);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
@@ -62,7 +62,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration, haveSubSolutions: true);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
             CheckFolderContainsMySubModule(solution.Root);
@@ -82,7 +82,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = Process(configuration, haveSubSolutions: true);
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
