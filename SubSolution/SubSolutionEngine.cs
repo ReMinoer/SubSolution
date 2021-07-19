@@ -19,7 +19,8 @@ namespace SubSolution
                 configuration = SubSolutionConfiguration.Load(configurationReader);
             }
 
-            string solutionPath = configuration.ComputeSolutionPath(Environment.CurrentDirectory, configurationFilePath, fileSystem);
+            string defaultOutputDirectory = (fileSystem ?? StandardSubSolutionFileSystem.Instance).GetParentDirectoryPath(configurationFilePath) ?? Environment.CurrentDirectory;
+            string solutionPath = configuration.ComputeSolutionPath(defaultOutputDirectory, configurationFilePath, fileSystem);
             string workspaceDirectoryPath = configuration.ComputeWorkspaceDirectoryPath(configurationFilePath, fileSystem);
 
             return Process(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, fileSystem);

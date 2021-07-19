@@ -25,7 +25,6 @@ namespace SubSolution.Tests
             SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
-            CheckFolderContainsMySubModule(solution.Root);
         }
 
         [Test]
@@ -65,6 +64,55 @@ namespace SubSolution.Tests
             SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
+        }
+
+        [Test]
+        public void ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "SubModule",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new SubSolutions { Path = "**/MySubModule/" }
+                            }
+                        },
+                        new SubSolutions()
+                    }
+                }
+            };
+
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+
+            CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
+
+            var subModuleFolder = solution.Root.SubFolders.Should().ContainKey("SubModule").WhichValue;
+            CheckFolderContainsMySubModule(subModuleFolder, only: true);
+        }
+
+        [Test]
+        public void ProcessSubSolutionsWithReverseOrder()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new SubSolutions { ReverseOrder = true }
+                    }
+                }
+            };
+
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+
+            CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
             CheckFolderContainsMySubModule(solution.Root);
         }
 
@@ -86,10 +134,34 @@ namespace SubSolution.Tests
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
-            solution.Root.SubFolders.Should().HaveCount(2);
+            solution.Root.SubFolders.Should().HaveCount(1);
 
             var myFrameworkFolder = solution.Root.SubFolders.Should().ContainKey("MyFramework").WhichValue;
             CheckFolderContainsMyFramework(myFrameworkFolder, only: true);
+        }
+
+        [Test]
+        public void ProcessSubSolutionsWithCreateRootFolderAndReverseOrder()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new SubSolutions { CreateRootFolder = true, ReverseOrder = true }
+                    }
+                }
+            };
+
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(2);
+
+            var myFrameworkFolder = solution.Root.SubFolders.Should().ContainKey("MyFramework").WhichValue;
+            CheckFolderContainsMyFramework(myFrameworkFolder, only: true, butNotExternal: true);
 
             var mySubModuleFolder = solution.Root.SubFolders.Should().ContainKey("MySubModule").WhichValue;
             CheckFolderContainsMySubModule(mySubModuleFolder, only: true);

@@ -5,8 +5,11 @@ using SubSolution.Utils;
 
 namespace SubSolution.Builders
 {
-    public class SolutionBuilder : ISolutionBuilder, ISolutionOutputFile
+    public class SolutionBuilder : ISolutionBuilder, ISolution
     {
+        private readonly HashSet<string> _filePaths = new HashSet<string>();
+        private readonly HashSet<string> _projectPaths = new HashSet<string>();
+
         public IConfigurationFileSystem FileSystem { get; }
         public string OutputPath { get; }
 
@@ -19,8 +22,17 @@ namespace SubSolution.Builders
             FileSystem = fileSystem ?? StandardFileSystem.Instance;
         }
 
-        public void AddFile(string filePath, string[] solutionFolderPath) => GetSolutionFolder(solutionFolderPath).FilePaths.Add(filePath);
-        public void AddProject(string projectPath, string[] solutionFolderPath) => GetSolutionFolder(solutionFolderPath).ProjectPaths.Add(projectPath);
+        public void AddFile(string filePath, string[] solutionFolderPath)
+        {
+            if (_filePaths.Add(filePath))
+                GetSolutionFolder(solutionFolderPath).FilePaths.Add(filePath);
+        }
+
+        public void AddProject(string projectPath, string[] solutionFolderPath)
+        {
+            if (_projectPaths.Add(projectPath))
+                GetSolutionFolder(solutionFolderPath).ProjectPaths.Add(projectPath);
+        }
 
         private Folder GetSolutionFolder(string[] solutionFolderPath)
         {

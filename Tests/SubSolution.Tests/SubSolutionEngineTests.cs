@@ -102,12 +102,20 @@ namespace SubSolution.Tests
                         {
                             new Files { Path = "tools/**" }
                         }
+                    },
+                    new Folder
+                    {
+                        Name = "External",
+                        SolutionItems = new List<SolutionItems>
+                        {
+                            new SubSolutions { Path = "external/**" }
+                        }
                     }
                 }
             }
         };
 
-        private void CheckFolderContainsMyFramework(SolutionBuilder.Folder rootFolder, bool only = false)
+        private void CheckFolderContainsMyFramework(SolutionBuilder.Folder rootFolder, bool only = false, bool butNotExternal = false)
         {
             rootFolder.ProjectPaths.Should().Contain("external/MyFramework/src/MyFramework/MyFramework.csproj");
 
@@ -115,7 +123,7 @@ namespace SubSolution.Tests
             {
                 rootFolder.FilePaths.Should().BeEmpty();
                 rootFolder.ProjectPaths.Should().HaveCount(1);
-                rootFolder.SubFolders.Should().HaveCount(2);
+                rootFolder.SubFolders.Should().HaveCount(butNotExternal ? 2 : 3);
             }
 
             var testsFolder = rootFolder.SubFolders.Should().ContainKey("Tests").WhichValue;
@@ -140,6 +148,14 @@ namespace SubSolution.Tests
                     toolsFolder.ProjectPaths.Should().BeEmpty();
                     toolsFolder.SubFolders.Should().BeEmpty();
                 }
+            }
+
+            if (butNotExternal)
+                return;
+
+            var externalFolder = rootFolder.SubFolders.Should().ContainKey("External").WhichValue;
+            {
+                CheckFolderContainsMySubModule(externalFolder, true);
             }
         }
 

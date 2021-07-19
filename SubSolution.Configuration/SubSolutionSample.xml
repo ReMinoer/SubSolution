@@ -1,7 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <SubSolutionConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="SubSolutionConfiguration.xsd">
-    <Root RemoveUniqueItemFolders="true" ConflictProjectsOutputDirectory="External/.Conflicts/">
-        <SubSolutions CreateRootFolder="true" CreateFolders="true" />
+    <Root RemoveUniqueItemFolders="true" CollapseEmptyFolders="true" ConflictProjectsOutputDirectory=".Conflicts">
+        <Folder Name="FolderName" RemoveUniqueItemFolders="true" CollapseEmptyFolders="true" ConflictProjectsOutputDirectory=".Conflicts">
+            <SubSolutions CreateRootFolder="true" CreateFolders="true">
+                <MatchingPath Path="**/*.custom.csproj" />
+            </SubSolutions>
+            <Projects />
+        </Folder>
+        <SubSolutions CreateRootFolder="true" CreateFolders="true">
+        </SubSolutions>
         <Projects />
     </Root>
 </SubSolutionConfiguration>

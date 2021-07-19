@@ -92,6 +92,49 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public void ProcessProjectsMatchingMultipleFiltersInDifferentSolutionFolders()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "Executables",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Projects
+                                {
+                                    Path = "src/Executables/**"
+                                }
+                            }
+                        },
+                        new Projects
+                        {
+                            Path = "**"
+                        }
+                    }
+                }
+            };
+
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.ProjectPaths.Should().HaveCount(2);
+            solution.Root.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                var executablesFolder = solution.Root.SubFolders.Should().ContainKey("Executables").WhichValue;
+                executablesFolder.FilePaths.Should().BeEmpty();
+                executablesFolder.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                executablesFolder.SubFolders.Should().BeEmpty();
+            }
+        }
+
+        [Test]
         public void ProcessProjectsWithCreateFolders()
         {
             var configuration = new SubSolutionConfiguration

@@ -122,6 +122,9 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionItemsSourceBase">
+                <xs:sequence>
+                    <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded" />
+                </xs:sequence>
                 <xs:attribute ref="Path" />
                 <xs:attribute name="CreateFolders" type="xs:boolean">
                     <xs:annotation>
@@ -169,9 +172,48 @@
                         <xs:documentation>True to create a dedicated folder for each SubSolution. Folder name will be its SolutionName.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="ReverseOrder" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to reverse matching files order. Deep files will be treated before files contained in parent folders.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+
+    <xs:element name="FileFilters" abstract="true">
+        <xs:annotation>
+            <xs:documentation>File filter.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="MatchingPath" substitutionGroup="FileFilters">
+        <xs:annotation>
+            <xs:documentation>Filter on file path.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute ref="Path" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="IsDependencyOf" substitutionGroup="FileFilters">
+        <xs:annotation>
+            <xs:documentation>Filter on dependent projects.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="ProjectName" type="ProjectName" use="required">
+                <xs:annotation>
+                    <xs:documentation>Dependent project name.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ProjectFilter" type="SolutionItemsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Solution item source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
     <xs:simpleType name="PathGlobPattern">
         <xs:annotation>
@@ -192,6 +234,14 @@
     <xs:simpleType name="FileName">
         <xs:annotation>
             <xs:documentation>File name.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ProjectName">
+        <xs:annotation>
+            <xs:documentation>Project name.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
         </xs:restriction>

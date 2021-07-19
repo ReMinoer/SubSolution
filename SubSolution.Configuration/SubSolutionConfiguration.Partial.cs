@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using SubSolution.Configuration.FileSystems;
 
 namespace SubSolution.Configuration
@@ -65,9 +67,14 @@ namespace SubSolution.Configuration
                 globPattern += "*." + DefaultFileExtension;
             else if (globPattern.EndsWith("**"))
                 globPattern += "/*." + DefaultFileExtension;
-
-            foreach (string matchingFilePath in context.FileSystem.GetFilesMatchingGlobPattern(context.CurrentWorkspaceDirectoryPath, globPattern))
+            
+            foreach (string matchingFilePath in GetMatchingFiles(context, globPattern))
                 AddFoldersAndFileToSolution(matchingFilePath, context);
+        }
+
+        protected virtual IEnumerable<string> GetMatchingFiles(ISolutionBuildContext context, string globPattern)
+        {
+            return context.FileSystem.GetFilesMatchingGlobPattern(context.CurrentWorkspaceDirectoryPath, globPattern);
         }
 
         protected virtual void AddFoldersAndFileToSolution(string relativeFilePath, ISolutionBuildContext context)
@@ -115,6 +122,15 @@ namespace SubSolution.Configuration
     {
         protected override string DefaultFileExtension => "subsln";
 
+        protected override IEnumerable<string> GetMatchingFiles(ISolutionBuildContext context, string globPattern)
+        {
+            IEnumerable<string> matchingFiles = base.GetMatchingFiles(context, globPattern);
+            if (ReverseOrder ?? false)
+                matchingFiles = matchingFiles.Reverse();
+
+            return matchingFiles;
+        }
+
         protected override void AddFoldersAndFileToSolution(string relativeFilePath, ISolutionBuildContext context)
         {
             string filePath = context.FileSystem.Combine(context.CurrentWorkspaceDirectoryPath, relativeFilePath);
@@ -126,7 +142,7 @@ namespace SubSolution.Configuration
 
         protected override void AddFileToSolution(string relativeFilePath, ISolutionBuildContext context)
         {
-            string filePath = context.FileSystem.Combine(context.CurrentWorkspaceDirectoryPath, relativeFilePath);
+            string filePath = context.FileSystem.Combine(context.OriginWorkspaceDirectoryPath, relativeFilePath);
 
             SubSolutionConfiguration configuration;
             using (Stream configurationStream = context.FileSystem.OpenStream(filePath))

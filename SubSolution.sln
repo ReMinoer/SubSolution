@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Configuration",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DCA4B9AE-20BF-40E4-A150-25CC261FABB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubSolution.Tests", "Tests\SubSolution.Tests\SubSolution.Tests.csproj", "{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Tests", "Tests\SubSolution.Tests\SubSolution.Tests.csproj", "{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

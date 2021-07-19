@@ -67,6 +67,49 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public void ProcessFilesMatchingMultipleFiltersInDifferentSolutionFolders()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "Batch",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Files
+                                {
+                                    Path = "tools/**/*.bat"
+                                }
+                            }
+                        },
+                        new Files
+                        {
+                            Path = "tools/**"
+                        }
+                    }
+                }
+            };
+
+            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+
+            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.FilePaths.Should().HaveCount(1);
+            solution.Root.FilePaths.Should().Contain("tools/debug/Debug.exe");
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                var batchFolder = solution.Root.SubFolders.Should().ContainKey("Batch").WhichValue;
+                batchFolder.ProjectPaths.Should().BeEmpty();
+                batchFolder.FilePaths.Should().HaveCount(1);
+                batchFolder.FilePaths.Should().Contain("tools/submit.bat");
+                batchFolder.SubFolders.Should().BeEmpty();
+            }
+        }
+
+        [Test]
         public void ProcessFilesWithCreateFolders()
         {
             var configuration = new SubSolutionConfiguration
