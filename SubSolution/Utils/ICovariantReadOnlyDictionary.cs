@@ -2,7 +2,7 @@
 
 namespace SubSolution.Utils
 {
-    public interface ICovariantReadOnlyDictionary<TKey, out TValue>
+    public interface ICovariantReadOnlyDictionary<TKey, out TValue> : IEnumerable<ICovariantKeyValuePair<TKey, TValue>>
     {
         int Count { get; }
         IReadOnlyCollection<TKey> Keys { get; }

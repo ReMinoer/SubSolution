@@ -8,15 +8,18 @@ namespace SubSolution.Console
 {
     static class Program
     {
-        static void Main(string[] args)
+        static private void Main(string[] args)
         {
             if (args.Length == 0)
                 System.Console.WriteLine("No SubSolution configuration path provided!");
 
-            SolutionBuilder solution = SubSolutionEngine.ProcessConfigurationFile(args[0]);
+            SubSolutionContext context = SubSolutionContext.FromConfigurationFile(args[0]);
 
-            var generator = new DotNetCommandLineGenerator();
-            generator.Generate(solution, solution.OutputPath);
+            ISolutionBuilder solutionBuilder = new SolutionBuilder(context);
+            ISolutionOutput solution = solutionBuilder.Build(context.Configuration);
+
+            ISolutionGenerator generator = new DotNetCommandLineGenerator();
+            generator.Generate(solution);
         }
     }
 }

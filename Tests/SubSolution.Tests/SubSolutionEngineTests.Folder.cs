@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Configuration;
 
 namespace SubSolution.Tests
@@ -25,7 +24,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();

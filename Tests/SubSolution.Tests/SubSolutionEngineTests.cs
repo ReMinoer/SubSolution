@@ -1,10 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using SubSolution.Builders;
 using SubSolution.Configuration;
-using SubSolution.FileSystems;
+using SubSolution.FileSystems.Mock;
 
 namespace SubSolution.Tests
 {
@@ -14,14 +16,29 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private SolutionBuilder ProcessConfigurationMockFile(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
-            => SubSolutionEngine.ProcessConfigurationFile(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", GetMockFileSystem(configuration, haveSubSolutions));
-        private SolutionBuilder ProcessConfiguration(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
-            => SubSolutionEngine.ProcessConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
-
-        private MockSubSolutionFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)
+        private ISolutionOutput ProcessConfigurationMockFile(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
-            var mockFileSystem = new MockSubSolutionFileSystem();
+            const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
+
+            SubSolutionContext subSolutionContext = SubSolutionContext.FromConfigurationFile(configurationFilePath, GetMockFileSystem(configuration, haveSubSolutions));
+            subSolutionContext.Logger = new ConsoleLogger();
+
+            var solutionBuilder = new SolutionBuilder(subSolutionContext);
+            return solutionBuilder.Build(subSolutionContext.Configuration);
+        }
+
+        private ISolutionOutput ProcessConfiguration(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+        {
+            SubSolutionContext subSolutionContext = SubSolutionContext.FromConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
+            subSolutionContext.Logger = new ConsoleLogger();
+
+            var solutionBuilder = new SolutionBuilder(subSolutionContext);
+            return solutionBuilder.Build(subSolutionContext.Configuration);
+        }
+
+        private MockFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)
+        {
+            var mockFileSystem = new MockFileSystem();
             var relativeFilePath = new List<string>();
             
             if (configurationContent is not null)
@@ -69,7 +86,7 @@ namespace SubSolution.Tests
             return mockFileSystem;
         }
 
-        private void AddConfigurationToFileSystem(MockSubSolutionFileSystem mockFileSystem, string filePath, SubSolutionConfiguration configuration)
+        private void AddConfigurationToFileSystem(MockFileSystem mockFileSystem, string filePath, SubSolutionConfiguration configuration)
         {
             using var memoryStream = new MemoryStream();
 
@@ -115,7 +132,7 @@ namespace SubSolution.Tests
             }
         };
 
-        private void CheckFolderContainsMyFramework(SolutionBuilder.Folder rootFolder, bool only = false, bool butNotExternal = false)
+        private void CheckFolderContainsMyFramework(ISolutionFolder rootFolder, bool only = false, bool butNotExternal = false)
         {
             rootFolder.ProjectPaths.Should().Contain("external/MyFramework/src/MyFramework/MyFramework.csproj");
 
@@ -125,8 +142,8 @@ namespace SubSolution.Tests
                 rootFolder.ProjectPaths.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().HaveCount(butNotExternal ? 2 : 3);
             }
-
-            var testsFolder = rootFolder.SubFolders.Should().ContainKey("Tests").WhichValue;
+            
+            ISolutionFolder testsFolder = rootFolder.SubFolders["Tests"];
             {
                 testsFolder.ProjectPaths.Should().Contain("external/MyFramework/tests/MyFramework.Tests/MyFramework.Tests.csproj");
 
@@ -138,7 +155,7 @@ namespace SubSolution.Tests
                 }
             }
 
-            var toolsFolder = rootFolder.SubFolders.Should().ContainKey("Tools").WhichValue;
+            ISolutionFolder toolsFolder = rootFolder.SubFolders["Tools"];
             {
                 toolsFolder.FilePaths.Should().Contain("external/MyFramework/tools/submit.bat");
 
@@ -153,7 +170,7 @@ namespace SubSolution.Tests
             if (butNotExternal)
                 return;
 
-            var externalFolder = rootFolder.SubFolders.Should().ContainKey("External").WhichValue;
+            ISolutionFolder externalFolder = rootFolder.SubFolders["External"];
             {
                 CheckFolderContainsMySubModule(externalFolder, true);
             }
@@ -170,7 +187,7 @@ namespace SubSolution.Tests
             }
         };
 
-        private void CheckFolderContainsMySubModule(SolutionBuilder.Folder rootFolder, bool only = false)
+        private void CheckFolderContainsMySubModule(ISolutionFolder rootFolder, bool only = false)
         {
             rootFolder.ProjectPaths.Should().Contain("external/MyFramework/external/MySubModule/src/MySubModule/MySubModule.csproj");
 
@@ -180,6 +197,17 @@ namespace SubSolution.Tests
                 rootFolder.ProjectPaths.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().BeEmpty();
             }
+        }
+
+        private class ConsoleLogger : ILogger
+        {
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                Console.WriteLine($"[{logLevel.ToString().ToUpperInvariant()}] {state}");
+            }
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+            public IDisposable BeginScope<TState>(TState state) => null;
         }
     }
 }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Configuration;
 
 namespace SubSolution.Tests
@@ -22,7 +21,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
@@ -41,7 +40,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
@@ -61,7 +60,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
@@ -88,11 +87,11 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
 
-            var subModuleFolder = solution.Root.SubFolders.Should().ContainKey("SubModule").WhichValue;
+            ISolutionFolder subModuleFolder = solution.Root.SubFolders["SubModule"];
             CheckFolderContainsMySubModule(subModuleFolder, only: true);
         }
 
@@ -110,7 +109,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
             CheckFolderContainsMySubModule(solution.Root);
@@ -130,13 +129,13 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(1);
 
-            var myFrameworkFolder = solution.Root.SubFolders.Should().ContainKey("MyFramework").WhichValue;
+            ISolutionFolder myFrameworkFolder = solution.Root.SubFolders["MyFramework"];
             CheckFolderContainsMyFramework(myFrameworkFolder, only: true);
         }
 
@@ -154,16 +153,16 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(2);
 
-            var myFrameworkFolder = solution.Root.SubFolders.Should().ContainKey("MyFramework").WhichValue;
+            ISolutionFolder myFrameworkFolder = solution.Root.SubFolders["MyFramework"];
             CheckFolderContainsMyFramework(myFrameworkFolder, only: true, butNotExternal: true);
 
-            var mySubModuleFolder = solution.Root.SubFolders.Should().ContainKey("MySubModule").WhichValue;
+            ISolutionFolder mySubModuleFolder = solution.Root.SubFolders["MySubModule"];
             CheckFolderContainsMySubModule(mySubModuleFolder, only: true);
         }
     }

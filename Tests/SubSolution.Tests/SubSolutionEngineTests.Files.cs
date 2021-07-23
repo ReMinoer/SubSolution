@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Configuration;
 
 namespace SubSolution.Tests
@@ -25,7 +24,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -56,7 +55,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -94,14 +93,14 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.FilePaths.Should().HaveCount(1);
             solution.Root.FilePaths.Should().Contain("tools/debug/Debug.exe");
             solution.Root.SubFolders.Should().HaveCount(1);
             {
-                var batchFolder = solution.Root.SubFolders.Should().ContainKey("Batch").WhichValue;
+                ISolutionFolder batchFolder = solution.Root.SubFolders["Batch"];
                 batchFolder.ProjectPaths.Should().BeEmpty();
                 batchFolder.FilePaths.Should().HaveCount(1);
                 batchFolder.FilePaths.Should().Contain("tools/submit.bat");
@@ -127,23 +126,24 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(1);
             {
-                var toolsFolder = solution.Root.SubFolders.Should().ContainKey("tools").WhichValue;
+                ISolutionFolder toolsFolder = solution.Root.SubFolders["tools"];
                 toolsFolder.FilePaths.Should().BeEquivalentTo("tools/submit.bat");
                 toolsFolder.ProjectPaths.Should().BeEmpty();
                 toolsFolder.SubFolders.Should().HaveCount(1);
                 {
-                    var debugFolder = toolsFolder.SubFolders.Should().ContainKey("debug").WhichValue;
+                    ISolutionFolder debugFolder = toolsFolder.SubFolders["debug"];
                     debugFolder.FilePaths.Should().BeEquivalentTo("tools/debug/Debug.exe");
                     debugFolder.ProjectPaths.Should().BeEmpty();
                     debugFolder.SubFolders.Should().BeEmpty();
                 }
             }
+
         }
     }
 }

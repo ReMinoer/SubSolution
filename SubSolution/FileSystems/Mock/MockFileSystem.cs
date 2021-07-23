@@ -5,10 +5,10 @@ using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using SubSolution.FileSystems.Base;
 
-namespace SubSolution.FileSystems
+namespace SubSolution.FileSystems.Mock
 {
     [ExcludeFromCodeCoverage]
-    public class MockSubSolutionFileSystem : SubSolutionFileSystemBase
+    public class MockFileSystem : SubSolutionFileSystemBase
     {
         // Do not use System.IO !
 

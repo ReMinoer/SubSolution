@@ -2,26 +2,25 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
-using SubSolution.Configuration.FileSystems;
 using SubSolution.FileSystems.Base;
 
 namespace SubSolution.FileSystems
 {
     [ExcludeFromCodeCoverage]
-    public class StandardSubSolutionFileSystem : SubSolutionFileSystemBase
+    public class StandardFileSystem : SubSolutionFileSystemBase
     {
-        static private StandardSubSolutionFileSystem? _instance;
-        static public StandardSubSolutionFileSystem Instance => _instance ??= new StandardSubSolutionFileSystem();
+        static private StandardFileSystem? _instance;
+        static public StandardFileSystem Instance => _instance ??= new StandardFileSystem();
 
         static private readonly char[] DirectorySeparators = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
 
-        private StandardSubSolutionFileSystem()
+        private StandardFileSystem()
         {
         }
 
-        public override string GetFileNameWithoutExtension(string fileName) => StandardFileSystem.Instance.GetFileNameWithoutExtension(fileName);
-        public override string? GetParentDirectoryPath(string path) => StandardFileSystem.Instance.GetParentDirectoryPath(path);
-        public override string Combine(string firstPath, string secondPath) => StandardFileSystem.Instance.Combine(firstPath, secondPath);
+        public override string GetFileNameWithoutExtension(string fileName) => Path.GetFileNameWithoutExtension(fileName);
+        public override string? GetParentDirectoryPath(string path) => Path.GetDirectoryName(path);
+        public override string Combine(string firstPath, string secondPath) => Path.Combine(firstPath, secondPath);
 
         public override string[] SplitPath(string path) => path.Split(DirectorySeparators, StringSplitOptions.RemoveEmptyEntries);
         public override Stream OpenStream(string filePath) => File.OpenRead(filePath);

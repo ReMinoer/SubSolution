@@ -8,16 +8,18 @@ using System.Linq;
 namespace SubSolution.Generators
 {
     [ExcludeFromCodeCoverage]
-    public class DotNetCommandLineGenerator
+    public class DotNetCommandLineGenerator : ISolutionGenerator
     {
-        public void Generate(ISolution solution, string outputPath)
+        public void Generate(ISolutionOutput solutionOutput)
         {
+            string outputPath = solutionOutput.OutputPath;
+
             string workingDirectory = Path.GetDirectoryName(outputPath)!;
             string solutionName = Path.GetFileNameWithoutExtension(outputPath);
             string solutionFileName = Path.GetFileName(outputPath);
 
             CreateSolution(workingDirectory, solutionName);
-            AddSolutionRoot(solution, workingDirectory, solutionFileName);
+            AddSolutionRoot(solutionOutput, workingDirectory, solutionFileName);
         }
 
         private void CreateSolution(string workingDirectory, string solutionName)

@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace SubSolution.Configuration.FileSystems
+namespace SubSolution.FileSystems
 {
-    public interface ISubSolutionFileSystem : IConfigurationFileSystem
+    public interface ISubSolutionFileSystem
     {
+        string GetFileNameWithoutExtension(string fileName);
+        string? GetParentDirectoryPath(string path);
+        string Combine(string firstPath, string secondPath);
         string[] SplitPath(string path);
         string MakeRelativePath(string rootPath, string filePath);
         Stream OpenStream(string filePath);

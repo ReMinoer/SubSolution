@@ -1,77 +1,168 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SubSolution.Configuration;
-using SubSolution.Configuration.FileSystems;
+using SubSolution.FileSystems;
 using SubSolution.Utils;
 
 namespace SubSolution.Builders
 {
-    public class SolutionBuilder : ISolutionBuilder, ISolution
+    public class SolutionBuilder : ISolutionBuilder, ISubSolutionConfigurationVisitor
     {
-        private readonly HashSet<string> _filePaths = new HashSet<string>();
-        private readonly HashSet<string> _projectPaths = new HashSet<string>();
+        private readonly SolutionOutput _solutionOutput;
 
-        public IConfigurationFileSystem FileSystem { get; }
-        public string OutputPath { get; }
+        private readonly string _originWorkspaceDirectoryPath;
 
-        public Folder Root { get; } = new Folder();
-        ISolutionFolder ISolution.Root => Root;
+        private readonly ISubSolutionFileSystem _fileSystem;
+        private readonly ILogger _logger;
 
-        public SolutionBuilder(string outputPath, IConfigurationFileSystem? fileSystem = null)
+        private readonly ISet<string> _knownConfigurationFilePaths;
+        private readonly Stack<string> _currentWorkspacePathStack;
+        private readonly Stack<string> _currentFolderPathStack;
+
+        private string CurrentWorkspaceDirectoryPath => _currentWorkspacePathStack.Peek();
+        private IEnumerable<string> CurrentFolderPath => _currentFolderPathStack.Reverse();
+
+        public SolutionBuilder(SubSolutionContext context)
         {
-            OutputPath = outputPath;
-            FileSystem = fileSystem ?? StandardFileSystem.Instance;
+            _solutionOutput = new SolutionOutput(context.SolutionPath);
+            _originWorkspaceDirectoryPath = context.WorkspaceDirectoryPath;
+
+            _knownConfigurationFilePaths = new HashSet<string>();
+            if (context.ConfigurationFilePath != null)
+                _knownConfigurationFilePaths.Add(context.ConfigurationFilePath);
+
+            _currentWorkspacePathStack = new Stack<string>();
+            _currentWorkspacePathStack.Push(_originWorkspaceDirectoryPath);
+
+            _currentFolderPathStack = new Stack<string>();
+
+            _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
+            _logger = context.Logger ?? NullLogger.Instance;
         }
 
-        public void AddFile(string filePath, string[] solutionFolderPath)
+        private IDisposable AppendSubFolderPath(params string[] relativeFolderPath)
         {
-            if (_filePaths.Add(filePath))
-                GetSolutionFolder(solutionFolderPath).FilePaths.Add(filePath);
+            foreach (string folderName in relativeFolderPath)
+                _currentFolderPathStack.Push(folderName);
+
+            return new Disposable(() =>
+                {
+                    for (int i = 0; i < relativeFolderPath.Length; i++)
+                        _currentFolderPathStack.Pop();
+                }
+            );
         }
 
-        public void AddProject(string projectPath, string[] solutionFolderPath)
+        private IDisposable NewWorkspaceDirectory(string workspaceDirectoryPath)
         {
-            if (_projectPaths.Add(projectPath))
-                GetSolutionFolder(solutionFolderPath).ProjectPaths.Add(projectPath);
+            _currentWorkspacePathStack.Push(workspaceDirectoryPath);
+            return new Disposable(() => _currentWorkspacePathStack.Pop());
         }
 
-        private Folder GetSolutionFolder(string[] solutionFolderPath)
+        public ISolutionOutput Build(SubSolutionConfiguration configuration)
         {
-            Folder currentFolder = Root;
-            foreach (string solutionFolderName in solutionFolderPath)
+            Visit(configuration.Root);
+            return _solutionOutput;
+        }
+
+        public void Visit(SolutionRootConfiguration root)
+        {
+            if (root == null)
+                return;
+
+            VisitRoot(root);
+        }
+
+        public void Visit(Folder folder)
+        {
+            using (AppendSubFolderPath(folder.Name))
+                VisitRoot(folder.Content);
+        }
+
+        private void VisitRoot(SolutionRootConfiguration root)
+        {
+            foreach (SolutionItems items in root.SolutionItems)
+                items.Accept(this);
+        }
+
+        public void Visit(Files files)
+        {
+            foreach (string relativeFilePath in GetMatchingFilePaths(files.Path, defaultFileExtension: "*"))
+                AddFoldersAndFileToSolution(relativeFilePath, _solutionOutput.AddFile, files.CreateFolders == true);
+        }
+
+        public void Visit(Projects projects)
+        {
+            foreach (string relativeFilePath in GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj"))
+                AddFoldersAndFileToSolution(relativeFilePath, _solutionOutput.AddProject, projects.CreateFolders == true);
+        }
+
+        public void Visit(SubSolutions subSolutions)
+        {
+            IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(subSolutions.Path, defaultFileExtension: "subsln");
+            if (subSolutions.ReverseOrder == true)
+                matchingFilePaths = matchingFilePaths.Reverse();
+
+            foreach (string relativeFilePath in matchingFilePaths)
             {
-                if (!currentFolder.SubFolders.TryGetValue(solutionFolderName, out Folder subFolder))
-                    currentFolder.SubFolders[solutionFolderName] = subFolder = new Folder();
+                string filePath = _fileSystem.Combine(CurrentWorkspaceDirectoryPath, relativeFilePath);
+                if (!_knownConfigurationFilePaths.Add(filePath))
+                    continue;
 
-                currentFolder = subFolder;
+                SubSolutionConfiguration configuration;
+                using (Stream configurationStream = _fileSystem.OpenStream(filePath))
+                using (TextReader configurationReader = new StreamReader(configurationStream))
+                    configuration = SubSolutionConfiguration.Load(configurationReader);
+
+                var workspaceDirectoryPath = SubSolutionContext.ComputeWorkspaceDirectoryPath(configuration, filePath, _fileSystem);
+
+                using (NewWorkspaceDirectory(workspaceDirectoryPath))
+                {
+                    if (subSolutions.CreateRootFolder == true)
+                    {
+                        using (AppendSubFolderPath(SubSolutionContext.ComputeSolutionName(configuration, filePath, _fileSystem)))
+                            configuration.Root.Accept(this);
+                    }
+                    else
+                    {
+                        configuration.Root.Accept(this);
+                    }
+                }
             }
-
-            return currentFolder;
         }
 
-        public class Folder : ISolutionFolder
+        private IEnumerable<string> GetMatchingFilePaths(string? globPattern, string defaultFileExtension)
         {
-            public HashSet<string> FilePaths { get; }
-            public HashSet<string> ProjectPaths { get; }
-            public Dictionary<string, Folder> SubFolders { get; }
+            if (string.IsNullOrEmpty(globPattern))
+                globPattern = "**/*." + defaultFileExtension;
+            else if (globPattern.EndsWith("/") || globPattern.EndsWith("\\"))
+                globPattern += "*." + defaultFileExtension;
+            else if (globPattern.EndsWith("**"))
+                globPattern += "/*." + defaultFileExtension;
 
-            private readonly ReadOnlyCollection<string> _readOnlyFilePaths;
-            private readonly ReadOnlyCollection<string> _readOnlyProjectPaths;
-            private readonly ICovariantReadOnlyDictionary<string, ISolutionFolder> _readOnlySubFolders;
+            return _fileSystem.GetFilesMatchingGlobPattern(CurrentWorkspaceDirectoryPath, globPattern);
+        }
 
-            IReadOnlyCollection<string> ISolutionFolder.FilePaths => _readOnlyFilePaths;
-            IReadOnlyCollection<string> ISolutionFolder.ProjectPaths => _readOnlyProjectPaths;
-            ICovariantReadOnlyDictionary<string, ISolutionFolder> ISolutionFolder.SubFolders => _readOnlySubFolders;
+        private void AddFoldersAndFileToSolution(string relativeFilePath, Action<string, IEnumerable<string>> addFile, bool createFolders)
+        {
+            string filePath = _fileSystem.Combine(CurrentWorkspaceDirectoryPath, relativeFilePath);
+            relativeFilePath = _fileSystem.MakeRelativePath(_originWorkspaceDirectoryPath, filePath);
 
-            public Folder()
+            if (createFolders)
             {
-                FilePaths = new HashSet<string>();
-                _readOnlyFilePaths = new ReadOnlyCollection<string>(FilePaths);
+                string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(relativeFilePath) ?? string.Empty;
+                string[] solutionFolderPath = _fileSystem.SplitPath(relativeDirectoryPath);
 
-                ProjectPaths = new HashSet<string>();
-                _readOnlyProjectPaths = new ReadOnlyCollection<string>(ProjectPaths);
-
-                SubFolders = new Dictionary<string, Folder>();
-                _readOnlySubFolders = new CovariantReadOnlyDictionary<string, Folder>(SubFolders);
+                using (AppendSubFolderPath(solutionFolderPath))
+                    addFile(relativeFilePath, CurrentFolderPath);
+            }
+            else
+            {
+                addFile(relativeFilePath, CurrentFolderPath);
             }
         }
     }

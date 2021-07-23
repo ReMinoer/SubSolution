@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Configuration;
 
 namespace SubSolution.Tests
@@ -22,7 +21,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -50,7 +49,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -80,7 +79,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -119,7 +118,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().HaveCount(2);
@@ -127,7 +126,7 @@ namespace SubSolution.Tests
             solution.Root.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
             solution.Root.SubFolders.Should().HaveCount(1);
             {
-                var executablesFolder = solution.Root.SubFolders.Should().ContainKey("Executables").WhichValue;
+                ISolutionFolder executablesFolder = solution.Root.SubFolders["Executables"];
                 executablesFolder.FilePaths.Should().BeEmpty();
                 executablesFolder.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
                 executablesFolder.SubFolders.Should().BeEmpty();
@@ -151,33 +150,33 @@ namespace SubSolution.Tests
                 }
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(1);
             {
-                var srcFolder = solution.Root.SubFolders.Should().ContainKey("src").WhichValue;
+                ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
                 srcFolder.FilePaths.Should().BeEmpty();
                 srcFolder.ProjectPaths.Should().BeEmpty();
                 srcFolder.SubFolders.Should().HaveCount(3);
                 {
-                    var myApplicationFolder = srcFolder.SubFolders.Should().ContainKey("MyApplication").WhichValue;
+                    ISolutionFolder myApplicationFolder = srcFolder.SubFolders["MyApplication"];
                     myApplicationFolder.FilePaths.Should().BeEmpty();
                     myApplicationFolder.ProjectPaths.Should().BeEquivalentTo("src/MyApplication/MyApplication.csproj");
                     myApplicationFolder.SubFolders.Should().BeEmpty();
 
-                    var myApplicationConfigurationFolder = srcFolder.SubFolders.Should().ContainKey("MyApplication.Configuration").WhichValue;
+                    ISolutionFolder myApplicationConfigurationFolder = srcFolder.SubFolders["MyApplication.Configuration"];
                     myApplicationConfigurationFolder.FilePaths.Should().BeEmpty();
                     myApplicationConfigurationFolder.ProjectPaths.Should().BeEquivalentTo("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
                     myApplicationConfigurationFolder.SubFolders.Should().BeEmpty();
 
-                    var executablesFolder = srcFolder.SubFolders.Should().ContainKey("Executables").WhichValue;
+                    ISolutionFolder executablesFolder = srcFolder.SubFolders["Executables"];
                     executablesFolder.FilePaths.Should().BeEmpty();
                     executablesFolder.ProjectPaths.Should().BeEmpty();
                     executablesFolder.SubFolders.Should().HaveCount(1);
                     {
-                        var myApplicationConsoleFolder = executablesFolder.SubFolders.Should().ContainKey("MyApplication.Console").WhichValue;
+                        ISolutionFolder myApplicationConsoleFolder = executablesFolder.SubFolders["MyApplication.Console"];
                         myApplicationConsoleFolder.FilePaths.Should().BeEmpty();
                         myApplicationConsoleFolder.ProjectPaths.Should().BeEquivalentTo("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
                         myApplicationConsoleFolder.SubFolders.Should().BeEmpty();

@@ -1,7 +1,6 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Configuration;
 using static FluentAssertions.FluentActions;
 
@@ -13,7 +12,7 @@ namespace SubSolution.Tests
         public void ProcessEmptyConfiguration()
         {
             var configuration = new SubSolutionConfiguration();
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
             
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
@@ -28,7 +27,7 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName"
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
             solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
 
             configuration = new SubSolutionConfiguration
@@ -57,7 +56,7 @@ namespace SubSolution.Tests
                 OutputDirectory = "MySolutions/MyCustomSolutions"
             };
 
-            SolutionBuilder solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
 
             solution.OutputPath.Should().EndWith("MySolutions/MyCustomSolutions/MyCustomSolutionName.sln");
             solution.Root.FilePaths.Should().BeEmpty();
@@ -73,7 +72,7 @@ namespace SubSolution.Tests
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
 
-            SolutionBuilder solution = ProcessConfiguration(configuration, workspaceDirectoryPath: null);
+            ISolutionOutput solution = ProcessConfiguration(configuration, workspaceDirectoryPath: null);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.ProjectPaths.Should().BeEmpty();
@@ -86,7 +85,5 @@ namespace SubSolution.Tests
             var configuration = new SubSolutionConfiguration();
             Invoking(() => ProcessConfiguration(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
         }
-
-
     }
 }
