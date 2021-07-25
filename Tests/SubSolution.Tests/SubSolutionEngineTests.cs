@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using SubSolution.Builders;
 using SubSolution.Configuration;
 using SubSolution.FileSystems.Mock;
+using SubSolution.Generators;
 
 namespace SubSolution.Tests
 {
@@ -20,20 +21,36 @@ namespace SubSolution.Tests
         {
             const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
-            SubSolutionContext subSolutionContext = SubSolutionContext.FromConfigurationFile(configurationFilePath, GetMockFileSystem(configuration, haveSubSolutions));
-            subSolutionContext.Logger = new ConsoleLogger();
+            ILogger logger = new ConsoleLogger();
 
-            var solutionBuilder = new SolutionBuilder(subSolutionContext);
-            return solutionBuilder.Build(subSolutionContext.Configuration);
+            SubSolutionContext context = SubSolutionContext.FromConfigurationFile(configurationFilePath, GetMockFileSystem(configuration, haveSubSolutions));
+            context.Logger = logger;
+            context.LogLevel = LogLevel.Debug;
+
+            var solutionBuilder = new SolutionBuilder(context);
+            ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
+
+            var logGenerator = new LogGenerator(logger, LogLevel.Debug);
+            logGenerator.Generate(solutionOutput);
+
+            return solutionOutput;
         }
 
         private ISolutionOutput ProcessConfiguration(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
         {
-            SubSolutionContext subSolutionContext = SubSolutionContext.FromConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(null, haveSubSolutions));
-            subSolutionContext.Logger = new ConsoleLogger();
+            ILogger logger = new ConsoleLogger();
 
-            var solutionBuilder = new SolutionBuilder(subSolutionContext);
-            return solutionBuilder.Build(subSolutionContext.Configuration);
+            SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(configuration, haveSubSolutions));
+            context.Logger = logger;
+            context.LogLevel = LogLevel.Debug;
+
+            var solutionBuilder = new SolutionBuilder(context);
+            ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
+
+            var logGenerator = new LogGenerator(logger, LogLevel.Debug);
+            logGenerator.Generate(solutionOutput);
+
+            return solutionOutput;
         }
 
         private MockFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)

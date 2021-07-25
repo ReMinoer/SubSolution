@@ -15,6 +15,7 @@ namespace SubSolution
         public ISubSolutionFileSystem? FileSystem { get; }
 
         public ILogger? Logger { get; set; }
+        public LogLevel LogLevel { get; set; } = LogLevel.Trace;
 
         private SubSolutionContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, ISubSolutionFileSystem? fileSystem)
         {
