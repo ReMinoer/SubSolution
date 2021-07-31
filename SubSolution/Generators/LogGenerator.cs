@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using SubSolution.FileSystems;
 using SubSolution.Utils;
 
 namespace SubSolution.Generators
@@ -11,12 +12,16 @@ namespace SubSolution.Generators
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
         private readonly int _indentSize;
+        private readonly ISubSolutionFileSystem _fileSystem;
 
-        public LogGenerator(ILogger logger, LogLevel logLevel, int indentSize = 4)
+        public bool ShowFilePath { get; set; }
+
+        public LogGenerator(ILogger logger, LogLevel logLevel, int indentSize = 4, ISubSolutionFileSystem? fileSystem = null)
         {
             _logger = logger;
             _logLevel = logLevel;
             _indentSize = indentSize;
+            _fileSystem = fileSystem ?? StandardFileSystem.Instance;
         }
 
         public void Generate(ISolutionOutput solutionOutput)
@@ -28,8 +33,7 @@ namespace SubSolution.Generators
 
             _logger.Log(_logLevel, messageBuilder.ToString());
         }
-
-        // │├─└─┬
+        
         private void LogFolder(StringBuilder messageBuilder, ISolutionFolder folder, List<bool> showPreviousConnections)
         {
             string lineHeader = GetLineHeader(showPreviousConnections);
@@ -39,7 +43,7 @@ namespace SubSolution.Generators
 
             foreach (ICovariantKeyValuePair<string, ISolutionFolder> pair in folder.SubFolders)
             {
-                messageBuilder.AppendLine(lineHeader + GetBullet(index++, count) + pair.Key);
+                messageBuilder.AppendLine(Item(pair.Key, isFilePath: false));
 
                 showPreviousConnections.Add(index < count);
                 LogFolder(messageBuilder, pair.Value, showPreviousConnections);
@@ -47,9 +51,14 @@ namespace SubSolution.Generators
             }
 
             foreach (string filePath in folder.FilePaths)
-                messageBuilder.AppendLine(lineHeader + GetBullet(index++, count) + filePath);
+                messageBuilder.AppendLine(Item(filePath, isFilePath: true));
             foreach (string projectPath in folder.ProjectPaths)
-                messageBuilder.AppendLine(lineHeader + GetBullet(index++, count) + projectPath);
+                messageBuilder.AppendLine(Item(projectPath, isFilePath: true));
+
+            string Item(string content, bool isFilePath)
+            {
+                return lineHeader + GetBullet(index++, count) + (!isFilePath || ShowFilePath ? content : _fileSystem.GetFileNameWithoutExtension(content));
+            }
         }
 
         private string GetLineHeader(IEnumerable<bool> showPreviousConnections)

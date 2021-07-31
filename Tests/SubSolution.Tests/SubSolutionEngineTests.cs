@@ -30,7 +30,7 @@ namespace SubSolution.Tests
             var solutionBuilder = new SolutionBuilder(context);
             ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Debug);
+            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
             logGenerator.Generate(solutionOutput);
 
             return solutionOutput;
@@ -47,7 +47,7 @@ namespace SubSolution.Tests
             var solutionBuilder = new SolutionBuilder(context);
             ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Debug);
+            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
             logGenerator.Generate(solutionOutput);
 
             return solutionOutput;
