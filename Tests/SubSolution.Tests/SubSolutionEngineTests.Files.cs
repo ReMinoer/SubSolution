@@ -109,6 +109,60 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public void ProcessFilesMatchingMultipleFiltersWithOverwrite()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "Tools",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Files
+                                {
+                                    Path = "tools/**"
+                                }
+                            }
+                        },
+                        new Folder
+                        {
+                            Name = "Batch",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Files
+                                {
+                                    Path = "**/*.bat",
+                                    Overwrite = true
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(2);
+            {
+                ISolutionFolder toolsFolder = solution.Root.SubFolders["Tools"];
+                toolsFolder.FilePaths.Should().BeEquivalentTo("tools/debug/Debug.exe");
+                toolsFolder.ProjectPaths.Should().BeEmpty();
+                toolsFolder.SubFolders.Should().BeEmpty();
+
+                ISolutionFolder batchFolder = solution.Root.SubFolders["Batch"];
+                batchFolder.FilePaths.Should().BeEquivalentTo("tools/submit.bat");
+                batchFolder.ProjectPaths.Should().BeEmpty();
+                batchFolder.SubFolders.Should().BeEmpty();
+            }
+        }
+
+        [Test]
         public void ProcessFilesWithCreateFolders()
         {
             var configuration = new SubSolutionConfiguration
@@ -143,7 +197,6 @@ namespace SubSolution.Tests
                     debugFolder.SubFolders.Should().BeEmpty();
                 }
             }
-
         }
     }
 }

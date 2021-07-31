@@ -134,6 +134,63 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public void ProcessProjectsMatchingMultipleFiltersWithOverwrite()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "Libraries",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Projects
+                                {
+                                    Path = "**"
+                                }
+                            }
+                        },
+                        new Folder
+                        {
+                            Name = "Executables",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new Projects
+                                {
+                                    Path = "src/Executables/**",
+                                    Overwrite = true
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(2);
+            {
+                ISolutionFolder librariesFolder = solution.Root.SubFolders["Libraries"];
+                librariesFolder.FilePaths.Should().BeEmpty();
+                librariesFolder.ProjectPaths.Should().HaveCount(2);
+                librariesFolder.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
+                librariesFolder.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                librariesFolder.SubFolders.Should().BeEmpty();
+
+                ISolutionFolder executablesFolder = solution.Root.SubFolders["Executables"];
+                executablesFolder.FilePaths.Should().BeEmpty();
+                executablesFolder.ProjectPaths.Should().HaveCount(1);
+                executablesFolder.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                executablesFolder.SubFolders.Should().BeEmpty();
+            }
+        }
+
+        [Test]
         public void ProcessProjectsWithCreateFolders()
         {
             var configuration = new SubSolutionConfiguration

@@ -96,6 +96,53 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public void ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRootConfiguration
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Folder
+                        {
+                            Name = "SubSolutions",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new SubSolutions()
+                            }
+                        },
+                        new Folder
+                        {
+                            Name = "MySubModule",
+                            SolutionItems = new List<SolutionItems>
+                            {
+                                new SubSolutions
+                                {
+                                    Path = "**/MySubModule/",
+                                    Overwrite = true
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(2);
+            {
+                ISolutionFolder subSolutionsFolder = solution.Root.SubFolders["SubSolutions"];
+                CheckFolderContainsMyFramework(subSolutionsFolder, only: true, butNotExternal: true);
+
+                ISolutionFolder mySubModuleFolder = solution.Root.SubFolders["MySubModule"];
+                CheckFolderContainsMySubModule(mySubModuleFolder, only: true);
+            }
+        }
+
+        [Test]
         public void ProcessSubSolutionsWithReverseOrder()
         {
             var configuration = new SubSolutionConfiguration

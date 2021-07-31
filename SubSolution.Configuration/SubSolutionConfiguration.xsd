@@ -126,6 +126,11 @@
                     <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded" />
                 </xs:sequence>
                 <xs:attribute ref="Path" />
+                <xs:attribute name="Overwrite" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to process files already contained in solution.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="CreateFolders" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>True to create folders matching file system hierarchy.</xs:documentation>
