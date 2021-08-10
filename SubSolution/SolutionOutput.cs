@@ -12,10 +12,15 @@ namespace SubSolution
 
         private readonly Dictionary<string, Folder> _knownPaths = new Dictionary<string, Folder>();
 
+        private readonly List<ISolutionConfiguration> _configurations;
+        private readonly IReadOnlyCollection<ISolutionConfiguration> _readOnlyConfigurations;
+
         public string OutputPath { get; private set; }
 
         public Folder Root { get; }
+
         ISolutionFolder ISolution.Root => Root;
+        IReadOnlyCollection<ISolutionConfiguration> ISolution.Configurations => _readOnlyConfigurations;
 
         public SolutionOutput(string outputPath, ISubSolutionFileSystem? fileSystem = null)
         {
@@ -23,6 +28,9 @@ namespace SubSolution
             OutputPath = outputPath;
 
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
+
+            _configurations = new List<ISolutionConfiguration>();
+            _readOnlyConfigurations = _configurations.AsReadOnly();
         }
 
         public void SetOutputDirectory(string outputDirectory)
