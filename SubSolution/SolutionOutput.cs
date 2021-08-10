@@ -10,9 +10,8 @@ namespace SubSolution
     {
         private readonly ISubSolutionFileSystem _fileSystem;
 
-        private readonly Dictionary<string, Folder> _filePaths = new Dictionary<string, Folder>();
-        private readonly Dictionary<string, Folder> _projectPaths = new Dictionary<string, Folder>();
-        
+        private readonly Dictionary<string, Folder> _knownPaths = new Dictionary<string, Folder>();
+
         public string OutputPath { get; private set; }
 
         public Folder Root { get; }
@@ -30,8 +29,7 @@ namespace SubSolution
         {
             string currentOutputDirectory = _fileSystem.GetParentDirectoryPath(OutputPath)!;
 
-            _filePaths.Clear();
-            _projectPaths.Clear();
+            _knownPaths.Clear();
 
             ChangeOutputDirectory(outputDirectory, currentOutputDirectory, Root);
             OutputPath = outputDirectory;
@@ -85,21 +83,21 @@ namespace SubSolution
             }
 
             public void AddFile(string filePath, bool overwrite = false)
-                => AddEntry(filePath, _solution._filePaths, x => x._filePaths, overwrite);
+                => AddEntry(filePath, x => x._filePaths, overwrite);
 
             public void AddProject(string projectPath, bool overwrite = false)
-                => AddEntry(projectPath, _solution._projectPaths, x => x._projectPaths, overwrite);
+                => AddEntry(projectPath, x => x._projectPaths, overwrite);
 
-            private void AddEntry(string filePath, Dictionary<string, Folder> dictionary, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
+            private void AddEntry(string filePath, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
             {
-                if (overwrite && dictionary.Remove(filePath, out Folder folder))
+                if (overwrite && _solution._knownPaths.Remove(filePath, out Folder folder))
                     getFolderContent(folder).Remove(filePath);
 
-                if (!overwrite && dictionary.ContainsKey(filePath))
+                if (!overwrite && _solution._knownPaths.ContainsKey(filePath))
                     return;
                 
                 getFolderContent(this).Add(filePath);
-                dictionary.Add(filePath, this);
+                _solution._knownPaths.Add(filePath, this);
             }
 
             public void AddFolderContent(ISolutionFolder folder, bool overwrite = false)
@@ -114,10 +112,10 @@ namespace SubSolution
             }
 
             public bool RemoveFile(string filePath)
-                => RemoveEntry(filePath, _solution._filePaths, _filePaths);
+                => RemoveEntry(filePath, _solution._knownPaths, _filePaths);
 
             public bool RemoveProject(string projectPath)
-                => RemoveEntry(projectPath, _solution._projectPaths, _projectPaths);
+                => RemoveEntry(projectPath, _solution._knownPaths, _projectPaths);
 
             private bool RemoveEntry(string filePath, Dictionary<string, Folder> dictionary, HashSet<string> folderContent)
             {
@@ -147,10 +145,10 @@ namespace SubSolution
             public void ClearEntries()
             {
                 foreach (string filePath in _filePaths)
-                    _solution._filePaths.Remove(filePath);
+                    _solution._knownPaths.Remove(filePath);
 
                 foreach (string projectPath in _projectPaths)
-                    _solution._projectPaths.Remove(projectPath);
+                    _solution._knownPaths.Remove(projectPath);
 
                 _filePaths.Clear();
                 _projectPaths.Clear();
