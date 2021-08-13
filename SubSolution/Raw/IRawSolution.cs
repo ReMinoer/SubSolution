@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SubSolution.Raw
 {
     public interface IRawSolution
     {
-        // https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/solution-dot-sln-file
-        string SlnFormatVersion { get; }
-        string MajorVisualStudioVersion { get; }
-        string VisualStudioVersion { get; }
-        string MinimumVisualStudioVersion  { get; }
+        Version SlnFormatVersion { get; }
+        int MajorVisualStudioVersion { get; }
+        Version VisualStudioVersion { get; }
+        Version MinimumVisualStudioVersion  { get; }
         IReadOnlyList<IRawSolutionProject> Projects { get; }
         IReadOnlyList<IRawSolutionSection> GlobalSections { get; }
     }

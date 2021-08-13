@@ -5,6 +5,9 @@ namespace SubSolution.Raw
     public interface IRawSolutionSection
     {
         string Name { get; }
-        IReadOnlyDictionary<string, string> Parameters { get; }
+        string? Parameter { get; }
+        IReadOnlyList<string> Arguments { get; }
+        IReadOnlyList<string> OrderedValuePairs { get; }
+        IReadOnlyDictionary<string, string> ValuesByKey { get; }
     }
 }
