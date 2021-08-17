@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SubSolution.Raw
@@ -44,7 +45,7 @@ namespace SubSolution.Raw
 
         public async Task WriteAsync(Stream stream)
         {
-            await using StreamWriter writer = new StreamWriter(stream);
+            await using StreamWriter writer = new StreamWriter(stream, new UTF8Encoding(true));
 
             await writer.WriteLineAsync();
             await writer.WriteLineAsync(SlnFormatVersionHeaderPrefix + SlnFormatVersion.Major + '.' + SlnFormatVersion.Minor.ToString("00"));
