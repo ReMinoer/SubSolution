@@ -2,7 +2,7 @@
 {
     public interface ISolutionProjectContext
     {
-        ISolutionProject Project { get; }
+        string ProjectPath { get; }
         string Configuration { get; }
         string Platform { get; }
         bool Build { get; }

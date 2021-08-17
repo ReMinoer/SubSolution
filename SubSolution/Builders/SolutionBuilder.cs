@@ -63,6 +63,9 @@ namespace SubSolution.Builders
             if (root == null)
                 return;
 
+            _solutionOutput.Configurations.Add(new SolutionOutput.SolutionConfiguration("Debug", "Any CPU"));
+            _solutionOutput.Configurations.Add(new SolutionOutput.SolutionConfiguration("Release", "Any CPU"));
+
             VisitRoot(root);
         }
 

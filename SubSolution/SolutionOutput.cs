@@ -9,28 +9,26 @@ namespace SubSolution
     public class SolutionOutput : ISolutionOutput
     {
         private readonly ISubSolutionFileSystem _fileSystem;
-
         private readonly Dictionary<string, Folder> _knownPaths = new Dictionary<string, Folder>();
-
-        private readonly List<ISolutionConfiguration> _configurations;
-        private readonly IReadOnlyCollection<ISolutionConfiguration> _readOnlyConfigurations;
-
+        
         public string OutputPath { get; private set; }
 
         public Folder Root { get; }
-
         ISolutionFolder ISolution.Root => Root;
+
+        public List<SolutionConfiguration> Configurations { get; }
+        private readonly IReadOnlyCollection<SolutionConfiguration> _readOnlyConfigurations;
         IReadOnlyCollection<ISolutionConfiguration> ISolution.Configurations => _readOnlyConfigurations;
 
         public SolutionOutput(string outputPath, ISubSolutionFileSystem? fileSystem = null)
         {
-            Root = new Folder(this);
-            OutputPath = outputPath;
-
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
 
-            _configurations = new List<ISolutionConfiguration>();
-            _readOnlyConfigurations = _configurations.AsReadOnly();
+            OutputPath = outputPath;
+            Root = new Folder(this);
+
+            Configurations = new List<SolutionConfiguration>();
+            _readOnlyConfigurations = Configurations.AsReadOnly();
         }
 
         public void SetOutputDirectory(string outputDirectory)
@@ -56,6 +54,41 @@ namespace SubSolution
 
             foreach (Folder subFolder in folder.SubFolders.Values)
                 ChangeOutputDirectory(outputDirectory, previousOutputDirectory, subFolder);
+        }
+
+        public class SolutionConfiguration : ISolutionConfiguration
+        {
+            public string Configuration { get; }
+            public string Platform { get; }
+            public List<ISolutionProjectContext> ProjectContexts { get; }
+
+            private readonly IReadOnlyCollection<ISolutionProjectContext> _readOnlyProjectContexts;
+            IReadOnlyCollection<ISolutionProjectContext> ISolutionConfiguration.ProjectContexts => _readOnlyProjectContexts;
+
+            public SolutionConfiguration(string configuration, string platform)
+            {
+                Configuration = configuration;
+                Platform = platform;
+
+                ProjectContexts = new List<ISolutionProjectContext>();
+                _readOnlyProjectContexts = ProjectContexts.AsReadOnly();
+            }
+        }
+
+        public class ProjectContext : ISolutionProjectContext
+        {
+            public string ProjectPath { get; set; }
+            public string Configuration { get; set; }
+            public string Platform { get; set; }
+            public bool Build { get; set; } = true;
+            public bool Deploy { get; set; }
+
+            public ProjectContext(string projectPath, string configuration, string platform)
+            {
+                ProjectPath = projectPath;
+                Configuration = configuration;
+                Platform = platform;
+            }
         }
 
         public class Folder : ISolutionFolder
@@ -94,18 +127,27 @@ namespace SubSolution
                 => AddEntry(filePath, x => x._filePaths, overwrite);
 
             public void AddProject(string projectPath, bool overwrite = false)
-                => AddEntry(projectPath, x => x._projectPaths, overwrite);
+            {
+                if (!AddEntry(projectPath, x => x._projectPaths, overwrite))
+                    return;
 
-            private void AddEntry(string filePath, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
+                foreach (SolutionConfiguration configuration in _solution.Configurations)
+                {
+                    configuration.ProjectContexts.Add(new ProjectContext(projectPath, configuration.Configuration, configuration.Platform));
+                }
+            }
+
+            private bool AddEntry(string filePath, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
             {
                 if (overwrite && _solution._knownPaths.Remove(filePath, out Folder folder))
                     getFolderContent(folder).Remove(filePath);
 
                 if (!overwrite && _solution._knownPaths.ContainsKey(filePath))
-                    return;
+                    return false;
                 
                 getFolderContent(this).Add(filePath);
                 _solution._knownPaths.Add(filePath, this);
+                return true;
             }
 
             public void AddFolderContent(ISolutionFolder folder, bool overwrite = false)

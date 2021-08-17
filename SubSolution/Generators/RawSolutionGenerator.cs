@@ -31,14 +31,15 @@ namespace SubSolution.Generators
                 MinimumVisualStudioVersion = new Version(10, 0, 40219, 1)
             };
 
-            Dictionary<string, string> projectGuids = GenerateFolderContent(rawSolution, solutionOutput.Root);
+            Dictionary<string, string> projectGuids = new Dictionary<string, string>();
+
+            GenerateFolderContent(rawSolution, projectGuids, solutionOutput.Root);
             GenerateConfigurations(rawSolution, solutionOutput, projectGuids);
             return rawSolution;
         }
 
-        private Dictionary<string, string> GenerateFolderContent(RawSolution rawSolution, ISolutionFolder solutionFolder, RawSolution.Project? folderProject = null)
+        private void GenerateFolderContent(RawSolution rawSolution, Dictionary<string, string> projectGuids, ISolutionFolder solutionFolder, RawSolution.Project? folderProject = null)
         {
-            Dictionary<string, string> projectGuids = new Dictionary<string, string>();
 
             foreach (string projectPath in solutionFolder.ProjectPaths)
             {
@@ -49,7 +50,7 @@ namespace SubSolution.Generators
             foreach ((string name, ISolutionFolder subFolder) in solutionFolder.SubFolders.Select(x => (x.Key, x.Value)))
             {
                 RawSolution.Project subFolderProject = GetOrCreateProject(rawSolution, folderProject, FolderGuid, name, name, NewGuid());
-                GenerateFolderContent(rawSolution, subFolder, subFolderProject);
+                GenerateFolderContent(rawSolution, projectGuids, subFolder, subFolderProject);
             }
 
             if (solutionFolder.FilePaths.Count > 0)
@@ -59,8 +60,6 @@ namespace SubSolution.Generators
                 foreach (string filePath in solutionFolder.FilePaths)
                     solutionItemsSection.SetOrAddValue(filePath, filePath);
             }
-
-            return projectGuids;
         }
 
         static private string NewGuid() => $"{{{Guid.NewGuid().ToString().ToUpper()}}}";
@@ -96,7 +95,7 @@ namespace SubSolution.Generators
 
                 foreach (ISolutionProjectContext projectContext in configuration.ProjectContexts)
                 {
-                    string prefix = $"{projectGuids[projectContext.Project.Path]}.{projectContext.Configuration}|{projectContext.Platform}.";
+                    string prefix = $"{projectGuids[projectContext.ProjectPath]}.{projectContext.Configuration}|{projectContext.Platform}.";
 
                     projectConfigsSection.SetOrAddValue(prefix + "ActiveCfg", fullConfigName);
                     if (projectContext.Build)
