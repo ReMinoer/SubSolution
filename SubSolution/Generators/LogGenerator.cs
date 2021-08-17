@@ -43,7 +43,7 @@ namespace SubSolution.Generators
 
             foreach (ICovariantKeyValuePair<string, ISolutionFolder> pair in folder.SubFolders)
             {
-                messageBuilder.AppendLine(Item(pair.Key, isFilePath: false));
+                messageBuilder.AppendLine(Bullet() + pair.Key);
 
                 showPreviousConnections.Add(index < count);
                 LogFolder(messageBuilder, pair.Value, showPreviousConnections);
@@ -51,14 +51,11 @@ namespace SubSolution.Generators
             }
 
             foreach (string filePath in folder.FilePaths)
-                messageBuilder.AppendLine(Item(filePath, isFilePath: true));
+                messageBuilder.AppendLine(Bullet() + (ShowFilePath ? filePath : _fileSystem.GetName(filePath)));
             foreach (string projectPath in folder.ProjectPaths)
-                messageBuilder.AppendLine(Item(projectPath, isFilePath: true));
+                messageBuilder.AppendLine(Bullet() + (ShowFilePath ? projectPath : _fileSystem.GetFileNameWithoutExtension(projectPath)));
 
-            string Item(string content, bool isFilePath)
-            {
-                return lineHeader + GetBullet(index++, count) + (!isFilePath || ShowFilePath ? content : _fileSystem.GetFileNameWithoutExtension(content));
-            }
+            string Bullet() => lineHeader + GetBullet(index++, count);
         }
 
         private string GetLineHeader(IEnumerable<bool> showPreviousConnections)

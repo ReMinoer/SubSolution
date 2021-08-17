@@ -5,6 +5,7 @@ namespace SubSolution.FileSystems
 {
     public interface ISubSolutionFileSystem
     {
+        string GetName(string path);
         string GetFileNameWithoutExtension(string fileName);
         string? GetParentDirectoryPath(string path);
         string Combine(string firstPath, string secondPath);

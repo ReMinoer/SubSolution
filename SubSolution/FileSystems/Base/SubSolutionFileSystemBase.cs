@@ -9,6 +9,7 @@ namespace SubSolution.FileSystems.Base
 {
     public abstract class SubSolutionFileSystemBase : ISubSolutionFileSystem
     {
+        public abstract string GetName(string path);
         public abstract string GetFileNameWithoutExtension(string fileName);
         public abstract string? GetParentDirectoryPath(string path);
         public abstract string Combine(string firstPath, string secondPath);

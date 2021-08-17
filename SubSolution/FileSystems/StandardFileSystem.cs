@@ -18,6 +18,7 @@ namespace SubSolution.FileSystems
         {
         }
 
+        public override string GetName(string path) => Path.GetFileName(path);
         public override string GetFileNameWithoutExtension(string fileName) => Path.GetFileNameWithoutExtension(fileName);
         public override string? GetParentDirectoryPath(string path) => Path.GetDirectoryName(path);
         public override string Combine(string firstPath, string secondPath) => Path.Combine(firstPath, secondPath);

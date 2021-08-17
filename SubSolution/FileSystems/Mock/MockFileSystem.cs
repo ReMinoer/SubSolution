@@ -37,7 +37,7 @@ namespace SubSolution.FileSystems.Mock
             throw new FileNotFoundException($"\"{filePath}\" have no associated content.", filePath);
         }
 
-        public string GetName(string path)
+        public override string GetName(string path)
         {
             var pathParts = SplitPath(path);
             if (pathParts.Length == 0)
