@@ -54,31 +54,60 @@ namespace SubSolution.Builders
             Log($"Solution output file: {_solutionOutput.OutputPath}");
             Log($"Initial workspace directory: {_workspaceDirectoryPath}");
 
-            Visit(configuration.Root);
+            VisitConfigurationBindings(configuration.ConfigurationBindings);
+
+            if (configuration.Root != null)
+                VisitRoot(configuration.Root);
+
             return _solutionOutput;
         }
 
-        public void Visit(SolutionRootConfiguration root)
+        private void VisitConfigurationBindings(SolutionConfigurationBindingList? bindingList)
         {
-            if (root == null)
+            if (bindingList == null)
+            {
+                AddDefaultConfigurationBindings();
                 return;
+            }
 
-            _solutionOutput.Configurations.Add(new SolutionOutput.SolutionConfiguration("Debug", "Any CPU"));
-            _solutionOutput.Configurations.Add(new SolutionOutput.SolutionConfiguration("Release", "Any CPU"));
+            if (bindingList.UseDefaultBindings == true)
+                AddDefaultConfigurationBindings();
 
-            VisitRoot(root);
+            foreach (Binding binding in bindingList.Binding)
+                binding.Accept(this);
         }
 
-        public void Visit(Folder folder)
+        private void AddDefaultConfigurationBindings()
         {
-            using (MoveCurrentFolder(folder.Name))
-                VisitRoot(folder.Content);
+            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding("Debug", "Debug"));
+            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding("Release", "Release"));
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "Any CPU"));
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("x86", "x86"));
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("x64", "x64"));
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "x86"));
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "x64"));
+        }
+
+        public void Visit(Configuration.Configuration configuration)
+        {
+            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding(configuration.Project, configuration.Solution));
+        }
+
+        public void Visit(Platform platform)
+        {
+            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding(platform.Project, platform.Solution));
         }
 
         private void VisitRoot(SolutionRootConfiguration root)
         {
             foreach (SolutionItems items in root.SolutionItems)
                 items.Accept(this);
+        }
+
+        public void Visit(Folder folder)
+        {
+            using (MoveCurrentFolder(folder.Name))
+                VisitRoot(folder.Content);
         }
 
         public void Visit(Files files)

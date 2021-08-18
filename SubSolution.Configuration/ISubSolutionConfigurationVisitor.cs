@@ -2,10 +2,11 @@
 {
     public interface ISubSolutionConfigurationVisitor
     {
-        public void Visit(SolutionRootConfiguration root);
-        public void Visit(Folder folder);
-        public void Visit(Files files);
-        public void Visit(Projects projects);
-        public void Visit(SubSolutions subSolutions);
+        void Visit(Folder folder);
+        void Visit(Files files);
+        void Visit(Projects projects);
+        void Visit(SubSolutions subSolutions);
+        void Visit(Configuration configuration);
+        void Visit(Platform platform);
     }
 }

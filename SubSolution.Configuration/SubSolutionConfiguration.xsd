@@ -12,6 +12,11 @@
                         <xs:documentation>Root of the solution.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="ConfigurationBindings" type="SolutionConfigurationBindingList">
+                    <xs:annotation>
+                        <xs:documentation>Configuration binding list.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="SolutionName" type="FileName">
                 <xs:annotation>
@@ -186,6 +191,70 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="SolutionConfigurationBindingList">
+        <xs:annotation>
+            <xs:documentation>Represent a list of solution configuration bindings.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="Binding" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="UseDefaultBindings" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>True to use SubSolution default bindings.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:element name="Binding" type="SolutionConfigurationBinding" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Represent a solution configuration binding.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Configuration" type="ConfigurationBinding" substitutionGroup="Binding">
+        <xs:annotation>
+            <xs:documentation>Represent a configuration name binding.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Platform" type="PlatformBinding" substitutionGroup="Binding">
+        <xs:annotation>
+            <xs:documentation>Represent a platform name binding.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="SolutionConfigurationBinding" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Represent a solution configuration binding.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="Project" type="BindingName" use="required">
+            <xs:annotation>
+                <xs:documentation>Matching project configuration value..</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Solution" type="BindingName" use="required">
+            <xs:annotation>
+                <xs:documentation>Assigned solution configuration value.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ConfigurationBinding" >
+        <xs:annotation>
+            <xs:documentation>Represent a configuration name binding.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionConfigurationBinding" />
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="PlatformBinding">
+        <xs:annotation>
+            <xs:documentation>Represent a platform name binding.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionConfigurationBinding" />
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:element name="FileFilters" abstract="true">
         <xs:annotation>
             <xs:documentation>File filter.</xs:documentation>
@@ -258,6 +327,15 @@
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:pattern value="[0-9a-zA-Z]+" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BindingName">
+        <xs:annotation>
+            <xs:documentation>Configuration or platform name.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z ]+" />
         </xs:restriction>
     </xs:simpleType>
 

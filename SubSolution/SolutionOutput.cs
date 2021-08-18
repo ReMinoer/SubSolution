@@ -20,6 +20,9 @@ namespace SubSolution
         private readonly IReadOnlyCollection<SolutionConfiguration> _readOnlyConfigurations;
         IReadOnlyCollection<ISolutionConfiguration> ISolution.Configurations => _readOnlyConfigurations;
 
+        public List<ConfigurationBinding> ConfigurationBindings { get; }
+        public List<ConfigurationBinding> PlatformBindings { get; }
+
         public SolutionOutput(string outputPath, ISubSolutionFileSystem? fileSystem = null)
         {
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
@@ -29,6 +32,9 @@ namespace SubSolution
 
             Configurations = new List<SolutionConfiguration>();
             _readOnlyConfigurations = Configurations.AsReadOnly();
+
+            ConfigurationBindings = new List<ConfigurationBinding>();
+            PlatformBindings = new List<ConfigurationBinding>();
         }
 
         public void SetOutputDirectory(string outputDirectory)
@@ -91,6 +97,18 @@ namespace SubSolution
             }
         }
 
+        public struct ConfigurationBinding
+        {
+            public string? ProjectsValue { get; set; }
+            public string? SolutionValue { get; set; }
+
+            public ConfigurationBinding(string projectsValue, string solutionValue)
+            {
+                ProjectsValue = projectsValue;
+                SolutionValue = solutionValue;
+            }
+        }
+
         public class Folder : ISolutionFolder
         {
             private readonly SolutionOutput _solution;
@@ -131,10 +149,47 @@ namespace SubSolution
                 if (!AddEntry(projectPath, x => x._projectPaths, overwrite))
                     return;
 
-                foreach (SolutionConfiguration configuration in _solution.Configurations)
+                (string[] projectConfigurations, string[] projectPlatforms) = GetProjectConfigurationsAndPlatform();
+
+                Dictionary<string, string?> resolvedSolutionPlatforms = projectPlatforms.ToDictionary(x => x, ResolveSolutionPlatform);
+
+                foreach (string projectConfiguration in projectConfigurations)
                 {
-                    configuration.ProjectContexts.Add(new ProjectContext(projectPath, configuration.Configuration, configuration.Platform));
+                    string? resolvedSolutionConfiguration = ResolveSolutionConfiguration(projectConfiguration);
+                    if (resolvedSolutionConfiguration is null)
+                        continue;
+
+                    foreach (string projectPlatform in projectPlatforms)
+                    {
+                        string? resolvedSolutionPlatform = resolvedSolutionPlatforms[projectPlatform];
+                        if (resolvedSolutionPlatform is null)
+                            continue;
+
+                        SolutionConfiguration? solutionConfiguration = _solution.Configurations.FirstOrDefault(x => x.Configuration == resolvedSolutionConfiguration && x.Platform == resolvedSolutionPlatform);
+                        if (solutionConfiguration == null)
+                        {
+                            solutionConfiguration = new SolutionConfiguration(resolvedSolutionConfiguration, resolvedSolutionPlatform);
+                            _solution.Configurations.Add(solutionConfiguration);
+                        }
+
+                        solutionConfiguration.ProjectContexts.Add(new ProjectContext(projectPath, projectConfiguration, projectConfiguration));
+                    }
                 }
+            }
+
+            private string? ResolveSolutionConfiguration(string projectConfiguration)
+            {
+                return _solution.ConfigurationBindings.FirstOrDefault(b => b.ProjectsValue == projectConfiguration).SolutionValue;
+            }
+
+            private string? ResolveSolutionPlatform(string projectPlatform)
+            {
+                return _solution.PlatformBindings.FirstOrDefault(b => b.ProjectsValue == projectPlatform).SolutionValue;
+            }
+
+            private (string[], string[]) GetProjectConfigurationsAndPlatform()
+            {
+                return (new[] { "Debug", "Release" }, new[] { "Any CPU" });
             }
 
             private bool AddEntry(string filePath, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
