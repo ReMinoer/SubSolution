@@ -89,19 +89,20 @@ namespace SubSolution.Generators
 
             foreach (ISolutionConfiguration configuration in solutionOutput.Configurations)
             {
-                string fullConfigName = configuration.Configuration + '|' + configuration.Platform;
+                string solutionConfigurationFullName = configuration.Configuration + '|' + configuration.Platform;
 
-                solutionConfigsSection.SetOrAddValue(fullConfigName, fullConfigName);
+                solutionConfigsSection.SetOrAddValue(solutionConfigurationFullName, solutionConfigurationFullName);
 
                 foreach (ISolutionProjectContext projectContext in configuration.ProjectContexts)
                 {
-                    string prefix = $"{projectGuids[projectContext.ProjectPath]}.{projectContext.Configuration}|{projectContext.Platform}.";
+                    string prefix = $"{projectGuids[projectContext.ProjectPath]}.{solutionConfigurationFullName}.";
+                    string projectConfigurationFullName = projectContext.Configuration + '|' + projectContext.Platform;
 
-                    projectConfigsSection.SetOrAddValue(prefix + "ActiveCfg", fullConfigName);
+                    projectConfigsSection.SetOrAddValue(prefix + "ActiveCfg", projectConfigurationFullName);
                     if (projectContext.Build)
-                        projectConfigsSection.SetOrAddValue(prefix + "Build.0", fullConfigName);
+                        projectConfigsSection.SetOrAddValue(prefix + "Build.0", projectConfigurationFullName);
                     if (projectContext.Deploy)
-                        projectConfigsSection.SetOrAddValue(prefix + "Deploy.0", fullConfigName);
+                        projectConfigsSection.SetOrAddValue(prefix + "Deploy.0", projectConfigurationFullName);
                 }
             }
         }
