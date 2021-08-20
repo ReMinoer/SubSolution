@@ -39,27 +39,10 @@ namespace SubSolution
 
         public void SetOutputDirectory(string outputDirectory)
         {
-            string currentOutputDirectory = _fileSystem.GetParentDirectoryPath(OutputPath)!;
-
             _knownPaths.Clear();
 
-            ChangeOutputDirectory(outputDirectory, currentOutputDirectory, Root);
+            Root.ChangeItemsRootDirectory(outputDirectory);
             OutputPath = outputDirectory;
-        }
-
-        private void ChangeOutputDirectory(string outputDirectory, string previousOutputDirectory, Folder folder)
-        {
-            string[] previousFilePaths = folder.FilePaths.ToArray();
-            string[] previousProjectPaths = folder.ProjectPaths.ToArray();
-            folder.ClearEntries();
-
-            foreach (string previousFilePath in previousFilePaths)
-                folder.AddFile(_fileSystem.MoveRelativePathRoot(previousFilePath, previousOutputDirectory, outputDirectory));
-            foreach (string previousProjectPath in previousProjectPaths)
-                folder.AddProject(_fileSystem.MoveRelativePathRoot(previousProjectPath, previousOutputDirectory, outputDirectory));
-
-            foreach (Folder subFolder in folder.SubFolders.Values)
-                ChangeOutputDirectory(outputDirectory, previousOutputDirectory, subFolder);
         }
 
         public class SolutionConfiguration : ISolutionConfiguration
@@ -236,18 +219,12 @@ namespace SubSolution
                 if (!_subFolders.TryGetValue(subFolderName, out Folder subFolder))
                     return false;
 
-                subFolder.ClearEntries();
+                subFolder.Clear();
                 _subFolders.Remove(subFolderName);
                 return true;
             }
 
             public void Clear()
-            {
-                ClearEntries();
-                _subFolders.Clear();
-            }
-
-            public void ClearEntries()
             {
                 foreach (string filePath in _filePaths)
                     _solution._knownPaths.Remove(filePath);
@@ -257,6 +234,7 @@ namespace SubSolution
 
                 _filePaths.Clear();
                 _projectPaths.Clear();
+                _subFolders.Clear();
             }
 
             public Folder GetOrCreateSubFolder(string folderName)
@@ -270,6 +248,38 @@ namespace SubSolution
             public Folder GetOrCreateSubFolder(IEnumerable<string> folderPath)
             {
                 return folderPath.Aggregate(this, (currentFolder, folderName) => currentFolder.GetOrCreateSubFolder(folderName));
+            }
+
+            public void ChangeItemsRootDirectory(string outputDirectory)
+            {
+                string previousOutputDirectory = _solution._fileSystem.GetParentDirectoryPath(_solution.OutputPath)!;
+                ChangeItemsRootDirectory(outputDirectory, previousOutputDirectory);
+            }
+
+            private void ChangeItemsRootDirectory(string outputDirectory, string previousOutputDirectory)
+            {
+                ReplacePaths(_filePaths);
+                ReplacePaths(_projectPaths);
+
+                foreach (Folder subFolder in SubFolders.Values)
+                    subFolder.ChangeItemsRootDirectory(outputDirectory, previousOutputDirectory);
+
+                void ReplacePaths(HashSet<string> collection)
+                {
+                    string[] previousFilePaths = collection.ToArray();
+
+                    collection.Clear();
+                    foreach (string previousFilePath in previousFilePaths)
+                        _solution._knownPaths.Remove(previousFilePath);
+
+                    foreach (string previousFilePath in previousFilePaths)
+                    {
+                        string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousFilePath, previousOutputDirectory, outputDirectory);
+
+                        collection.Add(newFilePath);
+                        _solution._knownPaths.Add(newFilePath, this);
+                    }
+                }
             }
         }
     }
