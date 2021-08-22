@@ -26,7 +26,7 @@ namespace SubSolution.Builders
         private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? string.Join('/', _currentFolderPathStack.Reverse()) : LogTokenRoot;
 
         private readonly ISubSolutionFileSystem _fileSystem;
-        private readonly ISolutionProjectReader _projectReader;
+        private readonly CacheSolutionProjectReader _projectReader;
 
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
@@ -43,7 +43,7 @@ namespace SubSolution.Builders
             _currentFolderPathStack = new Stack<string>();
 
             _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
-            _projectReader = context.ProjectReader;
+            _projectReader = new CacheSolutionProjectReader(_fileSystem, context.ProjectReader);
 
             _knownConfigurationFilePaths = new HashSet<string>(_fileSystem.PathComparer);
             if (context.ConfigurationFilePath != null)
