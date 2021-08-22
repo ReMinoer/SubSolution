@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SubSolution.Configuration;
 using SubSolution.FileSystems;
+using SubSolution.ProjectReaders;
 
 namespace SubSolution
 {
@@ -13,12 +15,13 @@ namespace SubSolution
         public string SolutionName { get; }
         public string OutputDirectoryPath { get; }
         public string WorkspaceDirectoryPath { get; }
+        public ISolutionProjectReader ProjectReader { get; }
         public ISubSolutionFileSystem? FileSystem { get; }
 
         public ILogger? Logger { get; set; }
         public LogLevel LogLevel { get; set; } = LogLevel.Trace;
 
-        private SubSolutionContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, ISubSolutionFileSystem? fileSystem)
+        private SubSolutionContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, ISolutionProjectReader projectReader, ISubSolutionFileSystem? fileSystem)
         {
             Configuration = configuration;
             ConfigurationFilePath = configurationFilePath;
@@ -26,21 +29,22 @@ namespace SubSolution
             SolutionName = (fileSystem ?? StandardFileSystem.Instance).GetFileNameWithoutExtension(solutionPath);
             OutputDirectoryPath = (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(solutionPath)!;
             WorkspaceDirectoryPath = workspaceDirectoryPath;
+            ProjectReader = projectReader;
             FileSystem = fileSystem;
         }
 
-        static public SubSolutionContext FromConfigurationFile(string configurationFilePath, ISubSolutionFileSystem? fileSystem = null)
+        static public async Task<SubSolutionContext> FromConfigurationFileAsync(string configurationFilePath, ISolutionProjectReader projectReader, ISubSolutionFileSystem? fileSystem = null)
         {
-            SubSolutionConfiguration configuration = (fileSystem ?? StandardFileSystem.Instance).LoadConfiguration(configurationFilePath);
+            SubSolutionConfiguration configuration = await (fileSystem ?? StandardFileSystem.Instance).LoadConfigurationAsync(configurationFilePath);
 
             string defaultOutputDirectory = (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(configurationFilePath) ?? Environment.CurrentDirectory;
             string solutionPath = ComputeSolutionPath(configuration, configurationFilePath, defaultOutputDirectory, fileSystem);
             string workspaceDirectoryPath = ComputeWorkspaceDirectoryPath(configuration, configurationFilePath, fileSystem);
 
-            return new SubSolutionContext(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, fileSystem);
+            return new SubSolutionContext(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
-        static public SubSolutionContext FromConfiguration(SubSolutionConfiguration configuration, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
+        static public SubSolutionContext FromConfiguration(SubSolutionConfiguration configuration, ISolutionProjectReader projectReader, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
         {
             string solutionPath = ComputeSolutionPath(configuration, nameof(SubSolution), Environment.CurrentDirectory, fileSystem);
             string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
@@ -48,7 +52,7 @@ namespace SubSolution
             if (workspaceDirectoryPath is null)
                 throw new ArgumentNullException(nameof(defaultWorkspaceDirectory), "configuration.WorkspaceDirectory or defaultWorkspaceDirectory must be not null.");
 
-            return new SubSolutionContext(configuration, null, solutionPath, workspaceDirectoryPath, fileSystem);
+            return new SubSolutionContext(configuration, null, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
         static private string ComputeSolutionPath(SubSolutionConfiguration configuration, string configurationFilePath, string defaultOutputDirectory, ISubSolutionFileSystem? fileSystem)

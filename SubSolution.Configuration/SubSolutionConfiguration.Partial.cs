@@ -1,28 +1,30 @@
-﻿namespace SubSolution.Configuration
+﻿using System.Threading.Tasks;
+
+namespace SubSolution.Configuration
 {
     public partial class SolutionItems
     {
-        public abstract void Accept(ISubSolutionConfigurationVisitor visitor);
+        public abstract Task AcceptAsync(ISubSolutionConfigurationVisitor visitor);
     }
 
     public partial class Folder
     {
-        public override void Accept(ISubSolutionConfigurationVisitor visitor) => visitor.Visit(this);
+        public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
     }
 
     public partial class Files
     {
-        public override void Accept(ISubSolutionConfigurationVisitor visitor) => visitor.Visit(this);
+        public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
     }
 
     public partial class Projects
     {
-        public override void Accept(ISubSolutionConfigurationVisitor visitor) => visitor.Visit(this);
+        public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
     }
 
     public partial class SubSolutions
     {
-        public override void Accept(ISubSolutionConfigurationVisitor visitor) => visitor.Visit(this);
+        public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
     }
 
     public partial class Binding

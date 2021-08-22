@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using SubSolution.FileSystems.Base;
+using SubSolution.Utils;
 
 namespace SubSolution.FileSystems.Mock
 {
@@ -28,6 +29,8 @@ namespace SubSolution.FileSystems.Mock
         {
             _fileContents.Add(NormalizePath(filePath), content);
         }
+
+        public override IEqualityComparer<string> PathComparer { get; } = new PathComparer(PathCaseComparison.RespectCase);
 
         public override Stream OpenStream(string filePath)
         {

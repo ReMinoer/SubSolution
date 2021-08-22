@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using SubSolution.Builders;
 using SubSolution.Configuration;
 using SubSolution.FileSystems.Mock;
 using SubSolution.Generators;
+using SubSolution.ProjectReaders.Mock;
 
 namespace SubSolution.Tests
 {
@@ -23,12 +26,15 @@ namespace SubSolution.Tests
 
             ILogger logger = new ConsoleLogger();
 
-            SubSolutionContext context = SubSolutionContext.FromConfigurationFile(configurationFilePath, GetMockFileSystem(configuration, haveSubSolutions));
+            MockFileSystem mockFileSystem = GetMockFileSystem(configuration, haveSubSolutions);
+            var projectReader = new MockSolutionProjectReader(new[] {"Debug", "Release"}, new[] {"Any CPU"});
+
+            SubSolutionContext context = Task.Run(async () => await SubSolutionContext.FromConfigurationFileAsync(configurationFilePath, projectReader, mockFileSystem)).Result;
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             var solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
+            ISolutionOutput solutionOutput = Task.Run(async () => await solutionBuilder.BuildAsync(context.Configuration)).Result;
 
             var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
             logGenerator.Generate(solutionOutput);
@@ -40,12 +46,15 @@ namespace SubSolution.Tests
         {
             ILogger logger = new ConsoleLogger();
 
-            SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, workspaceDirectoryPath, GetMockFileSystem(configuration, haveSubSolutions));
+            MockFileSystem mockFileSystem = GetMockFileSystem(configuration, haveSubSolutions);
+            var projectReader = new MockSolutionProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" });
+
+            SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, mockFileSystem);
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             var solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solutionOutput = solutionBuilder.Build(context.Configuration);
+            ISolutionOutput solutionOutput = Task.Run(async () => await solutionBuilder.BuildAsync(context.Configuration)).Result;
 
             var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
             logGenerator.Generate(solutionOutput);
@@ -77,6 +86,11 @@ namespace SubSolution.Tests
                 @"src\Executables\MyApplication.Console\bin\MyApplication.Console.exe",
             });
 
+            byte[] emptyProjectContent = Encoding.UTF8.GetBytes("<Project></Project>");
+            mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj", emptyProjectContent);
+            mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj", emptyProjectContent);
+            mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj", emptyProjectContent);
+
             if (haveSubSolutions)
             {
                 relativeFilePath.AddRange(new []
@@ -91,6 +105,10 @@ namespace SubSolution.Tests
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj",
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MyClass.cs",
                 });
+
+                mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj", emptyProjectContent);
+                mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj", emptyProjectContent);
+                mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj", emptyProjectContent);
 
                 var myFrameworkConfigurationPath = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\MyFramework.subsln";
                 AddConfigurationToFileSystem(mockFileSystem, myFrameworkConfigurationPath, MyFrameworkConfiguration);

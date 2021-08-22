@@ -1,16 +1,17 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using SubSolution.Configuration;
 
 namespace SubSolution.FileSystems
 {
     static public class SubSolutionFileSystemExtension
     {
-        static public SubSolutionConfiguration LoadConfiguration(this ISubSolutionFileSystem fileSystem, string configurationPath)
+        static public async Task<SubSolutionConfiguration> LoadConfigurationAsync(this ISubSolutionFileSystem fileSystem, string configurationPath)
         {
-            using Stream stream = fileSystem.OpenStream(configurationPath);
+            await using Stream stream = fileSystem.OpenStream(configurationPath);
             using TextReader textReader = new StreamReader(stream);
 
-            return SubSolutionConfiguration.Load(textReader);
+            return await Task.Run(() => SubSolutionConfiguration.Load(textReader));
         }
 
         static public string MoveRelativePathRoot(this ISubSolutionFileSystem fileSystem, string relativePath, string previousRootPath, string newRootPath)

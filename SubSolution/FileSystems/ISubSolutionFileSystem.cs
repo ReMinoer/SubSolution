@@ -5,6 +5,7 @@ namespace SubSolution.FileSystems
 {
     public interface ISubSolutionFileSystem
     {
+        IEqualityComparer<string> PathComparer { get; }
         string GetName(string path);
         string GetFileNameWithoutExtension(string fileName);
         string? GetParentDirectoryPath(string path);

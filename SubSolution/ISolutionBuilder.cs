@@ -1,9 +1,10 @@
-﻿using SubSolution.Configuration;
+﻿using System.Threading.Tasks;
+using SubSolution.Configuration;
 
 namespace SubSolution
 {
     public interface ISolutionBuilder
     {
-        ISolutionOutput Build(SubSolutionConfiguration configuration);
+        Task<ISolutionOutput> BuildAsync(SubSolutionConfiguration configuration);
     }
 }

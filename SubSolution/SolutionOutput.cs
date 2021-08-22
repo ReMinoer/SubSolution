@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SubSolution.FileSystems;
+using SubSolution.ProjectReaders;
 using SubSolution.Utils;
 
 namespace SubSolution
@@ -9,7 +11,7 @@ namespace SubSolution
     public class SolutionOutput : ISolutionOutput
     {
         private readonly ISubSolutionFileSystem _fileSystem;
-        private readonly Dictionary<string, Folder> _knownPaths = new Dictionary<string, Folder>();
+        private readonly Dictionary<string, Folder> _knownPaths;
         
         public string OutputPath { get; private set; }
 
@@ -26,6 +28,7 @@ namespace SubSolution
         public SolutionOutput(string outputPath, ISubSolutionFileSystem? fileSystem = null)
         {
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
+            _knownPaths = new Dictionary<string, Folder>(_fileSystem.PathComparer);
 
             OutputPath = outputPath;
             Root = new Folder(this);
@@ -114,10 +117,10 @@ namespace SubSolution
             {
                 _solution = solution;
 
-                _filePaths = new HashSet<string>();
+                _filePaths = new HashSet<string>(_solution._fileSystem.PathComparer);
                 FilePaths = new ReadOnlyCollection<string>(_filePaths);
 
-                _projectPaths = new HashSet<string>();
+                _projectPaths = new HashSet<string>(_solution._fileSystem.PathComparer);
                 ProjectPaths = new ReadOnlyCollection<string>(_projectPaths);
 
                 _subFolders = new Dictionary<string, Folder>();
@@ -127,22 +130,20 @@ namespace SubSolution
             public void AddFile(string filePath, bool overwrite = false)
                 => AddEntry(filePath, x => x._filePaths, overwrite);
 
-            public void AddProject(string projectPath, bool overwrite = false)
+            public void AddProject(ISolutionProject project, bool overwrite = false)
             {
-                if (!AddEntry(projectPath, x => x._projectPaths, overwrite))
+                if (!AddEntry(project.Path, x => x._projectPaths, overwrite))
                     return;
 
-                (string[] projectConfigurations, string[] projectPlatforms) = GetProjectConfigurationsAndPlatform();
+                Dictionary<string, string?> resolvedSolutionPlatforms = project.Platforms.ToDictionary(x => x, ResolveSolutionPlatform);
 
-                Dictionary<string, string?> resolvedSolutionPlatforms = projectPlatforms.ToDictionary(x => x, ResolveSolutionPlatform);
-
-                foreach (string projectConfiguration in projectConfigurations)
+                foreach (string projectConfiguration in project.Configurations)
                 {
                     string? resolvedSolutionConfiguration = ResolveSolutionConfiguration(projectConfiguration);
                     if (resolvedSolutionConfiguration is null)
                         continue;
 
-                    foreach (string projectPlatform in projectPlatforms)
+                    foreach (string projectPlatform in project.Platforms)
                     {
                         string? resolvedSolutionPlatform = resolvedSolutionPlatforms[projectPlatform];
                         if (resolvedSolutionPlatform is null)
@@ -155,24 +156,9 @@ namespace SubSolution
                             _solution.Configurations.Add(solutionConfiguration);
                         }
 
-                        solutionConfiguration.ProjectContexts.Add(new ProjectContext(projectPath, projectConfiguration, projectConfiguration));
+                        solutionConfiguration.ProjectContexts.Add(new ProjectContext(project.Path, projectConfiguration, projectPlatform));
                     }
                 }
-            }
-
-            private string? ResolveSolutionConfiguration(string projectConfiguration)
-            {
-                return _solution.ConfigurationBindings.FirstOrDefault(b => b.ProjectsValue == projectConfiguration).SolutionValue;
-            }
-
-            private string? ResolveSolutionPlatform(string projectPlatform)
-            {
-                return _solution.PlatformBindings.FirstOrDefault(b => b.ProjectsValue == projectPlatform).SolutionValue;
-            }
-
-            private (string[], string[]) GetProjectConfigurationsAndPlatform()
-            {
-                return (new[] { "Debug", "Release" }, new[] { "Any CPU" });
             }
 
             private bool AddEntry(string filePath, Func<Folder, HashSet<string>> getFolderContent, bool overwrite)
@@ -188,29 +174,42 @@ namespace SubSolution
                 return true;
             }
 
-            public void AddFolderContent(ISolutionFolder folder, bool overwrite = false)
+            private string? ResolveSolutionConfiguration(string projectConfiguration)
+            {
+                return _solution.ConfigurationBindings.FirstOrDefault(b => b.ProjectsValue == projectConfiguration).SolutionValue;
+            }
+
+            private string? ResolveSolutionPlatform(string projectPlatform)
+            {
+                return _solution.PlatformBindings.FirstOrDefault(b => b.ProjectsValue == projectPlatform).SolutionValue;
+            }
+
+            public async Task AddFolderContent(ISolutionFolder folder, ISolutionProjectReader projectReader, bool overwrite = false)
             {
                 foreach (string filePath in folder.FilePaths)
                     AddFile(filePath, overwrite);
-                foreach (string projectPath in folder.ProjectPaths)
-                    AddProject(projectPath, overwrite);
+
+                string outputDirectory = _solution._fileSystem.GetParentDirectoryPath(_solution.OutputPath)!;
+                ISolutionProject[] projects = await Task.WhenAll(folder.ProjectPaths.Select(x => projectReader.ReadAsync(x, outputDirectory)));
+
+                foreach (ISolutionProject project in projects)
+                    AddProject(project, overwrite);
 
                 foreach ((string subFolderName, ISolutionFolder subFolder) in folder.SubFolders.Select(x => (x.Key, x.Value)))
-                    GetOrCreateSubFolder(subFolderName).AddFolderContent(subFolder, overwrite);
+                    await GetOrCreateSubFolder(subFolderName).AddFolderContent(subFolder, projectReader, overwrite);
             }
 
             public bool RemoveFile(string filePath)
-                => RemoveEntry(filePath, _solution._knownPaths, _filePaths);
-
+                => RemoveEntry(filePath, _filePaths);
             public bool RemoveProject(string projectPath)
-                => RemoveEntry(projectPath, _solution._knownPaths, _projectPaths);
+                => RemoveEntry(projectPath, _projectPaths);
 
-            private bool RemoveEntry(string filePath, Dictionary<string, Folder> dictionary, HashSet<string> folderContent)
+            private bool RemoveEntry(string filePath, HashSet<string> folderContent)
             {
                 if (!folderContent.Remove(filePath))
                     return false;
 
-                dictionary.Remove(filePath);
+                _solution._knownPaths.Remove(filePath);
                 return true;
             }
 
@@ -258,27 +257,33 @@ namespace SubSolution
 
             private void ChangeItemsRootDirectory(string outputDirectory, string previousOutputDirectory)
             {
-                ReplacePaths(_filePaths);
-                ReplacePaths(_projectPaths);
+                string[] previousFilePaths = _filePaths.ToArray();
+                string[] previousProjectPaths = _projectPaths.ToArray();
+                _filePaths.Clear();
+                _projectPaths.Clear();
+
+                foreach (string previousFilePath in previousFilePaths)
+                    _solution._knownPaths.Remove(previousFilePath);
+                foreach (string projectPath in previousProjectPaths)
+                    _solution._knownPaths.Remove(projectPath);
 
                 foreach (Folder subFolder in SubFolders.Values)
                     subFolder.ChangeItemsRootDirectory(outputDirectory, previousOutputDirectory);
 
-                void ReplacePaths(HashSet<string> collection)
+                foreach (string previousFilePath in previousFilePaths)
                 {
-                    string[] previousFilePaths = collection.ToArray();
+                    string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousFilePath, previousOutputDirectory, outputDirectory);
 
-                    collection.Clear();
-                    foreach (string previousFilePath in previousFilePaths)
-                        _solution._knownPaths.Remove(previousFilePath);
+                    _filePaths.Add(newFilePath);
+                    _solution._knownPaths.Add(newFilePath, this);
+                }
 
-                    foreach (string previousFilePath in previousFilePaths)
-                    {
-                        string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousFilePath, previousOutputDirectory, outputDirectory);
+                foreach (string previousProjectPath in previousProjectPaths)
+                {
+                    string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousProjectPath, previousOutputDirectory, outputDirectory);
 
-                        collection.Add(newFilePath);
-                        _solution._knownPaths.Add(newFilePath, this);
-                    }
+                    _projectPaths.Add(newFilePath);
+                    _solution._knownPaths.Add(newFilePath, this);
                 }
             }
         }

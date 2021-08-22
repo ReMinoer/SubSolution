@@ -6,6 +6,7 @@ using NLog.Extensions.Logging;
 using SubSolution.Builders;
 using SubSolution.FileSystems;
 using SubSolution.Generators;
+using SubSolution.MsBuild;
 using SubSolution.Raw;
 
 [assembly: ExcludeFromCodeCoverage]
@@ -22,12 +23,12 @@ namespace SubSolution.Console
             var loggerProvider = new NLogLoggerProvider();
             ILogger? logger = loggerProvider.CreateLogger(nameof(SubSolution));
 
-            SubSolutionContext context = SubSolutionContext.FromConfigurationFile(args[0]);
+            SubSolutionContext context = await SubSolutionContext.FromConfigurationFileAsync(args[0], new SolutionProjectReader());
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             ISolutionBuilder solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solution = solutionBuilder.Build(context.Configuration);
+            ISolutionOutput solution = await solutionBuilder.BuildAsync(context.Configuration);
 
             var logGenerator = new LogGenerator(logger, LogLevel.Information);
             logGenerator.Generate(solution);

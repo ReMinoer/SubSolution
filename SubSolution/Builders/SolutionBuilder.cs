@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SubSolution.Configuration;
 using SubSolution.FileSystems;
+using SubSolution.ProjectReaders;
 using SubSolution.Utils;
 
 namespace SubSolution.Builders
@@ -24,6 +26,8 @@ namespace SubSolution.Builders
         private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? string.Join('/', _currentFolderPathStack.Reverse()) : LogTokenRoot;
 
         private readonly ISubSolutionFileSystem _fileSystem;
+        private readonly ISolutionProjectReader _projectReader;
+
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
 
@@ -38,16 +42,18 @@ namespace SubSolution.Builders
             _currentFolderStack.Push(_solutionOutput.Root);
             _currentFolderPathStack = new Stack<string>();
 
-            _knownConfigurationFilePaths = new HashSet<string>();
+            _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
+            _projectReader = context.ProjectReader;
+
+            _knownConfigurationFilePaths = new HashSet<string>(_fileSystem.PathComparer);
             if (context.ConfigurationFilePath != null)
                 _knownConfigurationFilePaths.Add(context.ConfigurationFilePath);
 
-            _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
             _logger = context.Logger ?? NullLogger.Instance;
             _logLevel = context.LogLevel;
         }
 
-        public ISolutionOutput Build(SubSolutionConfiguration configuration)
+        public async Task<ISolutionOutput> BuildAsync(SubSolutionConfiguration configuration)
         {
             Log("Start building solution");
             Log($"Configuration file: {_knownConfigurationFilePaths.FirstOrDefault() ?? LogTokenNone}");
@@ -57,7 +63,7 @@ namespace SubSolution.Builders
             VisitConfigurationBindings(configuration.ConfigurationBindings);
 
             if (configuration.Root != null)
-                VisitRoot(configuration.Root);
+                await VisitRootAsync(configuration.Root);
 
             return _solutionOutput;
         }
@@ -98,31 +104,50 @@ namespace SubSolution.Builders
             _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding(platform.Project, platform.Solution));
         }
 
-        private void VisitRoot(SolutionRootConfiguration root)
+        private async Task VisitRootAsync(SolutionRootConfiguration root)
         {
             foreach (SolutionItems items in root.SolutionItems)
-                items.Accept(this);
+                await items.AcceptAsync(this);
         }
 
-        public void Visit(Folder folder)
+        public async Task VisitAsync(Folder folder)
         {
             using (MoveCurrentFolder(folder.Name))
-                VisitRoot(folder.Content);
+                await VisitRootAsync(folder.Content);
         }
 
-        public void Visit(Files files)
+        public async Task VisitAsync(Files files)
         {
             foreach (string relativeFilePath in GetMatchingFilePaths(files.Path, defaultFileExtension: "*"))
-                AddFoldersAndFileToSolution(relativeFilePath, (folder, file, overwrite) => folder.AddFile(file, overwrite), files.CreateFolders == true, files.Overwrite == true);
-        }
+                await AddFoldersAndFileToSolution(relativeFilePath, AddFile, files.CreateFolders == true, files.Overwrite == true);
 
-        public void Visit(Projects projects)
+            static Task AddFile(SolutionOutput.Folder folder, string filePath, bool overwrite)
+            {
+                folder.AddFile(filePath, overwrite);
+                return Task.CompletedTask;
+            }
+        }
+        
+        public async Task VisitAsync(Projects projects)
         {
-            foreach (string relativeFilePath in GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj"))
-                AddFoldersAndFileToSolution(relativeFilePath, (folder, file, overwrite) => folder.AddProject(file, overwrite), projects.CreateFolders == true, projects.Overwrite == true);
+            string outputDirectory = _fileSystem.GetParentDirectoryPath(_solutionOutput.OutputPath)!;
+
+            IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj");
+            Dictionary<string, Task<ISolutionProject>> matchingProjectByPath = matchingFilePaths.ToDictionary(x => x, x => _projectReader.ReadAsync(x, outputDirectory));
+
+            await Task.WhenAll(matchingProjectByPath.Values);
+
+            foreach (string relativeFilePath in matchingProjectByPath.Keys)
+                await AddFoldersAndFileToSolution(relativeFilePath, AddProject, projects.CreateFolders == true, projects.Overwrite == true);
+
+            async Task AddProject(SolutionOutput.Folder folder, string projectPath, bool overwrite)
+            {
+                ISolutionProject project = await matchingProjectByPath[projectPath];
+                folder.AddProject(project, overwrite);
+            }
         }
 
-        public void Visit(SubSolutions subSolutions)
+        public async Task VisitAsync(SubSolutions subSolutions)
         {
             IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(subSolutions.Path, defaultFileExtension: "subsln");
             if (subSolutions.ReverseOrder == true)
@@ -136,12 +161,12 @@ namespace SubSolution.Builders
                 if (!_knownConfigurationFilePaths.Add(filePath) && subSolutions.Overwrite != true)
                     continue;
 
-                SubSolutionContext subContext = SubSolutionContext.FromConfigurationFile(filePath, _fileSystem);
+                SubSolutionContext subContext = await SubSolutionContext.FromConfigurationFileAsync(filePath, _projectReader, _fileSystem);
                 subContext.Logger = _logger;
                 subContext.LogLevel = _logLevel;
 
                 SolutionBuilder solutionBuilder = new SolutionBuilder(subContext);
-                ISolutionOutput subSolution = solutionBuilder.Build(subContext.Configuration);
+                ISolutionOutput subSolution = await solutionBuilder.BuildAsync(subContext.Configuration);
 
                 string outputDirectory = _fileSystem.GetParentDirectoryPath(_solutionOutput.OutputPath)!;
                 subSolution.SetOutputDirectory(outputDirectory);
@@ -149,11 +174,11 @@ namespace SubSolution.Builders
                 if (subSolutions.CreateRootFolder == true)
                 {
                     using (MoveCurrentFolder(subContext.SolutionName))
-                        CurrentFolder.AddFolderContent(subSolution.Root, subSolutions.Overwrite == true);
+                        await CurrentFolder.AddFolderContent(subSolution.Root, _projectReader, subSolutions.Overwrite == true);
                 }
                 else
                 {
-                    CurrentFolder.AddFolderContent(subSolution.Root, subSolutions.Overwrite == true);
+                    await CurrentFolder.AddFolderContent(subSolution.Root, _projectReader, subSolutions.Overwrite == true);
                 }
             }
         }
@@ -172,11 +197,8 @@ namespace SubSolution.Builders
             return _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, globPattern);
         }
 
-        private void AddFoldersAndFileToSolution(string relativeFilePath, Action<SolutionOutput.Folder, string, bool> addEntry, bool createFolders, bool overwrite)
+        private async Task AddFoldersAndFileToSolution(string relativeFilePath, Func<SolutionOutput.Folder, string, bool, Task> addEntry, bool createFolders, bool overwrite)
         {
-            string filePath = _fileSystem.Combine(_workspaceDirectoryPath, relativeFilePath);
-            relativeFilePath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, filePath);
-
             if (createFolders)
             {
                 string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(relativeFilePath) ?? string.Empty;
@@ -185,13 +207,13 @@ namespace SubSolution.Builders
                 using (MoveCurrentFolder(solutionFolderPath))
                 {
                     Log($"Add: {relativeFilePath}");
-                    addEntry(CurrentFolder, relativeFilePath, overwrite);
+                    await addEntry(CurrentFolder, relativeFilePath, overwrite);
                 }
             }
             else
             {
                 Log($"Add: {relativeFilePath}");
-                addEntry(CurrentFolder, relativeFilePath, overwrite);
+                await addEntry(CurrentFolder, relativeFilePath, overwrite);
             }
         }
 
