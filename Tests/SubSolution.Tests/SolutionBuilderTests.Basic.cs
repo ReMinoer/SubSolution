@@ -6,7 +6,7 @@ using static FluentAssertions.FluentActions;
 
 namespace SubSolution.Tests
 {
-    public partial class SubSolutionEngineTests
+    public partial class SolutionBuilderTests
     {
         [Test]
         public void ProcessEmptyConfiguration()

@@ -14,7 +14,7 @@ using SubSolution.ProjectReaders.Mock;
 
 namespace SubSolution.Tests
 {
-    public partial class SubSolutionEngineTests
+    public partial class SolutionBuilderTests
     {
         private const string RootName = @"C:";
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";

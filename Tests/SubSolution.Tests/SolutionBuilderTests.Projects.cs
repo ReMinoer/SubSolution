@@ -5,7 +5,7 @@ using SubSolution.Configuration;
 
 namespace SubSolution.Tests
 {
-    public partial class SubSolutionEngineTests
+    public partial class SolutionBuilderTests
     {
         [Test]
         public void ProcessProjects()
