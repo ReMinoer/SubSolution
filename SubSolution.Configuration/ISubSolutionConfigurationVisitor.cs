@@ -8,7 +8,5 @@ namespace SubSolution.Configuration
         Task VisitAsync(Files files);
         Task VisitAsync(Projects projects);
         Task VisitAsync(SubSolutions subSolutions);
-        void Visit(Configuration configuration);
-        void Visit(Platform platform);
     }
 }

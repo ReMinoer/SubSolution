@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using SubSolution.Configuration;
@@ -8,7 +9,7 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         [Test]
-        public void IgnoreEmptyFolders()
+        public async Task IgnoreEmptyFolders()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -24,10 +25,10 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
         }
     }

@@ -1,23 +1,33 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SubSolution.ProjectReaders.Mock
 {
     public class MockSolutionProjectReader : ISolutionProjectReader
     {
-        public string[] ProjectConfigurations { get; set; }
-        public string[] ProjectPlatforms { get; set; }
+        public Dictionary<string, string[]> ProjectConfigurations { get; } = new Dictionary<string, string[]>();
+        public Dictionary<string, string[]> ProjectPlatforms { get; } = new Dictionary<string, string[]>();
+        public string[] ProjectDefaultConfigurations { get; }
+        public string[] ProjectDefaultPlatforms { get; }
+        public bool ProjectCanBuild { get; set; }
+        public bool ProjectCanDeploy { get; set; }
 
-        public MockSolutionProjectReader(string[] projectConfigurations, string[] projectPlatforms)
+        public MockSolutionProjectReader(string[] projectDefaultConfigurations, string[] projectDefaultPlatforms)
         {
-            ProjectConfigurations = projectConfigurations;
-            ProjectPlatforms = projectPlatforms;
+            ProjectDefaultConfigurations = projectDefaultConfigurations;
+            ProjectDefaultPlatforms = projectDefaultPlatforms;
         }
 
-        public Task<ISolutionProject> ReadAsync(string projectPath, string rootDirectory)
+        public Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
-            var solutionProject = new SolutionProject(projectPath);
-            solutionProject.Configurations.AddRange(ProjectConfigurations);
-            solutionProject.Platforms.AddRange(ProjectPlatforms);
+            var solutionProject = new SolutionProject
+            {
+                CanBuild = ProjectCanBuild,
+                CanDeploy = ProjectCanDeploy
+            };
+
+            solutionProject.Configurations.AddRange(ProjectConfigurations.TryGetValue(absoluteProjectPath, out string[] x) ? x : ProjectDefaultConfigurations);
+            solutionProject.Platforms.AddRange(ProjectPlatforms.TryGetValue(absoluteProjectPath, out string[] y) ? y : ProjectDefaultPlatforms);
 
             return Task.FromResult<ISolutionProject>(solutionProject);
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using SubSolution.Configuration;
@@ -8,7 +9,7 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         [Test]
-        public void ProcessProjects()
+        public async Task ProcessProjects()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -21,19 +22,19 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.ProjectPaths.Should().HaveCount(3);
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
-            solution.Root.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
 
         [Test]
-        public void ProcessProjectsMatchingFilter()
+        public async Task ProcessProjectsMatchingFilter()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -49,17 +50,17 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.ProjectPaths.Should().HaveCount(1);
-            solution.Root.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+            solution.Root.Projects.Should().HaveCount(1);
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
 
         [Test]
-        public void ProcessProjectsMatchingMultipleFilters()
+        public async Task ProcessProjectsMatchingMultipleFilters()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -79,19 +80,19 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.ProjectPaths.Should().HaveCount(3);
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
-            solution.Root.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
 
         [Test]
-        public void ProcessProjectsMatchingMultipleFiltersInDifferentSolutionFolders()
+        public async Task ProcessProjectsMatchingMultipleFiltersInDifferentSolutionFolders()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -118,23 +119,24 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().HaveCount(2);
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
-            solution.Root.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
             solution.Root.SubFolders.Should().HaveCount(1);
             {
                 ISolutionFolder executablesFolder = solution.Root.SubFolders["Executables"];
                 executablesFolder.FilePaths.Should().BeEmpty();
-                executablesFolder.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                executablesFolder.Projects.Should().HaveCount(1);
+                executablesFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
                 executablesFolder.SubFolders.Should().BeEmpty();
             }
         }
 
         [Test]
-        public void ProcessProjectsMatchingMultipleFiltersWithOverwrite()
+        public async Task ProcessProjectsMatchingMultipleFiltersWithOverwrite()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -169,29 +171,29 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(2);
             {
                 ISolutionFolder librariesFolder = solution.Root.SubFolders["Libraries"];
                 librariesFolder.FilePaths.Should().BeEmpty();
-                librariesFolder.ProjectPaths.Should().HaveCount(2);
-                librariesFolder.ProjectPaths.Should().Contain("src/MyApplication/MyApplication.csproj");
-                librariesFolder.ProjectPaths.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                librariesFolder.Projects.Should().HaveCount(2);
+                librariesFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+                librariesFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
                 librariesFolder.SubFolders.Should().BeEmpty();
 
                 ISolutionFolder executablesFolder = solution.Root.SubFolders["Executables"];
                 executablesFolder.FilePaths.Should().BeEmpty();
-                executablesFolder.ProjectPaths.Should().HaveCount(1);
-                executablesFolder.ProjectPaths.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                executablesFolder.Projects.Should().HaveCount(1);
+                executablesFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
                 executablesFolder.SubFolders.Should().BeEmpty();
             }
         }
 
         [Test]
-        public void ProcessProjectsWithCreateFolders()
+        public async Task ProcessProjectsWithCreateFolders()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -207,35 +209,38 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(1);
             {
                 ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
                 srcFolder.FilePaths.Should().BeEmpty();
-                srcFolder.ProjectPaths.Should().BeEmpty();
+                srcFolder.Projects.Should().BeEmpty();
                 srcFolder.SubFolders.Should().HaveCount(3);
                 {
                     ISolutionFolder myApplicationFolder = srcFolder.SubFolders["MyApplication"];
                     myApplicationFolder.FilePaths.Should().BeEmpty();
-                    myApplicationFolder.ProjectPaths.Should().BeEquivalentTo("src/MyApplication/MyApplication.csproj");
+                    myApplicationFolder.Projects.Should().HaveCount(1);
+                    myApplicationFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
                     myApplicationFolder.SubFolders.Should().BeEmpty();
 
                     ISolutionFolder myApplicationConfigurationFolder = srcFolder.SubFolders["MyApplication.Configuration"];
                     myApplicationConfigurationFolder.FilePaths.Should().BeEmpty();
-                    myApplicationConfigurationFolder.ProjectPaths.Should().BeEquivalentTo("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                    myApplicationConfigurationFolder.Projects.Should().HaveCount(1);
+                    myApplicationConfigurationFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
                     myApplicationConfigurationFolder.SubFolders.Should().BeEmpty();
 
                     ISolutionFolder executablesFolder = srcFolder.SubFolders["Executables"];
                     executablesFolder.FilePaths.Should().BeEmpty();
-                    executablesFolder.ProjectPaths.Should().BeEmpty();
+                    executablesFolder.Projects.Should().BeEmpty();
                     executablesFolder.SubFolders.Should().HaveCount(1);
                     {
                         ISolutionFolder myApplicationConsoleFolder = executablesFolder.SubFolders["MyApplication.Console"];
                         myApplicationConsoleFolder.FilePaths.Should().BeEmpty();
-                        myApplicationConsoleFolder.ProjectPaths.Should().BeEquivalentTo("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                        myApplicationConsoleFolder.Projects.Should().HaveCount(1);
+                        myApplicationConsoleFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
                         myApplicationConsoleFolder.SubFolders.Should().BeEmpty();
                     }
                 }

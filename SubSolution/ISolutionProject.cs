@@ -4,8 +4,9 @@ namespace SubSolution
 {
     public interface ISolutionProject
     {
-        string Path { get; set; }
-        IReadOnlyCollection<string> Configurations { get; }
-        IReadOnlyCollection<string> Platforms { get; }
+        IReadOnlyList<string> Configurations { get; }
+        IReadOnlyList<string> Platforms { get; }
+        bool CanBuild { get; }
+        bool CanDeploy { get; }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using SubSolution.Configuration;
@@ -9,25 +10,25 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         [Test]
-        public void ProcessEmptyConfiguration()
+        public async Task ProcessEmptyConfiguration()
         {
             var configuration = new SubSolutionConfiguration();
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
             
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
         }
 
         [Test]
-        public void ProcessWithSolutionName()
+        public async Task ProcessWithSolutionName()
         {
             var configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName"
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
             solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
 
             configuration = new SubSolutionConfiguration
@@ -35,7 +36,7 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName.sln"
             };
 
-            solution = ProcessConfigurationMockFile(configuration);
+            solution = await ProcessConfigurationMockFileAsync(configuration);
             solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
 
             configuration = new SubSolutionConfiguration
@@ -43,12 +44,12 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName.txt"
             };
 
-            solution = ProcessConfigurationMockFile(configuration);
+            solution = await ProcessConfigurationMockFileAsync(configuration);
             solution.OutputPath.Should().EndWith("MyCustomSolutionName.txt.sln");
         }
 
         [Test]
-        public void ProcessWithOutput()
+        public async Task ProcessWithOutput()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -56,26 +57,26 @@ namespace SubSolution.Tests
                 OutputDirectory = "MySolutions/MyCustomSolutions"
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.OutputPath.Should().EndWith("MySolutions/MyCustomSolutions/MyCustomSolutionName.sln");
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
         }
 
         [Test]
-        public void ProcessWithConfigurationWorkspaceDirectory()
+        public async Task ProcessWithConfigurationWorkspaceDirectory()
         {
             var configuration = new SubSolutionConfiguration
             {
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
 
-            ISolutionOutput solution = ProcessConfiguration(configuration, workspaceDirectoryPath: null);
+            ISolutionOutput solution = await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
         }
 
@@ -83,7 +84,7 @@ namespace SubSolution.Tests
         public void ThrowOnProcessWithoutAnyWorkspaceDirectory()
         {
             var configuration = new SubSolutionConfiguration();
-            Invoking(() => ProcessConfiguration(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
+            Invoking(async () => await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
         }
     }
 }

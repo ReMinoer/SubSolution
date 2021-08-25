@@ -5,6 +5,6 @@ namespace SubSolution
     public interface ISolution
     {
         ISolutionFolder Root { get; }
-        IReadOnlyCollection<ISolutionConfiguration> Configurations { get; }
+        IReadOnlyList<ISolutionConfigurationPlatform> ConfigurationPlatforms { get; }
     }
 }

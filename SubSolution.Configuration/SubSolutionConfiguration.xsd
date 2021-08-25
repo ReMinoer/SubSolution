@@ -12,9 +12,14 @@
                         <xs:documentation>Root of the solution.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="ConfigurationBindings" type="SolutionConfigurationBindingList">
+                <xs:element name="Configurations" type="SolutionConfigurationList">
                     <xs:annotation>
-                        <xs:documentation>Configuration binding list.</xs:documentation>
+                        <xs:documentation>Solution configuration list.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="Platforms" type="SolutionPlatformList">
+                    <xs:annotation>
+                        <xs:documentation>Solution platform list.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -35,6 +40,90 @@
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+
+    <xs:complexType name="SolutionConfigurationList">
+        <xs:annotation>
+            <xs:documentation>Represent a solution configuration list.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Configuration" type="SolutionConfiguration" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Solution configuration.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionConfiguration">
+        <xs:annotation>
+            <xs:documentation>Represent a solution configuration.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ProjectConfiguration" type="ProjectConfigurationMatch" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Project configuration to match.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="Name" type="ConfigurationPlatformName" use="required">
+            <xs:annotation>
+                <xs:documentation>Configuration name.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ProjectConfigurationMatch">
+        <xs:annotation>
+            <xs:documentation>Represent a project configuration to match.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="Match" type="ConfigurationPlatformName" use="required">
+            <xs:annotation>
+                <xs:documentation>Project configuration name part to match.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionPlatformList">
+        <xs:annotation>
+            <xs:documentation>Represent a solution platform list.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Platform" type="SolutionPlatform" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Solution platform.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionPlatform">
+        <xs:annotation>
+            <xs:documentation>Represent a solution platform.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ProjectPlatform" type="ProjectPlatformMatch" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Project platform to match.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="Name" type="ConfigurationPlatformName" use="required">
+            <xs:annotation>
+                <xs:documentation>Platform name.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ProjectPlatformMatch">
+        <xs:annotation>
+            <xs:documentation>Represent a project platform to match.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="Match" type="ConfigurationPlatformName" use="required">
+            <xs:annotation>
+                <xs:documentation>Project platform name part to match.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:element name="SolutionItems" type="SolutionItemsSourceBase" abstract="true">
         <xs:annotation>
@@ -191,70 +280,6 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="SolutionConfigurationBindingList">
-        <xs:annotation>
-            <xs:documentation>Represent a list of solution configuration bindings.</xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element ref="Binding" minOccurs="0" maxOccurs="unbounded" />
-        </xs:sequence>
-        <xs:attribute name="UseDefaultBindings" type="xs:boolean">
-            <xs:annotation>
-                <xs:documentation>True to use SubSolution default bindings.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:element name="Binding" type="SolutionConfigurationBinding" abstract="true">
-        <xs:annotation>
-            <xs:documentation>Represent a solution configuration binding.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="Configuration" type="ConfigurationBinding" substitutionGroup="Binding">
-        <xs:annotation>
-            <xs:documentation>Represent a configuration name binding.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="Platform" type="PlatformBinding" substitutionGroup="Binding">
-        <xs:annotation>
-            <xs:documentation>Represent a platform name binding.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-
-    <xs:complexType name="SolutionConfigurationBinding" abstract="true">
-        <xs:annotation>
-            <xs:documentation>Represent a solution configuration binding.</xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="Project" type="BindingName" use="required">
-            <xs:annotation>
-                <xs:documentation>Matching project configuration value..</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="Solution" type="BindingName" use="required">
-            <xs:annotation>
-                <xs:documentation>Assigned solution configuration value.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="ConfigurationBinding" >
-        <xs:annotation>
-            <xs:documentation>Represent a configuration name binding.</xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="SolutionConfigurationBinding" />
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="PlatformBinding">
-        <xs:annotation>
-            <xs:documentation>Represent a platform name binding.</xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="SolutionConfigurationBinding" />
-        </xs:complexContent>
-    </xs:complexType>
-
     <xs:element name="FileFilters" abstract="true">
         <xs:annotation>
             <xs:documentation>File filter.</xs:documentation>
@@ -330,7 +355,7 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="BindingName">
+    <xs:simpleType name="ConfigurationPlatformName">
         <xs:annotation>
             <xs:documentation>Configuration or platform name.</xs:documentation>
         </xs:annotation>

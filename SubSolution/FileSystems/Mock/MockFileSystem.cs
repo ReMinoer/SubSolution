@@ -53,7 +53,7 @@ namespace SubSolution.FileSystems.Mock
         {
             var fileName = GetName(path);
 
-            var dotIndex = fileName.IndexOf('.');
+            var dotIndex = fileName.LastIndexOf('.');
             if (dotIndex == -1)
                 return fileName;
 

@@ -16,13 +16,26 @@
         <SubSolutions CreateRootFolder="true" CreateFolders="true" />
         <Projects />
     </Root>
-    <ConfigurationBindings UseDefaultBindings="true">
-        <Configuration Project="Debug" Solution="Debug" />
-        <Configuration Project="Release" Solution="Release" />
-        <Platform Project="Any CPU" Solution="Any CPU" />
-        <Platform Project="x86" Solution="x86" />
-        <Platform Project="x64" Solution="x64" />
-        <Platform Project="Any CPU" Solution="x86" />
-        <Platform Project="Any CPU" Solution="x64" />
-    </ConfigurationBindings>
+    <Configurations>
+        <Configuration Name="Debug">
+            <ProjectConfiguration Match="Debug" />
+        </Configuration>
+        <Configuration Name="Release">
+            <ProjectConfiguration Match="Release" />
+        </Configuration>
+    </Configurations>
+    <Platforms>
+        <Platform Name="Any CPU">
+            <ProjectPlatform Match="Any" />
+        </Platform>
+        <Platform Name="x86">
+            <ProjectPlatform Match="86" />
+            <ProjectPlatform Match="32" />
+            <ProjectPlatform Match="Any" />
+        </Platform>
+        <Platform Name="x64">
+            <ProjectPlatform Match="64" />
+            <ProjectPlatform Match="Any" />
+        </Platform>
+    </Platforms>
 </SubSolutionConfiguration>

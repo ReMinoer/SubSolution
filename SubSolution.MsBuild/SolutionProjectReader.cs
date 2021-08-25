@@ -1,32 +1,24 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.Build.Evaluation;
-using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 
 namespace SubSolution.MsBuild
 {
+    [ExcludeFromCodeCoverage]
     public class SolutionProjectReader : ISolutionProjectReader
     {
-        private readonly ISubSolutionFileSystem _fileSystem;
-
-        public SolutionProjectReader(ISubSolutionFileSystem? fileSystem = null)
+        public async Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
-            _fileSystem = fileSystem ?? StandardFileSystem.Instance;
-        }
+            Project project = await Task.Run(()
+                => new Project(absoluteProjectPath, null, null, ProjectCollection.GlobalProjectCollection, ProjectLoadSettings.IgnoreMissingImports));
 
-        public async Task<ISolutionProject> ReadAsync(string projectPath, string rootDirectory)
-        {
-            string absoluteProjectPath = _fileSystem.Combine(rootDirectory, projectPath);
-
-            await using Stream projectStream = _fileSystem.OpenStream(absoluteProjectPath);
-            using var xmlReader = XmlReader.Create(projectStream);
-
-            Project project = await Task.Run(() => new Project(xmlReader, null, null, ProjectCollection.GlobalProjectCollection, ProjectLoadSettings.IgnoreMissingImports));
-
-            var solutionProject = new SolutionProject(projectPath);
+            var solutionProject = new SolutionProject
+            {
+                CanBuild = true,
+                CanDeploy = false
+            };
 
             string projectConfigurations = project.GetPropertyValue("Configurations");
             if (string.IsNullOrEmpty(projectConfigurations))

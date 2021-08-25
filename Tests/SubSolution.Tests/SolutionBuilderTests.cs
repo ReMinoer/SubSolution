@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using SubSolution.Configuration;
 using SubSolution.FileSystems.Mock;
 using SubSolution.Generators;
 using SubSolution.ProjectReaders.Mock;
+using SubSolution.Raw;
 
 namespace SubSolution.Tests
 {
@@ -20,44 +22,73 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private ISolutionOutput ProcessConfigurationMockFile(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        private Task<ISolutionOutput> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
             const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
-            ILogger logger = new ConsoleLogger();
-
-            MockFileSystem mockFileSystem = GetMockFileSystem(configuration, haveSubSolutions);
-            var projectReader = new MockSolutionProjectReader(new[] {"Debug", "Release"}, new[] {"Any CPU"});
-
-            SubSolutionContext context = Task.Run(async () => await SubSolutionContext.FromConfigurationFileAsync(configurationFilePath, projectReader, mockFileSystem)).Result;
-            context.Logger = logger;
-            context.LogLevel = LogLevel.Debug;
-
-            var solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solutionOutput = Task.Run(async () => await solutionBuilder.BuildAsync(context.Configuration)).Result;
-
-            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
-            logGenerator.Generate(solutionOutput);
-
-            return solutionOutput;
+            return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
+                => SubSolutionContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
         }
 
-        private ISolutionOutput ProcessConfiguration(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+        private Task<ISolutionOutput> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+        {
+            return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
+                => Task.FromResult(SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, fileSystem)));
+        }
+
+        private async Task<ISolutionOutput> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+            Func<MockFileSystem, MockSolutionProjectReader, Task<SubSolutionContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
 
             MockFileSystem mockFileSystem = GetMockFileSystem(configuration, haveSubSolutions);
-            var projectReader = new MockSolutionProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" });
+            var mockProjectReader = new MockSolutionProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
+            {
+                ProjectCanBuild = true,
+                ProjectCanDeploy = false,
+                ProjectConfigurations =
+                {
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj", new []{"Debug", "Release"}},
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj", new []{"debug", "release"}},
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj", new []{"Debug", "Release", "Final"}}
+                },
+                ProjectPlatforms =
+                {
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj", new []{"Any CPU"}},
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj", new []{"any cpu"}},
+                    {@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj", new []{"x86", "x64"}}
+                }
+            };
 
-            SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, mockFileSystem);
+            SubSolutionContext context = await createContext(mockFileSystem, mockProjectReader);
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             var solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solutionOutput = Task.Run(async () => await solutionBuilder.BuildAsync(context.Configuration)).Result;
+            ISolutionOutput solutionOutput = await solutionBuilder.BuildAsync(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: context.FileSystem);
+            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: mockFileSystem)
+            {
+                ShowHeaders = true,
+                ShowOutputPath = true,
+                ShowHierarchy = true,
+                ShowConfigurationPlatforms = true,
+                ShowProjectContexts = true
+            };
             logGenerator.Generate(solutionOutput);
+
+            var rawSolutionGenerator = new RawSolutionGenerator(mockFileSystem);
+            RawSolution rawSolution = rawSolutionGenerator.Generate(solutionOutput);
+
+            await using var firstPassStream = new MemoryStream();
+            await rawSolution.WriteAsync(firstPassStream);
+            firstPassStream.Position = 0;
+            rawSolution = await RawSolution.ReadAsync(firstPassStream);
+
+            await using var secondPassStream = new MemoryStream();
+            await rawSolution.WriteAsync(secondPassStream);
+            secondPassStream.Position = 0;
+            await RawSolution.ReadAsync(secondPassStream);
 
             return solutionOutput;
         }
@@ -169,23 +200,23 @@ namespace SubSolution.Tests
 
         private void CheckFolderContainsMyFramework(ISolutionFolder rootFolder, bool only = false, bool butNotExternal = false)
         {
-            rootFolder.ProjectPaths.Should().Contain("external/MyFramework/src/MyFramework/MyFramework.csproj");
+            rootFolder.Projects.Keys.Should().Contain("external/MyFramework/src/MyFramework/MyFramework.csproj");
 
             if (only)
             {
                 rootFolder.FilePaths.Should().BeEmpty();
-                rootFolder.ProjectPaths.Should().HaveCount(1);
+                rootFolder.Projects.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().HaveCount(butNotExternal ? 2 : 3);
             }
             
             ISolutionFolder testsFolder = rootFolder.SubFolders["Tests"];
             {
-                testsFolder.ProjectPaths.Should().Contain("external/MyFramework/tests/MyFramework.Tests/MyFramework.Tests.csproj");
+                testsFolder.Projects.Keys.Should().Contain("external/MyFramework/tests/MyFramework.Tests/MyFramework.Tests.csproj");
 
                 if (only)
                 {
                     testsFolder.FilePaths.Should().BeEmpty();
-                    testsFolder.ProjectPaths.Should().HaveCount(1);
+                    testsFolder.Projects.Should().HaveCount(1);
                     testsFolder.SubFolders.Should().BeEmpty();
                 }
             }
@@ -197,7 +228,7 @@ namespace SubSolution.Tests
                 if (only)
                 {
                     toolsFolder.FilePaths.Should().HaveCount(1);
-                    toolsFolder.ProjectPaths.Should().BeEmpty();
+                    toolsFolder.Projects.Should().BeEmpty();
                     toolsFolder.SubFolders.Should().BeEmpty();
                 }
             }
@@ -224,16 +255,45 @@ namespace SubSolution.Tests
 
         private void CheckFolderContainsMySubModule(ISolutionFolder rootFolder, bool only = false)
         {
-            rootFolder.ProjectPaths.Should().Contain("external/MyFramework/external/MySubModule/src/MySubModule/MySubModule.csproj");
+            rootFolder.Projects.Keys.Should().Contain("external/MyFramework/external/MySubModule/src/MySubModule/MySubModule.csproj");
 
             if (only)
             {
                 rootFolder.FilePaths.Should().BeEmpty();
-                rootFolder.ProjectPaths.Should().HaveCount(1);
+                rootFolder.Projects.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().BeEmpty();
             }
         }
 
+        static private void CheckConfigurationPlatforms(ISolutionOutput solution, string configurationName, string platformName,
+            string[] projectConfigurationNames, string[] projectPlatformNames, bool[] projectBuild)
+        {
+            ISolutionConfigurationPlatform solutionConfiguration = solution.ConfigurationPlatforms.First(x => x.ConfigurationName == configurationName && x.PlatformName == platformName);
+            solutionConfiguration.ConfigurationName.Should().Be(configurationName);
+            solutionConfiguration.PlatformName.Should().Be(platformName);
+            solutionConfiguration.FullName.Should().Be($"{configurationName}|{platformName}");
+            solutionConfiguration.ProjectContexts.Should().HaveCount(3);
+
+            string[] projectPaths =
+            {
+                "src/MyApplication/MyApplication.csproj",
+                "src/MyApplication.Configuration/MyApplication.Configuration.csproj",
+                "src/Executables/MyApplication.Console/MyApplication.Console.csproj"
+            };
+
+            int i = 0;
+            foreach (string projectPath in projectPaths)
+            {
+                SolutionProjectContext projectContext = solutionConfiguration.ProjectContexts[projectPath];
+                projectContext.ConfigurationName.Should().Be(projectConfigurationNames[i]);
+                projectContext.PlatformName.Should().Be(projectPlatformNames[i]);
+                projectContext.Build.Should().Be(projectBuild[i]);
+                projectContext.Deploy.Should().BeFalse();
+                i++;
+            }
+        }
+
+        [ExcludeFromCodeCoverage]
         private class ConsoleLogger : ILogger
         {
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

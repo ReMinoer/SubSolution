@@ -13,7 +13,6 @@ namespace SubSolution
         public string? ConfigurationFilePath { get; }
         public string SolutionPath { get; }
         public string SolutionName { get; }
-        public string OutputDirectoryPath { get; }
         public string WorkspaceDirectoryPath { get; }
         public ISolutionProjectReader ProjectReader { get; }
         public ISubSolutionFileSystem? FileSystem { get; }
@@ -27,7 +26,6 @@ namespace SubSolution
             ConfigurationFilePath = configurationFilePath;
             SolutionPath = solutionPath;
             SolutionName = (fileSystem ?? StandardFileSystem.Instance).GetFileNameWithoutExtension(solutionPath);
-            OutputDirectoryPath = (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(solutionPath)!;
             WorkspaceDirectoryPath = workspaceDirectoryPath;
             ProjectReader = projectReader;
             FileSystem = fileSystem;

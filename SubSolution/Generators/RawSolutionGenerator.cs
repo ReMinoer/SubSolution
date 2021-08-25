@@ -40,8 +40,7 @@ namespace SubSolution.Generators
 
         private void GenerateFolderContent(RawSolution rawSolution, Dictionary<string, string> projectGuids, ISolutionFolder solutionFolder, RawSolution.Project? folderProject = null)
         {
-
-            foreach (string projectPath in solutionFolder.ProjectPaths)
+            foreach (string projectPath in solutionFolder.Projects.Keys)
             {
                 RawSolution.Project project = GetOrCreateProject(rawSolution, folderProject, CSharpProjectGuid, _fileSystem.GetFileNameWithoutExtension(projectPath), projectPath, NewGuid());
                 projectGuids.Add(projectPath, project.Arguments[2]);
@@ -81,22 +80,22 @@ namespace SubSolution.Generators
 
         static private void GenerateConfigurations(RawSolution rawSolution, ISolutionOutput solutionOutput, Dictionary<string, string> projectGuids)
         {
-            if (solutionOutput.Configurations.Count == 0)
+            if (solutionOutput.ConfigurationPlatforms.Count == 0)
                 return;
 
             RawSolution.Section solutionConfigsSection = GetOrAddGlobalSection(rawSolution, "SolutionConfigurationPlatforms", PreSolutionKeyword);
             RawSolution.Section projectConfigsSection = GetOrAddGlobalSection(rawSolution, "ProjectConfigurationPlatforms", PostSolutionKeyword);
 
-            foreach (ISolutionConfiguration configuration in solutionOutput.Configurations)
+            foreach (ISolutionConfigurationPlatform configurationPlatform in solutionOutput.ConfigurationPlatforms)
             {
-                string solutionConfigurationFullName = configuration.Configuration + '|' + configuration.Platform;
+                string solutionConfigurationFullName = configurationPlatform.ConfigurationName + '|' + configurationPlatform.PlatformName;
 
                 solutionConfigsSection.SetOrAddValue(solutionConfigurationFullName, solutionConfigurationFullName);
 
-                foreach (ISolutionProjectContext projectContext in configuration.ProjectContexts)
+                foreach ((string projectPath, SolutionProjectContext projectContext) in configurationPlatform.ProjectContexts)
                 {
-                    string prefix = $"{projectGuids[projectContext.ProjectPath]}.{solutionConfigurationFullName}.";
-                    string projectConfigurationFullName = projectContext.Configuration + '|' + projectContext.Platform;
+                    string prefix = $"{projectGuids[projectPath]}.{solutionConfigurationFullName}.";
+                    string projectConfigurationFullName = projectContext.ConfigurationName + '|' + projectContext.PlatformName;
 
                     projectConfigsSection.SetOrAddValue(prefix + "ActiveCfg", projectConfigurationFullName);
                     if (projectContext.Build)

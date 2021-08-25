@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using SubSolution.Configuration;
@@ -8,7 +9,7 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         [Test]
-        public void ProcessSubSolutions()
+        public async Task ProcessSubSolutions()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -21,13 +22,13 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
 
         [Test]
-        public void ProcessSubSolutionsMatchingFilter()
+        public async Task ProcessSubSolutionsMatchingFilter()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -40,13 +41,13 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
 
         [Test]
-        public void ProcessSubSolutionsMatchingMultipleFilters()
+        public async Task ProcessSubSolutionsMatchingMultipleFilters()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -60,13 +61,13 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
 
         [Test]
-        public void ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder()
+        public async Task ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -87,7 +88,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
 
@@ -96,7 +97,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public void ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite()
+        public async Task ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -128,10 +129,10 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(2);
             {
                 ISolutionFolder subSolutionsFolder = solution.Root.SubFolders["SubSolutions"];
@@ -143,7 +144,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public void ProcessSubSolutionsWithReverseOrder()
+        public async Task ProcessSubSolutionsWithReverseOrder()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -156,14 +157,14 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
             CheckFolderContainsMySubModule(solution.Root);
         }
 
         [Test]
-        public void ProcessSubSolutionsWithCreateRootFolder()
+        public async Task ProcessSubSolutionsWithCreateRootFolder()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -176,10 +177,10 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(1);
 
             ISolutionFolder myFrameworkFolder = solution.Root.SubFolders["MyFramework"];
@@ -187,7 +188,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public void ProcessSubSolutionsWithCreateRootFolderAndReverseOrder()
+        public async Task ProcessSubSolutionsWithCreateRootFolderAndReverseOrder()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -200,10 +201,10 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = ProcessConfigurationMockFile(configuration, haveSubSolutions: true);
+            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.ProjectPaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().HaveCount(2);
 
             ISolutionFolder myFrameworkFolder = solution.Root.SubFolders["MyFramework"];

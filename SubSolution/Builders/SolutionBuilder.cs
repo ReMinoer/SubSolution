@@ -32,6 +32,8 @@ namespace SubSolution.Builders
         private readonly LogLevel _logLevel;
 
         private readonly ISet<string> _knownConfigurationFilePaths;
+        private readonly ISet<string> _projectConfigurations;
+        private readonly ISet<string> _projectPlatforms;
 
         public SolutionBuilder(SubSolutionContext context)
         {
@@ -49,10 +51,13 @@ namespace SubSolution.Builders
             if (context.ConfigurationFilePath != null)
                 _knownConfigurationFilePaths.Add(context.ConfigurationFilePath);
 
+            _projectConfigurations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _projectPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             _logger = context.Logger ?? NullLogger.Instance;
             _logLevel = context.LogLevel;
         }
-
+        
         public async Task<ISolutionOutput> BuildAsync(SubSolutionConfiguration configuration)
         {
             Log("Start building solution");
@@ -60,48 +65,82 @@ namespace SubSolution.Builders
             Log($"Solution output file: {_solutionOutput.OutputPath}");
             Log($"Initial workspace directory: {_workspaceDirectoryPath}");
 
-            VisitConfigurationBindings(configuration.ConfigurationBindings);
+            bool hasFullConfigurationPlatforms = (configuration.Configurations?.Configuration.Count ?? 0) > 0 && (configuration.Platforms?.Platform.Count ?? 0) > 0;
+            if (hasFullConfigurationPlatforms)
+                VisitConfigurationsAndPlatforms(configuration.Configurations, configuration.Platforms);
 
             if (configuration.Root != null)
                 await VisitRootAsync(configuration.Root);
 
+            if (!hasFullConfigurationPlatforms)
+                FillMissingConfigurationsPlatformsFromProjects(configuration.Configurations, configuration.Platforms);
+
             return _solutionOutput;
         }
 
-        private void VisitConfigurationBindings(SolutionConfigurationBindingList? bindingList)
+        private void VisitConfigurationsAndPlatforms(SolutionConfigurationList configurations, SolutionPlatformList platforms)
         {
-            if (bindingList == null)
+            foreach (SolutionConfiguration configuration in configurations.Configuration)
+                foreach (SolutionPlatform platform in platforms.Platform)
+                {
+                    var configurationPlatform = new SolutionOutput.ConfigurationPlatform(_fileSystem, configuration.Name, platform.Name);
+                    if (configuration.ProjectConfiguration.Count == 0)
+                        configurationPlatform.MatchingProjectConfigurationNames.Add(configuration.Name);
+                    else
+                        configurationPlatform.MatchingProjectConfigurationNames.AddRange(configuration.ProjectConfiguration.Select(x => x.Match));
+
+                    if (platform.ProjectPlatform.Count == 0)
+                        configurationPlatform.MatchingProjectPlatformNames.Add(platform.Name);
+                    else
+                        configurationPlatform.MatchingProjectPlatformNames.AddRange(platform.ProjectPlatform.Select(x => x.Match));
+
+                    _solutionOutput.AddConfigurationPlatform(configurationPlatform);
+                }
+        }
+
+        private void FillMissingConfigurationsPlatformsFromProjects(SolutionConfigurationList? configurations, SolutionPlatformList? platforms)
+        {
+            if (configurations is null)
             {
-                AddDefaultConfigurationBindings();
-                return;
+                configurations = new SolutionConfigurationList();
+
+                foreach (string projectConfigurationName in _projectConfigurations)
+                {
+                    configurations.Configuration.Add(new SolutionConfiguration
+                    {
+                        Name = projectConfigurationName,
+                        ProjectConfiguration = new List<ProjectConfigurationMatch>
+                        {
+                            new ProjectConfigurationMatch
+                            {
+                                Match = projectConfigurationName
+                            }
+                        }
+                    });
+                }
             }
 
-            if (bindingList.UseDefaultBindings == true)
-                AddDefaultConfigurationBindings();
+            if (platforms is null)
+            {
+                platforms = new SolutionPlatformList();
 
-            foreach (Binding binding in bindingList.Binding)
-                binding.Accept(this);
-        }
+                foreach (string projectPlatformName in _projectPlatforms)
+                {
+                    platforms.Platform.Add(new SolutionPlatform
+                    {
+                        Name = projectPlatformName,
+                        ProjectPlatform = new List<ProjectPlatformMatch>
+                        {
+                            new ProjectPlatformMatch
+                            {
+                                Match = projectPlatformName
+                            }
+                        }
+                    });
+                }
+            }
 
-        private void AddDefaultConfigurationBindings()
-        {
-            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding("Debug", "Debug"));
-            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding("Release", "Release"));
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "Any CPU"));
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("x86", "x86"));
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("x64", "x64"));
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "x86"));
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding("Any CPU", "x64"));
-        }
-
-        public void Visit(Configuration.Configuration configuration)
-        {
-            _solutionOutput.ConfigurationBindings.Add(new SolutionOutput.ConfigurationBinding(configuration.Project, configuration.Solution));
-        }
-
-        public void Visit(Platform platform)
-        {
-            _solutionOutput.PlatformBindings.Add(new SolutionOutput.ConfigurationBinding(platform.Project, platform.Solution));
+            VisitConfigurationsAndPlatforms(configurations, platforms);
         }
 
         private async Task VisitRootAsync(SolutionRootConfiguration root)
@@ -133,7 +172,7 @@ namespace SubSolution.Builders
             string outputDirectory = _fileSystem.GetParentDirectoryPath(_solutionOutput.OutputPath)!;
 
             IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj");
-            Dictionary<string, Task<ISolutionProject>> matchingProjectByPath = matchingFilePaths.ToDictionary(x => x, x => _projectReader.ReadAsync(x, outputDirectory));
+            Dictionary<string, Task<ISolutionProject>> matchingProjectByPath = matchingFilePaths.ToDictionary(x => x, x => _projectReader.ReadAsync(_fileSystem.Combine(outputDirectory, x)));
 
             await Task.WhenAll(matchingProjectByPath.Values);
 
@@ -143,7 +182,13 @@ namespace SubSolution.Builders
             async Task AddProject(SolutionOutput.Folder folder, string projectPath, bool overwrite)
             {
                 ISolutionProject project = await matchingProjectByPath[projectPath];
-                folder.AddProject(project, overwrite);
+                if (folder.AddProject(projectPath, project, overwrite))
+                {
+                    foreach (string projectConfiguration in project.Configurations)
+                        _projectConfigurations.Add(projectConfiguration);
+                    foreach (string projectPlatform in project.Platforms)
+                        _projectPlatforms.Add(projectPlatform);
+                }
             }
         }
 
@@ -174,11 +219,11 @@ namespace SubSolution.Builders
                 if (subSolutions.CreateRootFolder == true)
                 {
                     using (MoveCurrentFolder(subContext.SolutionName))
-                        await CurrentFolder.AddFolderContent(subSolution.Root, _projectReader, subSolutions.Overwrite == true);
+                        await CurrentFolder.AddFolderContent(subSolution.Root, subSolutions.Overwrite == true);
                 }
                 else
                 {
-                    await CurrentFolder.AddFolderContent(subSolution.Root, _projectReader, subSolutions.Overwrite == true);
+                    await CurrentFolder.AddFolderContent(subSolution.Root, subSolutions.Overwrite == true);
                 }
             }
         }

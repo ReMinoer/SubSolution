@@ -4,6 +4,6 @@ namespace SubSolution.ProjectReaders
 {
     public interface ISolutionProjectReader
     {
-        Task<ISolutionProject> ReadAsync(string projectPath, string rootDirectory);
+        Task<ISolutionProject> ReadAsync(string absoluteProjectPath);
     }
 }

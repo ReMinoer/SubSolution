@@ -30,7 +30,10 @@ namespace SubSolution.Console
             ISolutionBuilder solutionBuilder = new SolutionBuilder(context);
             ISolutionOutput solution = await solutionBuilder.BuildAsync(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Information);
+            var logGenerator = new LogGenerator(logger, LogLevel.Information)
+            {
+                ShowProjectContexts = true
+            };
             logGenerator.Generate(solution);
 
             //var generator = new DotNetCommandLineGenerator();
