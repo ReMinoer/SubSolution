@@ -77,18 +77,29 @@ namespace SubSolution.Tests
             };
             logGenerator.Generate(solution);
 
+            // Full pipe checks
             var rawSolutionGenerator = new SolutionToRawSolutionGenerator(mockFileSystem);
-            RawSolution rawSolution = rawSolutionGenerator.Generate(solution);
+            var solutionGenerator = new RawSolutionToSolutionGenerator(mockFileSystem, mockProjectReader);
 
+            ISolution checkSolution = solution;
+            RawSolution rawSolution;
+            List<Issue> issues;
+
+            rawSolution = rawSolutionGenerator.Generate(checkSolution);
             await using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(firstPassStream);
+            (checkSolution, issues) = await solutionGenerator.GenerateAsync(rawSolution, context.SolutionPath);
+            issues.Should().BeEmpty();
 
+            rawSolution = rawSolutionGenerator.Generate(checkSolution);
             await using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
             await RawSolution.ReadAsync(secondPassStream);
+            (_, issues) = await solutionGenerator.GenerateAsync(rawSolution, context.SolutionPath);
+            issues.Should().BeEmpty();
 
             return solution;
         }

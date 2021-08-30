@@ -27,8 +27,8 @@ namespace SubSolution.Console
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
-            ISolutionBuilder solutionBuilder = new SolutionBuilder(context);
-            ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
+            SolutionBuilder solutionBuilder = new SolutionBuilder(context);
+            Solution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
             var logGenerator = new LogGenerator(logger, LogLevel.Information)
             {

@@ -11,7 +11,7 @@
         {
             ConfigurationName = configurationName;
             PlatformName = platformName;
-            Build = true;
+            Build = false;
             Deploy = false;
         }
 

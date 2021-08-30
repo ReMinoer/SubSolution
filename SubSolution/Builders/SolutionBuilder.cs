@@ -14,7 +14,7 @@ using SubSolution.Utils;
 
 namespace SubSolution.Builders
 {
-    public class SolutionBuilder : ISolutionBuilder, ISubSolutionConfigurationVisitor
+    public class SolutionBuilder : ISubSolutionConfigurationVisitor
     {
         private const string LogTokenNone = "*none*";
         private const string LogTokenRoot = "*root*";
@@ -62,7 +62,7 @@ namespace SubSolution.Builders
             _logLevel = context.LogLevel;
         }
         
-        public async Task<ISolution> BuildAsync(SubSolutionConfiguration configuration)
+        public async Task<Solution> BuildAsync(SubSolutionConfiguration configuration)
         {
             Log("Start building solution");
             Log($"Configuration file: {_ignoredSolutionPaths.FirstOrDefault() ?? LogTokenNone}");
@@ -203,7 +203,11 @@ namespace SubSolution.Builders
                 await using Stream fileStream = _fileSystem.OpenStream(filePath);
                 RawSolution rawSolution = await RawSolution.ReadAsync(fileStream);
 
-                RawSolutionToSolutionGenerator solutionGenerator = new RawSolutionToSolutionGenerator(_fileSystem, _projectReader);
+                RawSolutionToSolutionGenerator solutionGenerator = new RawSolutionToSolutionGenerator(_fileSystem, _projectReader)
+                {
+                    SkipConfigurationPlatforms = true
+                };
+
                 (ISolution solution, _) = await solutionGenerator.GenerateAsync(rawSolution, filePath);
 
                 return (solution, solutionName);
@@ -219,7 +223,9 @@ namespace SubSolution.Builders
                 subContext.LogLevel = _logLevel;
 
                 SolutionBuilder solutionBuilder = new SolutionBuilder(subContext);
-                return (await solutionBuilder.BuildAsync(subContext.Configuration), subContext.SolutionName);
+                ISolution solution = await solutionBuilder.BuildAsync(subContext.Configuration);
+
+                return (solution, subContext.SolutionName);
             });
         }
 
@@ -248,6 +254,22 @@ namespace SubSolution.Builders
                 else
                 {
                     CurrentFolder.AddFolderContent(solution.Root, solutionContentFiles.Overwrite == true);
+                }
+
+                FillProjectConfigurationPlatformList(solution.Root);
+
+                void FillProjectConfigurationPlatformList(ISolutionFolder folder)
+                {
+                    foreach (ISolutionProject project in folder.Projects.Values)
+                    {
+                        foreach (string projectConfiguration in project.Configurations)
+                            _projectConfigurations.Add(projectConfiguration);
+                        foreach (string projectPlatform in project.Platforms)
+                            _projectPlatforms.Add(projectPlatform);
+                    }
+
+                    foreach (ISolutionFolder subFolder in folder.SubFolders.Values)
+                        FillProjectConfigurationPlatformList(subFolder);
                 }
             }
         }

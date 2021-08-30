@@ -1,65 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
+using SubSolution.Base;
 using SubSolution.FileSystems;
-using SubSolution.Utils;
 
 namespace SubSolution
 {
-    public class Solution : ISolution
+    public class Solution : SolutionBase<Solution, Solution.Folder>
     {
-        private readonly ISubSolutionFileSystem _fileSystem;
-        private readonly Dictionary<string, Folder> _knownPaths;
-
-        public string SolutionName { get; set; }
-        public string OutputDirectory { get; private set; }
-        public string OutputPath => _fileSystem.Combine(OutputDirectory, SolutionName + ".sln");
-
-        public Folder Root { get; }
-        ISolutionFolder ISolution.Root => Root;
+        public override sealed Folder Root { get; }
 
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
-        public IReadOnlyList<ISolutionConfigurationPlatform> ConfigurationPlatforms { get; }
+        protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
         public Solution(string outputPath, ISubSolutionFileSystem? fileSystem = null)
+            : base(outputPath, fileSystem)
         {
-            _fileSystem = fileSystem ?? StandardFileSystem.Instance;
-            _knownPaths = new Dictionary<string, Folder>(_fileSystem.PathComparer);
-
-            SolutionName = _fileSystem.GetFileNameWithoutExtension(outputPath);
-            OutputDirectory = _fileSystem.GetParentDirectoryPath(outputPath)!;
-            Root = new Folder(this);
+            Root = new Folder(this, _fileSystem, _knownPaths);
 
             _configurationPlatforms = new List<ConfigurationPlatform>();
-            ConfigurationPlatforms = _configurationPlatforms.AsReadOnly();
-        }
-
-        public Solution(ISolution solution, string outputPath, ISubSolutionFileSystem? fileSystem = null)
-            : this(outputPath, fileSystem)
-        {
-            Root.AddFolderContent(solution.Root);
-
-            foreach (ISolutionConfigurationPlatform configurationPlatform in solution.ConfigurationPlatforms)
-            {
-                ConfigurationPlatform copy = new ConfigurationPlatform(_fileSystem, configurationPlatform.ConfigurationName, configurationPlatform.PlatformName);
-
-                foreach ((string projectPath, SolutionProjectContext projectContext) in configurationPlatform.ProjectContexts)
-                    copy.ProjectContexts.Add(projectPath, new SolutionProjectContext(projectContext));
-
-                copy.MatchingProjectConfigurationNames.AddRange(configurationPlatform.MatchingProjectConfigurationNames);
-                copy.MatchingProjectPlatformNames.AddRange(configurationPlatform.MatchingProjectPlatformNames);
-
-                AddConfigurationPlatform(copy);
-            }
-        }
-
-        public void SetOutputDirectory(string outputDirectory)
-        {
-            _knownPaths.Clear();
-
-            Root.ChangeItemsRootDirectory(outputDirectory);
-            OutputDirectory = outputDirectory;
+            ProtectedConfigurationPlatforms = _configurationPlatforms.AsReadOnly();
         }
 
         public void AddConfigurationPlatform(ConfigurationPlatform configurationPlatform)
@@ -76,16 +36,9 @@ namespace SubSolution
             public string PlatformName { get; }
             public List<string> MatchingProjectConfigurationNames { get; }
             public List<string> MatchingProjectPlatformNames { get; }
-            public Dictionary<string, SolutionProjectContext> ProjectContexts { get; }
 
-            private readonly IReadOnlyList<string> _readOnlyMatchingProjectConfigurationNames;
-            IReadOnlyList<string> ISolutionConfigurationPlatform.MatchingProjectConfigurationNames => _readOnlyMatchingProjectConfigurationNames;
-
-            private readonly IReadOnlyList<string> _readOnlyMatchingProjectPlatformNames;
-            IReadOnlyList<string> ISolutionConfigurationPlatform.MatchingProjectPlatformNames => _readOnlyMatchingProjectPlatformNames;
-
-            private readonly IReadOnlyDictionary<string, SolutionProjectContext> _readOnlyProjectContexts;
-            IReadOnlyDictionary<string, SolutionProjectContext> ISolutionConfigurationPlatform.ProjectContexts => _readOnlyProjectContexts;
+            private readonly Dictionary<string, SolutionProjectContext> _projectContexts;
+            public IReadOnlyDictionary<string, SolutionProjectContext> ProjectContexts { get; }
 
             public ConfigurationPlatform(ISubSolutionFileSystem fileSystem, string configurationName, string platformName)
             {
@@ -93,101 +46,16 @@ namespace SubSolution
                 PlatformName = platformName;
 
                 MatchingProjectConfigurationNames = new List<string>();
-                _readOnlyMatchingProjectConfigurationNames = MatchingProjectConfigurationNames.AsReadOnly();
-
                 MatchingProjectPlatformNames = new List<string>();
-                _readOnlyMatchingProjectPlatformNames = MatchingProjectPlatformNames.AsReadOnly();
 
-                ProjectContexts = new Dictionary<string, SolutionProjectContext>(fileSystem.PathComparer);
-                _readOnlyProjectContexts = new ReadOnlyDictionary<string, SolutionProjectContext>(ProjectContexts);
-            }
-        }
-
-        public class Folder : ISolutionFolder
-        {
-            private readonly Solution _solution;
-
-            private readonly HashSet<string> _filePaths;
-            private readonly Dictionary<string, ISolutionProject> _projects;
-            private readonly Dictionary<string, Folder> _subFolders;
-
-            public Utils.ReadOnlyCollection<string> FilePaths { get; }
-            public ReadOnlyDictionary<string, ISolutionProject> Projects { get; }
-            public CovariantReadOnlyDictionary<string, Folder> SubFolders { get; }
-
-            IReadOnlyCollection<string> ISolutionFolder.FilePaths => FilePaths;
-            IReadOnlyDictionary<string, ISolutionProject> ISolutionFolder.Projects => Projects;
-            ICovariantReadOnlyDictionary<string, ISolutionFolder> ISolutionFolder.SubFolders => SubFolders;
-
-            public bool IsEmpty => _filePaths.Count == 0 && _projects.Count == 0 && _subFolders.Count == 0;
-
-            public Folder(Solution solution)
-            {
-                _solution = solution;
-
-                _filePaths = new HashSet<string>(_solution._fileSystem.PathComparer);
-                FilePaths = new Utils.ReadOnlyCollection<string>(_filePaths);
-                
-                _projects = new Dictionary<string, ISolutionProject>(_solution._fileSystem.PathComparer);
-                Projects = new ReadOnlyDictionary<string, ISolutionProject>(_projects);
-
-                _subFolders = new Dictionary<string, Folder>();
-                SubFolders = new CovariantReadOnlyDictionary<string, Folder>(_subFolders);
+                _projectContexts = new Dictionary<string, SolutionProjectContext>(fileSystem.PathComparer);
+                ProjectContexts = new ReadOnlyDictionary<string, SolutionProjectContext>(_projectContexts);
             }
 
-            public bool AddFile(string filePath, bool overwrite = false)
-                => AddEntry(filePath, x => x._filePaths.Add(filePath), x => x._filePaths.Remove(filePath), overwrite);
-
-            public bool AddProject(string projectPath, ISolutionProject project, bool overwrite = false)
+            public void AddProjectContext(string projectPath, ISolutionProject project)
             {
-                if (!AddEntry(projectPath, x => x._projects.Add(projectPath, project), x => x._projects.Remove(projectPath), overwrite))
-                    return false;
-
-                foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
-                    AddProjectContext(projectPath, project, configurationPlatform);
-
-                return true;
-            }
-
-            private bool AddEntry(string filePath, Action<Folder> addPath, Action<Folder> removePath, bool overwrite)
-            {
-                if (overwrite && _solution._knownPaths.Remove(filePath, out Folder folder))
-                    removePath(folder);
-
-                if (!overwrite && _solution._knownPaths.ContainsKey(filePath))
-                    return false;
-
-                addPath(this);
-                _solution._knownPaths.Add(filePath, this);
-                return true;
-            }
-
-            public void AddFolderContent(ISolutionFolder folder, bool overwrite = false)
-            {
-                foreach (string filePath in folder.FilePaths)
-                    AddFile(filePath, overwrite);
-
-                foreach ((string projectPaths, ISolutionProject project) in folder.Projects)
-                    AddProject(projectPaths, project, overwrite);
-
-                foreach ((string subFolderName, ISolutionFolder subFolder) in folder.SubFolders.Select(x => (x.Key, x.Value)))
-                    GetOrAddSubFolder(subFolderName).AddFolderContent(subFolder, overwrite);
-            }
-
-            public void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform)
-            {
-                foreach ((string projectPath, ISolutionProject project) in Projects)
-                    if (!configurationPlatform.ProjectContexts.ContainsKey(projectPath))
-                        AddProjectContext(projectPath, project, configurationPlatform);
-
-                foreach (Folder subFolder in SubFolders.Values)
-                    subFolder.FillConfigurationPlatformWithProjectContexts(configurationPlatform);
-            }
-
-            private void AddProjectContext(string projectPath, ISolutionProject project, ConfigurationPlatform configurationPlatform)
-            {
-                string? matchingProjectConfiguration = MatchNames(project.Configurations, configurationPlatform.MatchingProjectConfigurationNames);
-                string? matchingProjectPlatform = MatchNames(project.Platforms, configurationPlatform.MatchingProjectPlatformNames);
+                string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
+                string? matchingProjectPlatform = MatchNames(project.Platforms, MatchingProjectPlatformNames);
                 bool isCompleteMatch = matchingProjectConfiguration != null && matchingProjectPlatform != null;
 
                 string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
@@ -199,7 +67,7 @@ namespace SubSolution
                     Deploy = project.CanDeploy && isCompleteMatch
                 };
 
-                configurationPlatform.ProjectContexts.Add(projectPath, solutionProjectContext);
+                _projectContexts.Add(projectPath, solutionProjectContext);
             }
 
             static private string? MatchNames(IReadOnlyList<string> names, IReadOnlyList<string> matches)
@@ -211,93 +79,34 @@ namespace SubSolution
 
                 return null;
             }
+        }
 
-            public bool RemoveFile(string filePath)
-                => RemoveEntry(filePath, () => _filePaths.Remove(filePath));
-            public bool RemoveProject(string projectPath)
-                => RemoveEntry(projectPath, () => _projects.Remove(projectPath));
-
-            private bool RemoveEntry(string filePath, Func<bool> removeFilePath)
+        public class Folder : FolderBase<Solution, Folder>
+        {
+            public Folder(Solution solution, ISubSolutionFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
+                : base(solution, fileSystem, knownPaths, () => new Folder(solution, fileSystem, knownPaths))
             {
-                if (!removeFilePath())
+            }
+
+            public override bool AddProject(string projectPath, ISolutionProject project, bool overwrite = false)
+            {
+                if (!base.AddProject(projectPath, project, overwrite))
                     return false;
 
-                _solution._knownPaths.Remove(filePath);
+                foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
+                    configurationPlatform.AddProjectContext(projectPath, project);
+
                 return true;
             }
 
-            public bool RemoveSubFolder(string subFolderName)
+            public void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform)
             {
-                if (!_subFolders.TryGetValue(subFolderName, out Folder subFolder))
-                    return false;
-
-                subFolder.Clear();
-                _subFolders.Remove(subFolderName);
-                return true;
-            }
-
-            public void Clear()
-            {
-                foreach (string filePath in _filePaths)
-                    _solution._knownPaths.Remove(filePath);
-
-                foreach (string projectPath in _projects.Keys)
-                    _solution._knownPaths.Remove(projectPath);
-
-                _filePaths.Clear();
-                _projects.Clear();
-                _subFolders.Clear();
-            }
-
-            public Folder GetOrAddSubFolder(string folderName)
-            {
-                if (!_subFolders.TryGetValue(folderName, out Folder subFolder))
-                    _subFolders[folderName] = subFolder = new Folder(_solution);
-
-                return subFolder;
-            }
-
-            public Folder GetOrAddSubFolder(IEnumerable<string> folderPath)
-            {
-                return folderPath.Aggregate(this, (currentFolder, folderName) => currentFolder.GetOrAddSubFolder(folderName));
-            }
-
-            public void ChangeItemsRootDirectory(string outputDirectory)
-            {
-                ChangeItemsRootDirectory(outputDirectory, _solution.OutputDirectory);
-            }
-
-            private void ChangeItemsRootDirectory(string outputDirectory, string previousOutputDirectory)
-            {
-                string[] previousFilePaths = _filePaths.ToArray();
-                Dictionary<string, ISolutionProject> previousProjectPaths = _projects.ToDictionary(x => x.Key, x => x.Value);
-
-                foreach (string filePath in _filePaths)
-                    _solution._knownPaths.Remove(filePath);
-                foreach (string projectPath in _projects.Keys)
-                    _solution._knownPaths.Remove(projectPath);
-
-                _filePaths.Clear();
-                _projects.Clear();
+                foreach ((string projectPath, ISolutionProject project) in Projects)
+                    if (!configurationPlatform.ProjectContexts.ContainsKey(projectPath))
+                        configurationPlatform.AddProjectContext(projectPath, project);
 
                 foreach (Folder subFolder in SubFolders.Values)
-                    subFolder.ChangeItemsRootDirectory(outputDirectory, previousOutputDirectory);
-
-                foreach (string previousFilePath in previousFilePaths)
-                {
-                    string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousFilePath, previousOutputDirectory, outputDirectory);
-
-                    _filePaths.Add(newFilePath);
-                    _solution._knownPaths.Add(newFilePath, this);
-                }
-
-                foreach ((string previousProjectPath, ISolutionProject project) in previousProjectPaths)
-                {
-                    string newFilePath = _solution._fileSystem.MoveRelativePathRoot(previousProjectPath, previousOutputDirectory, outputDirectory);
-
-                    _projects.Add(newFilePath, project);
-                    _solution._knownPaths.Add(newFilePath, this);
-                }
+                    subFolder.FillConfigurationPlatformWithProjectContexts(configurationPlatform);
             }
         }
     }
