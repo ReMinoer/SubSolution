@@ -22,6 +22,11 @@ namespace SubSolution.Configuration
         public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
     }
 
+    public partial class Solutions
+    {
+        public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);
+    }
+
     public partial class SubSolutions
     {
         public override Task AcceptAsync(ISubSolutionConfigurationVisitor visitor) => visitor.VisitAsync(this);

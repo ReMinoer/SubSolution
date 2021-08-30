@@ -155,9 +155,19 @@
             <xs:documentation>Set of files.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="SubSolutions" type="SubSolutionsSource" substitutionGroup="SolutionFiles">
+    <xs:element name="SolutionContentFiles" type="SolutionsContentSourceBase" abstract="true" substitutionGroup="SolutionFiles">
         <xs:annotation>
-            <xs:documentation>Set of files coming from a set of SubSolution configurations.</xs:documentation>
+            <xs:documentation>Solution file source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Solutions" type="SolutionsSource" substitutionGroup="SolutionContentFiles">
+        <xs:annotation>
+            <xs:documentation>Set of solution files.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SubSolutions" type="SubSolutionsSource" substitutionGroup="SolutionContentFiles">
+        <xs:annotation>
+            <xs:documentation>Set of SubSolution configurations files.</xs:documentation>
         </xs:annotation>
     </xs:element>
 
@@ -260,15 +270,15 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="SubSolutionsSource">
+    <xs:complexType name="SolutionsContentSourceBase" abstract="true">
         <xs:annotation>
-            <xs:documentation>Represent a SubSolution configuration used as file source.</xs:documentation>
+            <xs:documentation>Represent a file defining a solution content.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionFilesSourceBase">
                 <xs:attribute name="CreateRootFolder" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to create a dedicated folder for each SubSolution. Folder name will be its SolutionName.</xs:documentation>
+                        <xs:documentation>True to create a dedicated folder for each solution. Folder name will be its SolutionName.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="ReverseOrder" type="xs:boolean">
@@ -277,6 +287,24 @@
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of solution files.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionsContentSourceBase" />
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SubSolutionsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of SubSolution files.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionsContentSourceBase" />
         </xs:complexContent>
     </xs:complexType>
 

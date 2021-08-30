@@ -6,5 +6,9 @@ namespace SubSolution
     {
         ISolutionFolder Root { get; }
         IReadOnlyList<ISolutionConfigurationPlatform> ConfigurationPlatforms { get; }
+        string SolutionName { get; }
+        string OutputPath { get; }
+        string OutputDirectory { get; }
+        void SetOutputDirectory(string outputDirectory);
     }
 }

@@ -22,7 +22,7 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private Task<ISolutionOutput> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        private Task<ISolution> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
             const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
@@ -30,18 +30,17 @@ namespace SubSolution.Tests
                 => SubSolutionContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
         }
 
-        private Task<ISolutionOutput> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+        private Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => Task.FromResult(SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, fileSystem)));
+                => Task.FromResult(SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
-        private async Task<ISolutionOutput> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+        private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
             Func<MockFileSystem, MockSolutionProjectReader, Task<SubSolutionContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
 
-            MockFileSystem mockFileSystem = GetMockFileSystem(configuration, haveSubSolutions);
             var mockProjectReader = new MockSolutionProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
             {
                 ProjectCanBuild = true,
@@ -60,25 +59,26 @@ namespace SubSolution.Tests
                 }
             };
 
+            MockFileSystem mockFileSystem = await GetMockFileSystemAsync(configuration, haveSubSolutions, mockProjectReader);
+
             SubSolutionContext context = await createContext(mockFileSystem, mockProjectReader);
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             var solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solutionOutput = await solutionBuilder.BuildAsync(context.Configuration);
+            ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
             var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: mockFileSystem)
             {
                 ShowHeaders = true,
-                ShowOutputPath = true,
                 ShowHierarchy = true,
                 ShowConfigurationPlatforms = true,
                 ShowProjectContexts = true
             };
-            logGenerator.Generate(solutionOutput);
+            logGenerator.Generate(solution);
 
-            var rawSolutionGenerator = new RawSolutionGenerator(mockFileSystem);
-            RawSolution rawSolution = rawSolutionGenerator.Generate(solutionOutput);
+            var rawSolutionGenerator = new SolutionToRawSolutionGenerator(mockFileSystem);
+            RawSolution rawSolution = rawSolutionGenerator.Generate(solution);
 
             await using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
@@ -90,19 +90,13 @@ namespace SubSolution.Tests
             secondPassStream.Position = 0;
             await RawSolution.ReadAsync(secondPassStream);
 
-            return solutionOutput;
+            return solution;
         }
 
-        private MockFileSystem GetMockFileSystem(SubSolutionConfiguration configurationContent, bool haveSubSolutions)
+        private async Task<MockFileSystem> GetMockFileSystemAsync(SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockSolutionProjectReader mockProjectReader)
         {
             var mockFileSystem = new MockFileSystem();
             var relativeFilePath = new List<string>();
-            
-            if (configurationContent is not null)
-            {
-                relativeFilePath.Add("MyApplication.subsln");
-                AddConfigurationToFileSystem(mockFileSystem, @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
-            }
 
             relativeFilePath.AddRange(new[]
             {
@@ -126,13 +120,11 @@ namespace SubSolution.Tests
             {
                 relativeFilePath.AddRange(new []
                 {
-                    @"external\MyFramework\MyFramework.subsln",
                     @"external\MyFramework\tools\submit.bat",
                     @"external\MyFramework\src\MyFramework\MyFramework.csproj",
                     @"external\MyFramework\src\MyFramework\MyClass.cs",
                     @"external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj",
                     @"external\MyFramework\tests\MyFramework.Tests\MyTests.cs",
-                    @"external\MyFramework\external\MySubModule\MySubModule.subsln",
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj",
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MyClass.cs",
                 });
@@ -140,27 +132,71 @@ namespace SubSolution.Tests
                 mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj", emptyProjectContent);
                 mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj", emptyProjectContent);
                 mockFileSystem.AddFileContent(@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj", emptyProjectContent);
-
-                var myFrameworkConfigurationPath = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\MyFramework.subsln";
-                AddConfigurationToFileSystem(mockFileSystem, myFrameworkConfigurationPath, MyFrameworkConfiguration);
-
-                var mySubModuleConfigurationPath = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\MySubModule.subsln";
-                AddConfigurationToFileSystem(mockFileSystem, mySubModuleConfigurationPath, MySubModuleConfiguration);
             }
+            
+            mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
+
+            if (haveSubSolutions)
+            {
+                const string mySubModuleConfigurationPath = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\MySubModule";
+                relativeFilePath.Add(@"external\MyFramework\external\MySubModule\MySubModule.sln");
+                relativeFilePath.Add(@"external\MyFramework\external\MySubModule\MySubModule.subsln");
+
+                await AddConfigurationToFileSystemAsync(mySubModuleConfigurationPath + ".subsln", MySubModuleConfiguration);
+                await AddSolutionToFileSystemAsync(mySubModuleConfigurationPath + ".sln", MySubModuleConfiguration);
+
+                mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
+
+                const string myFrameworkConfigurationPath = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\MyFramework";
+                relativeFilePath.Add(@"external\MyFramework\MyFramework.sln");
+                relativeFilePath.Add(@"external\MyFramework\MyFramework.subsln");
+
+                await AddConfigurationToFileSystemAsync(myFrameworkConfigurationPath + ".subsln", MyFrameworkConfiguration);
+                await AddSolutionToFileSystemAsync(myFrameworkConfigurationPath + ".sln", MyFrameworkConfiguration);
+
+                mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
+            }
+
+            if (configurationContent is not null)
+            {
+                relativeFilePath.Add("MyApplication.sln");
+                relativeFilePath.Add("MyApplication.subsln");
+            }
+
+            await AddConfigurationToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
+            await AddSolutionToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.sln", configurationContent);
 
             mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
             return mockFileSystem;
-        }
+            
+            async Task AddConfigurationToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
+            {
+                await using var memoryStream = new MemoryStream();
 
-        private void AddConfigurationToFileSystem(MockFileSystem mockFileSystem, string filePath, SubSolutionConfiguration configuration)
-        {
-            using var memoryStream = new MemoryStream();
+                await using (TextWriter configurationWriter = new StreamWriter(memoryStream))
+                    configuration.Save(configurationWriter);
 
-            using (TextWriter configurationWriter = new StreamWriter(memoryStream))
-                configuration.Save(configurationWriter);
+                byte[] content = memoryStream.ToArray();
+                mockFileSystem.AddFileContent(filePath, content);
+            }
 
-            var content = memoryStream.ToArray();
-            mockFileSystem.AddFileContent(filePath, content);
+            async Task AddSolutionToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
+            {
+                string defaultWorkspaceDirectoryPath = mockFileSystem.GetParentDirectoryPath(filePath)!;
+
+                SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, mockProjectReader, defaultWorkspaceDirectoryPath, defaultWorkspaceDirectoryPath, mockFileSystem);
+                var solutionBuilder = new SolutionBuilder(context);
+                ISolution solution = await solutionBuilder.BuildAsync(configuration);
+
+                var rawSolutionGenerator = new SolutionToRawSolutionGenerator(mockFileSystem);
+                RawSolution rawSolution = rawSolutionGenerator.Generate(solution);
+
+                await using var memoryStream = new MemoryStream();
+                await rawSolution.WriteAsync(memoryStream);
+
+                byte[] content = memoryStream.ToArray();
+                mockFileSystem.AddFileContent(filePath, content);
+            }
         }
 
         static private readonly SubSolutionConfiguration MyFrameworkConfiguration = new SubSolutionConfiguration
@@ -265,7 +301,7 @@ namespace SubSolution.Tests
             }
         }
 
-        static private void CheckConfigurationPlatforms(ISolutionOutput solution, string configurationName, string platformName,
+        static private void CheckConfigurationPlatforms(ISolution solution, string configurationName, string platformName,
             string[] projectConfigurationNames, string[] projectPlatformNames, bool[] projectBuild)
         {
             ISolutionConfigurationPlatform solutionConfiguration = solution.ConfigurationPlatforms.First(x => x.ConfigurationName == configurationName && x.PlatformName == platformName);

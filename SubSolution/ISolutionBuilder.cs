@@ -5,6 +5,6 @@ namespace SubSolution
 {
     public interface ISolutionBuilder
     {
-        Task<ISolutionOutput> BuildAsync(SubSolutionConfiguration configuration);
+        Task<ISolution> BuildAsync(SubSolutionConfiguration configuration);
     }
 }

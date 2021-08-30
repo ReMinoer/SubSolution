@@ -14,5 +14,13 @@
             Build = true;
             Deploy = false;
         }
+
+        public SolutionProjectContext(SolutionProjectContext projectContext)
+        {
+            ConfigurationName = projectContext.ConfigurationName;
+            PlatformName = projectContext.PlatformName;
+            Build = projectContext.Build;
+            Deploy = projectContext.Deploy;
+        }
     }
 }

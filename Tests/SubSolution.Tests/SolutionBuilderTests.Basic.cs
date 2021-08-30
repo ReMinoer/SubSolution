@@ -13,7 +13,7 @@ namespace SubSolution.Tests
         public async Task ProcessEmptyConfiguration()
         {
             var configuration = new SubSolutionConfiguration();
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
             
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
@@ -28,8 +28,10 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName"
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
+            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            solution.SolutionName.Should().Be("MyCustomSolutionName");
 
             configuration = new SubSolutionConfiguration
             {
@@ -37,7 +39,9 @@ namespace SubSolution.Tests
             };
 
             solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().EndWith("MyCustomSolutionName.sln");
+            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
+            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            solution.SolutionName.Should().Be("MyCustomSolutionName");
 
             configuration = new SubSolutionConfiguration
             {
@@ -45,7 +49,9 @@ namespace SubSolution.Tests
             };
 
             solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().EndWith("MyCustomSolutionName.txt.sln");
+            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.txt.sln");
+            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            solution.SolutionName.Should().Be("MyCustomSolutionName.txt");
         }
 
         [Test]
@@ -54,12 +60,15 @@ namespace SubSolution.Tests
             var configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName",
-                OutputDirectory = "MySolutions/MyCustomSolutions"
+                OutputDirectory = @"C:\MySolutions\MyCustomSolutions"
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
-            solution.OutputPath.Should().EndWith("MySolutions/MyCustomSolutions/MyCustomSolutionName.sln");
+            solution.OutputPath.Should().Be(@"C:\MySolutions\MyCustomSolutions\MyCustomSolutionName.sln");
+            solution.OutputDirectory.Should().Be(@"C:\MySolutions\MyCustomSolutions");
+            solution.SolutionName.Should().Be("MyCustomSolutionName");
+
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -73,7 +82,7 @@ namespace SubSolution.Tests
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
 
-            ISolutionOutput solution = await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null);
+            ISolution solution = await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();

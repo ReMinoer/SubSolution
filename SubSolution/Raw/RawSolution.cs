@@ -159,7 +159,7 @@ namespace SubSolution.Raw
         static private async Task<Section> ReadSectionAsync(StreamReader reader, string line)
         {
             Block blockHeader = ReadBlockHeader(line);
-            Section section = new Section(blockHeader.Name);
+            Section section = new Section(blockHeader.Name, blockHeader.Parameter);
 
             while (true)
             {
@@ -318,7 +318,7 @@ namespace SubSolution.Raw
             private readonly Dictionary<string, string> _valuesByKey;
             public IReadOnlyDictionary<string, string> ValuesByKey { get; }
 
-            private Section(string name, string? parameter)
+            public Section(string name, string? parameter)
             {
                 Name = name;
                 Parameter = parameter;
@@ -331,11 +331,6 @@ namespace SubSolution.Raw
 
                 _valuesByKey = new Dictionary<string, string>();
                 ValuesByKey = new ReadOnlyDictionary<string, string>(_valuesByKey);
-            }
-
-            public Section(string name)
-                : this(name, null)
-            {
             }
 
             public Section(string name, string parameter, params string[] arguments)

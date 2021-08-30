@@ -28,7 +28,7 @@ namespace SubSolution.Console
             context.LogLevel = LogLevel.Debug;
 
             ISolutionBuilder solutionBuilder = new SolutionBuilder(context);
-            ISolutionOutput solution = await solutionBuilder.BuildAsync(context.Configuration);
+            ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
             var logGenerator = new LogGenerator(logger, LogLevel.Information)
             {
@@ -39,7 +39,7 @@ namespace SubSolution.Console
             //var generator = new DotNetCommandLineGenerator();
             //generator.Generate(solution);
 
-            var rawGenerator = new RawSolutionGenerator(StandardFileSystem.Instance);
+            var rawGenerator = new SolutionToRawSolutionGenerator(StandardFileSystem.Instance);
             RawSolution rawSolution = rawGenerator.Generate(solution);
 
             await using (FileStream createStream = File.Create(solution.OutputPath))

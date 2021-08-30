@@ -8,8 +8,10 @@ namespace SubSolution.Tests
 {
     public partial class SolutionBuilderTests
     {
-        [Test]
-        public async Task ProcessSubSolutions()
+        [Test] public Task ProcessSolutions() => ProcessSolutionsBase<Solutions>();
+        [Test] public Task ProcessSubSolutions() => ProcessSolutionsBase<SubSolutions>();
+        private async Task ProcessSolutionsBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -17,18 +19,20 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions()
+                        new T()
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsMatchingFilter()
+        [Test] public Task ProcessSolutionsMatchingFilter() => ProcessSolutionsMatchingFilterBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingFilter() => ProcessSolutionsMatchingFilterBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingFilterBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -36,18 +40,20 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions { Path = "external/*/" }
+                        new T { Path = "external/*/" }
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsMatchingMultipleFilters()
+        [Test] public Task ProcessSolutionsMatchingMultipleFilters() => ProcessSolutionsMatchingMultipleFiltersBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultipleFilters() => ProcessSolutionsMatchingMultipleFiltersBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultipleFiltersBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -55,19 +61,21 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions { Path = "external/*/" },
-                        new SubSolutions()
+                        new T { Path = "external/*/" },
+                        new T()
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder()
+        [Test] public Task ProcessSolutionsMatchingMultipleFiltersInDifferentFolder() => ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder() => ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -80,15 +88,15 @@ namespace SubSolution.Tests
                             Name = "SubModule",
                             SolutionItems = new List<SolutionItems>
                             {
-                                new SubSolutions { Path = "**/MySubModule/" }
+                                new T { Path = "**/MySubModule/" }
                             }
                         },
-                        new SubSolutions()
+                        new T()
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
 
@@ -96,8 +104,10 @@ namespace SubSolution.Tests
             CheckFolderContainsMySubModule(subModuleFolder, only: true);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite()
+        [Test] public Task ProcessSolutionsMatchingMultipleFiltersWithOverwrite() => ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite() => ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -110,7 +120,7 @@ namespace SubSolution.Tests
                             Name = "SubSolutions",
                             SolutionItems = new List<SolutionItems>
                             {
-                                new SubSolutions()
+                                new T()
                             }
                         },
                         new Folder
@@ -118,7 +128,7 @@ namespace SubSolution.Tests
                             Name = "MySubModule",
                             SolutionItems = new List<SolutionItems>
                             {
-                                new SubSolutions
+                                new T
                                 {
                                     Path = "**/MySubModule/",
                                     Overwrite = true
@@ -129,7 +139,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
@@ -143,8 +153,10 @@ namespace SubSolution.Tests
             }
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsWithReverseOrder()
+        [Test] public Task ProcessSolutionsWithReverseOrder() => ProcessSolutionsWithReverseOrderBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsWithReverseOrder() => ProcessSolutionsWithReverseOrderBase<SubSolutions>();
+        private async Task ProcessSolutionsWithReverseOrderBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -152,19 +164,21 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions { ReverseOrder = true }
+                        new T { ReverseOrder = true }
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             CheckFolderContainsMyFramework(solution.Root, butNotExternal: true);
             CheckFolderContainsMySubModule(solution.Root);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsWithCreateRootFolder()
+        [Test] public Task ProcessSolutionsWithCreateRootFolder() => ProcessSolutionsWithCreateRootFolderBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsWithCreateRootFolder() => ProcessSolutionsWithCreateRootFolderBase<SubSolutions>();
+        private async Task ProcessSolutionsWithCreateRootFolderBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -172,12 +186,12 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions { CreateRootFolder = true }
+                        new T { CreateRootFolder = true }
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
@@ -187,8 +201,10 @@ namespace SubSolution.Tests
             CheckFolderContainsMyFramework(myFrameworkFolder, only: true);
         }
 
-        [Test]
-        public async Task ProcessSubSolutionsWithCreateRootFolderAndReverseOrder()
+        [Test] public Task ProcessSolutionsWithCreateRootFolderAndReverseOrder() => ProcessSolutionsWithCreateRootFolderAndReverseOrderBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsWithCreateRootFolderAndReverseOrder() => ProcessSolutionsWithCreateRootFolderAndReverseOrderBase<SubSolutions>();
+        private async Task ProcessSolutionsWithCreateRootFolderAndReverseOrderBase<T>()
+            where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -196,12 +212,12 @@ namespace SubSolution.Tests
                 {
                     SolutionItems = new List<SolutionItems>
                     {
-                        new SubSolutions { CreateRootFolder = true, ReverseOrder = true }
+                        new T { CreateRootFolder = true, ReverseOrder = true }
                     }
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();

@@ -7,14 +7,13 @@ using SubSolution.Utils;
 
 namespace SubSolution.Generators
 {
-    public class LogGenerator : ISolutionGenerator
+    public class LogGenerator
     {
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
         private readonly int _indentSize;
         private readonly ISubSolutionFileSystem _fileSystem;
-
-        public bool ShowOutputPath { get; set; }
+        
         public bool ShowHierarchy { get; set; } = true;
         public bool ShowConfigurationPlatforms { get; set; } = true;
         public bool ShowProjectContexts { get; set; }
@@ -30,19 +29,16 @@ namespace SubSolution.Generators
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
         }
 
-        public void Generate(ISolutionOutput solutionOutput)
+        public void Generate(ISolution solution)
         {
             StringBuilder messageBuilder = new StringBuilder();
-
-            if (ShowOutputPath)
-                messageBuilder.AppendLine($"SOLUTION OUTPUT PATH: {solutionOutput.OutputPath}");
 
             if (ShowHierarchy)
             {
                 if (ShowHeaders)
                     messageBuilder.AppendLine("SOLUTION HIERARCHY:");
 
-                LogFolder(messageBuilder, solutionOutput.Root, new List<bool>());
+                LogFolder(messageBuilder, solution.Root, new List<bool>());
             }
 
             if (ShowConfigurationPlatforms)
@@ -50,7 +46,7 @@ namespace SubSolution.Generators
                 if (ShowHeaders)
                     messageBuilder.AppendLine("SOLUTION CONFIGURATION-PLATFORMS:");
 
-                LogConfigurationPlatforms(messageBuilder, solutionOutput.ConfigurationPlatforms);
+                LogConfigurationPlatforms(messageBuilder, solution.ConfigurationPlatforms);
             }
 
             _logger.Log(_logLevel, messageBuilder.ToString());

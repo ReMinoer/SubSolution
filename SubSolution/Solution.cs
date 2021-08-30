@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using SubSolution.FileSystems;
 using SubSolution.Utils;
 
 namespace SubSolution
 {
-    public class SolutionOutput : ISolutionOutput
+    public class Solution : ISolution
     {
         private readonly ISubSolutionFileSystem _fileSystem;
         private readonly Dictionary<string, Folder> _knownPaths;
 
-        public string OutputPath { get; private set; }
+        public string SolutionName { get; set; }
+        public string OutputDirectory { get; private set; }
+        public string OutputPath => _fileSystem.Combine(OutputDirectory, SolutionName + ".sln");
 
         public Folder Root { get; }
         ISolutionFolder ISolution.Root => Root;
@@ -21,16 +22,36 @@ namespace SubSolution
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
         public IReadOnlyList<ISolutionConfigurationPlatform> ConfigurationPlatforms { get; }
 
-        public SolutionOutput(string outputPath, ISubSolutionFileSystem? fileSystem = null)
+        public Solution(string outputPath, ISubSolutionFileSystem? fileSystem = null)
         {
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
             _knownPaths = new Dictionary<string, Folder>(_fileSystem.PathComparer);
 
-            OutputPath = outputPath;
+            SolutionName = _fileSystem.GetFileNameWithoutExtension(outputPath);
+            OutputDirectory = _fileSystem.GetParentDirectoryPath(outputPath)!;
             Root = new Folder(this);
 
             _configurationPlatforms = new List<ConfigurationPlatform>();
             ConfigurationPlatforms = _configurationPlatforms.AsReadOnly();
+        }
+
+        public Solution(ISolution solution, string outputPath, ISubSolutionFileSystem? fileSystem = null)
+            : this(outputPath, fileSystem)
+        {
+            Root.AddFolderContent(solution.Root);
+
+            foreach (ISolutionConfigurationPlatform configurationPlatform in solution.ConfigurationPlatforms)
+            {
+                ConfigurationPlatform copy = new ConfigurationPlatform(_fileSystem, configurationPlatform.ConfigurationName, configurationPlatform.PlatformName);
+
+                foreach ((string projectPath, SolutionProjectContext projectContext) in configurationPlatform.ProjectContexts)
+                    copy.ProjectContexts.Add(projectPath, new SolutionProjectContext(projectContext));
+
+                copy.MatchingProjectConfigurationNames.AddRange(configurationPlatform.MatchingProjectConfigurationNames);
+                copy.MatchingProjectPlatformNames.AddRange(configurationPlatform.MatchingProjectPlatformNames);
+
+                AddConfigurationPlatform(copy);
+            }
         }
 
         public void SetOutputDirectory(string outputDirectory)
@@ -38,7 +59,7 @@ namespace SubSolution
             _knownPaths.Clear();
 
             Root.ChangeItemsRootDirectory(outputDirectory);
-            OutputPath = outputDirectory;
+            OutputDirectory = outputDirectory;
         }
 
         public void AddConfigurationPlatform(ConfigurationPlatform configurationPlatform)
@@ -84,7 +105,7 @@ namespace SubSolution
 
         public class Folder : ISolutionFolder
         {
-            private readonly SolutionOutput _solution;
+            private readonly Solution _solution;
 
             private readonly HashSet<string> _filePaths;
             private readonly Dictionary<string, ISolutionProject> _projects;
@@ -100,7 +121,7 @@ namespace SubSolution
 
             public bool IsEmpty => _filePaths.Count == 0 && _projects.Count == 0 && _subFolders.Count == 0;
 
-            public Folder(SolutionOutput solution)
+            public Folder(Solution solution)
             {
                 _solution = solution;
 
@@ -141,7 +162,7 @@ namespace SubSolution
                 return true;
             }
 
-            public async Task AddFolderContent(ISolutionFolder folder, bool overwrite = false)
+            public void AddFolderContent(ISolutionFolder folder, bool overwrite = false)
             {
                 foreach (string filePath in folder.FilePaths)
                     AddFile(filePath, overwrite);
@@ -150,7 +171,7 @@ namespace SubSolution
                     AddProject(projectPaths, project, overwrite);
 
                 foreach ((string subFolderName, ISolutionFolder subFolder) in folder.SubFolders.Select(x => (x.Key, x.Value)))
-                    await GetOrCreateSubFolder(subFolderName).AddFolderContent(subFolder, overwrite);
+                    GetOrAddSubFolder(subFolderName).AddFolderContent(subFolder, overwrite);
             }
 
             public void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform)
@@ -228,7 +249,7 @@ namespace SubSolution
                 _subFolders.Clear();
             }
 
-            public Folder GetOrCreateSubFolder(string folderName)
+            public Folder GetOrAddSubFolder(string folderName)
             {
                 if (!_subFolders.TryGetValue(folderName, out Folder subFolder))
                     _subFolders[folderName] = subFolder = new Folder(_solution);
@@ -236,15 +257,14 @@ namespace SubSolution
                 return subFolder;
             }
 
-            public Folder GetOrCreateSubFolder(IEnumerable<string> folderPath)
+            public Folder GetOrAddSubFolder(IEnumerable<string> folderPath)
             {
-                return folderPath.Aggregate(this, (currentFolder, folderName) => currentFolder.GetOrCreateSubFolder(folderName));
+                return folderPath.Aggregate(this, (currentFolder, folderName) => currentFolder.GetOrAddSubFolder(folderName));
             }
 
             public void ChangeItemsRootDirectory(string outputDirectory)
             {
-                string previousOutputDirectory = _solution._fileSystem.GetParentDirectoryPath(_solution.OutputPath)!;
-                ChangeItemsRootDirectory(outputDirectory, previousOutputDirectory);
+                ChangeItemsRootDirectory(outputDirectory, _solution.OutputDirectory);
             }
 
             private void ChangeItemsRootDirectory(string outputDirectory, string previousOutputDirectory)

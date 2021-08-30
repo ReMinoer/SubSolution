@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
@@ -23,7 +22,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(9);
             CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new []{"Debug", "debug", "Debug"}, new[] {"Any CPU", "any cpu", "x86"}, new []{true, true, false});
@@ -52,7 +51,7 @@ namespace SubSolution.Tests
                 Configurations = new SolutionConfigurationList()
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(0);
         }
@@ -72,7 +71,7 @@ namespace SubSolution.Tests
                 Platforms = new SolutionPlatformList()
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(0);
         }
@@ -93,7 +92,7 @@ namespace SubSolution.Tests
                 Platforms = new SolutionPlatformList()
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(0);
         }
@@ -120,7 +119,7 @@ namespace SubSolution.Tests
                 Platforms = new SolutionPlatformList()
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(0);
         }
@@ -147,7 +146,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(0);
         }
@@ -174,7 +173,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(6);
             CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
@@ -207,7 +206,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(6);
             CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
@@ -248,7 +247,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(4);
             CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });

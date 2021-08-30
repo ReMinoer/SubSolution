@@ -25,7 +25,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();

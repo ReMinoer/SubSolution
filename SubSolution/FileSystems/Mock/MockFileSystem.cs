@@ -22,7 +22,7 @@ namespace SubSolution.FileSystems.Mock
 
         public void AddRoot(string rootName, IEnumerable<string> relativePaths)
         {
-            _rootDirectories.Add(rootName, new MockDirectoryInfo(this, rootName, relativePaths));
+            _rootDirectories[rootName] = new MockDirectoryInfo(this, rootName, relativePaths);
         }
 
         public void AddFileContent(string filePath, byte[] content)

@@ -42,9 +42,9 @@ namespace SubSolution
             return new SubSolutionContext(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
-        static public SubSolutionContext FromConfiguration(SubSolutionConfiguration configuration, ISolutionProjectReader projectReader, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
+        static public SubSolutionContext FromConfiguration(SubSolutionConfiguration configuration, ISolutionProjectReader projectReader, string defaultOutputDirectory, string? defaultWorkspaceDirectory = null, ISubSolutionFileSystem? fileSystem = null)
         {
-            string solutionPath = ComputeSolutionPath(configuration, nameof(SubSolution), Environment.CurrentDirectory, fileSystem);
+            string solutionPath = ComputeSolutionPath(configuration, nameof(SubSolution), defaultOutputDirectory, fileSystem);
             string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
 
             if (workspaceDirectoryPath is null)

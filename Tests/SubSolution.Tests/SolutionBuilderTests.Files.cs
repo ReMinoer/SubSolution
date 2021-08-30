@@ -25,7 +25,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -56,7 +56,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
@@ -94,7 +94,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.FilePaths.Should().HaveCount(1);
@@ -145,7 +145,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
@@ -181,7 +181,7 @@ namespace SubSolution.Tests
                 }
             };
 
-            ISolutionOutput solution = await ProcessConfigurationMockFileAsync(configuration);
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();

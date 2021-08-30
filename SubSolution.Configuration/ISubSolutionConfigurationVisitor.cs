@@ -7,6 +7,7 @@ namespace SubSolution.Configuration
         Task VisitAsync(Folder folder);
         Task VisitAsync(Files files);
         Task VisitAsync(Projects projects);
+        Task VisitAsync(Solutions solutions);
         Task VisitAsync(SubSolutions subSolutions);
     }
 }
