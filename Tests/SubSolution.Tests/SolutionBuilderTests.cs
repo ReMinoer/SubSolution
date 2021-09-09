@@ -13,6 +13,7 @@ using SubSolution.Converters;
 using SubSolution.FileSystems.Mock;
 using SubSolution.ProjectReaders.Mock;
 using SubSolution.Raw;
+using SubSolution.Utils;
 
 namespace SubSolution.Tests
 {
@@ -30,10 +31,10 @@ namespace SubSolution.Tests
                 => SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
         }
 
-        private Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
+        private Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, workspaceDirectoryPath, fileSystem)));
+                => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
         private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
@@ -169,12 +170,9 @@ namespace SubSolution.Tests
 
                 mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
             }
-
-            if (configurationContent is not null)
-            {
-                relativeFilePath.Add("MyApplication.sln");
-                relativeFilePath.Add("MyApplication.subsln");
-            }
+            
+            relativeFilePath.Add("MyApplication.sln");
+            relativeFilePath.Add("MyApplication.subsln");
 
             await AddConfigurationToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
             await AddSolutionToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.sln", configurationContent);
@@ -214,7 +212,7 @@ namespace SubSolution.Tests
 
         static private readonly SubSolutionConfiguration MyFrameworkConfiguration = new SubSolutionConfiguration
         {
-            Root = new SolutionRootConfiguration
+            Root = new SolutionRoot
             {
                 SolutionItems = new List<SolutionItems>
                 {
@@ -293,7 +291,7 @@ namespace SubSolution.Tests
 
         static private readonly SubSolutionConfiguration MySubModuleConfiguration = new SubSolutionConfiguration
         {
-            Root = new SolutionRootConfiguration
+            Root = new SolutionRoot
             {
                 SolutionItems = new List<SolutionItems>
                 {
@@ -351,7 +349,7 @@ namespace SubSolution.Tests
             }
 
             public bool IsEnabled(LogLevel logLevel) => true;
-            public IDisposable BeginScope<TState>(TState state) => null;
+            public IDisposable BeginScope<TState>(TState state) => new Disposable();
         }
     }
 }

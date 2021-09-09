@@ -70,7 +70,7 @@ namespace SubSolution.Configuration.Builders
 
             bool hasFullConfigurationPlatforms = (configuration.Configurations?.Configuration.Count ?? 0) > 0 && (configuration.Platforms?.Platform.Count ?? 0) > 0;
             if (hasFullConfigurationPlatforms)
-                VisitConfigurationsAndPlatforms(configuration.Configurations, configuration.Platforms);
+                VisitConfigurationsAndPlatforms(configuration.Configurations!, configuration.Platforms!);
 
             if (configuration.Root != null)
                 await VisitRootAsync(configuration.Root);
@@ -146,7 +146,7 @@ namespace SubSolution.Configuration.Builders
             VisitConfigurationsAndPlatforms(configurations, platforms);
         }
 
-        private async Task VisitRootAsync(SolutionRootConfiguration root)
+        private async Task VisitRootAsync(SolutionRoot root)
         {
             foreach (SolutionItems items in root.SolutionItems)
                 await items.AcceptAsync(this);

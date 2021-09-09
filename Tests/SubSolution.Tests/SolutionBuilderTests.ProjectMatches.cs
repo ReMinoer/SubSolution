@@ -13,7 +13,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {
@@ -46,7 +46,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {
@@ -79,7 +79,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {
@@ -115,7 +115,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {
@@ -151,7 +151,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {
@@ -193,7 +193,7 @@ namespace SubSolution.Tests
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRootConfiguration
+                Root = new SolutionRoot
                 {
                     SolutionItems = new List<SolutionItems>
                     {

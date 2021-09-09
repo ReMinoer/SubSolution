@@ -82,7 +82,7 @@ namespace SubSolution.Tests
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
 
-            ISolution solution = await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null);
+            ISolution solution = await ProcessConfigurationAsync(configuration, Environment.CurrentDirectory, workspaceDirectoryPath: null);
 
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.Projects.Should().BeEmpty();
@@ -93,7 +93,7 @@ namespace SubSolution.Tests
         public void ThrowOnProcessWithoutAnyWorkspaceDirectory()
         {
             var configuration = new SubSolutionConfiguration();
-            Invoking(async () => await ProcessConfigurationAsync(configuration, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
+            Invoking(async () => await ProcessConfigurationAsync(configuration, Environment.CurrentDirectory, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
         }
     }
 }

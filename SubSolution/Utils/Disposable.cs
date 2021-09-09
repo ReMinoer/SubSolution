@@ -4,13 +4,17 @@ namespace SubSolution.Utils
 {
     public class Disposable : IDisposable
     {
-        private readonly Action _disposeAction;
+        private readonly Action? _disposeAction;
+
+        public Disposable()
+        {
+        }
 
         public Disposable(Action disposeAction)
         {
             _disposeAction = disposeAction;
         }
 
-        public void Dispose() => _disposeAction.Invoke();
+        public void Dispose() => _disposeAction?.Invoke();
     }
 }

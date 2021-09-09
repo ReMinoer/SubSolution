@@ -6,23 +6,23 @@
             <xs:annotation>
                 <xs:documentation>Root element of a SubSolution configuration.</xs:documentation>
             </xs:annotation>
-            <xs:sequence>
-                <xs:element name="Root" type="SolutionRootConfiguration">
+            <xs:all>
+                <xs:element name="Root" type="SolutionRoot" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Root of the solution.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="Configurations" type="SolutionConfigurationList">
+                <xs:element name="Configurations" type="SolutionConfigurationList" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Solution configuration list.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="Platforms" type="SolutionPlatformList">
+                <xs:element name="Platforms" type="SolutionPlatformList" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Solution platform list.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-            </xs:sequence>
+            </xs:all>
             <xs:attribute name="SolutionName" type="FileName">
                 <xs:annotation>
                     <xs:documentation>Solution output file name (without extension).</xs:documentation>
@@ -130,12 +130,12 @@
             <xs:documentation>Solution item source.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="SolutionRoot" type="SolutionRootConfiguration" abstract="true" substitutionGroup="SolutionItems">
+    <xs:element name="Root" type="SolutionRoot" abstract="true" substitutionGroup="SolutionItems">
         <xs:annotation>
             <xs:documentation>Solution root.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="Folder" type="SolutionFolderConfiguration" substitutionGroup="SolutionRoot">
+    <xs:element name="Folder" type="SolutionFolder" substitutionGroup="Root">
         <xs:annotation>
             <xs:documentation>Solution folder.</xs:documentation>
         </xs:annotation>
@@ -177,7 +177,7 @@
         </xs:annotation>
     </xs:complexType>
 
-    <xs:complexType name="SolutionRootConfiguration">
+    <xs:complexType name="SolutionRoot">
         <xs:annotation>
             <xs:documentation>Represent a solution root.</xs:documentation>
         </xs:annotation>
@@ -205,12 +205,12 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="SolutionFolderConfiguration">
+    <xs:complexType name="SolutionFolder">
         <xs:annotation>
             <xs:documentation>Represent a solution folder.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="SolutionRootConfiguration">
+            <xs:extension base="SolutionRoot">
                 <xs:attribute name="Name" type="SolutionFolderName" use="required">
                     <xs:annotation>
                         <xs:documentation>Name of the solution folder.</xs:documentation>
@@ -323,7 +323,13 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="IsDependencyOf" substitutionGroup="FileFilters">
+    <xs:element name="ProjectFilter" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Project filter.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="DependenciesOf" substitutionGroup="ProjectFilter">
         <xs:annotation>
             <xs:documentation>Filter on dependent projects.</xs:documentation>
         </xs:annotation>
@@ -334,12 +340,6 @@
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
-    </xs:element>
-
-    <xs:element name="ProjectFilter" type="SolutionItemsSourceBase" abstract="true">
-        <xs:annotation>
-            <xs:documentation>Solution item source.</xs:documentation>
-        </xs:annotation>
     </xs:element>
 
     <xs:simpleType name="PathGlobPattern">
