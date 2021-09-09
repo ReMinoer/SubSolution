@@ -1,4 +1,4 @@
-﻿namespace SubSolution.Generators
+﻿namespace SubSolution.Converters
 {
     public class Issue
     {

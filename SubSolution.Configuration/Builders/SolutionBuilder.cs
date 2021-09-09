@@ -5,16 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SubSolution.Configuration;
+using SubSolution.Converters;
 using SubSolution.FileSystems;
-using SubSolution.Generators;
 using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 using SubSolution.Utils;
 
-namespace SubSolution.Builders
+namespace SubSolution.Configuration.Builders
 {
-    public class SolutionBuilder : ISubSolutionConfigurationVisitor
+    public class SolutionBuilder : ISolutionItemSourcesVisitor
     {
         private const string LogTokenNone = "*none*";
         private const string LogTokenRoot = "*root*";
@@ -28,8 +27,8 @@ namespace SubSolution.Builders
         private Solution.Folder CurrentFolder => _currentFolderStack.Peek();
         private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? string.Join('/', _currentFolderPathStack.Reverse()) : LogTokenRoot;
 
-        private readonly ISubSolutionFileSystem _fileSystem;
-        private readonly CacheSolutionProjectReader _projectReader;
+        private readonly IFileSystem _fileSystem;
+        private readonly CacheProjectReader _projectReader;
 
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
@@ -38,7 +37,7 @@ namespace SubSolution.Builders
         private readonly ISet<string> _projectConfigurations;
         private readonly ISet<string> _projectPlatforms;
 
-        public SolutionBuilder(SubSolutionContext context)
+        public SolutionBuilder(SolutionBuilderContext context)
         {
             _workspaceDirectoryPath = context.WorkspaceDirectoryPath;
 
@@ -48,7 +47,7 @@ namespace SubSolution.Builders
             _currentFolderPathStack = new Stack<string>();
 
             _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
-            _projectReader = new CacheSolutionProjectReader(_fileSystem, context.ProjectReader);
+            _projectReader = new CacheProjectReader(_fileSystem, context.ProjectReader);
 
             _ignoredSolutionPaths = new HashSet<string>(_fileSystem.PathComparer);
             if (context.ConfigurationFilePath != null)
@@ -203,12 +202,12 @@ namespace SubSolution.Builders
                 await using Stream fileStream = _fileSystem.OpenStream(filePath);
                 RawSolution rawSolution = await RawSolution.ReadAsync(fileStream);
 
-                RawSolutionToSolutionGenerator solutionGenerator = new RawSolutionToSolutionGenerator(_fileSystem, _projectReader)
+                RawSolutionConverter solutionConverter = new RawSolutionConverter(_fileSystem, _projectReader)
                 {
                     SkipConfigurationPlatforms = true
                 };
 
-                (ISolution solution, _) = await solutionGenerator.GenerateAsync(rawSolution, filePath);
+                (ISolution solution, _) = await solutionConverter.ConvertAsync(rawSolution, filePath);
 
                 return (solution, solutionName);
             });
@@ -218,7 +217,7 @@ namespace SubSolution.Builders
         {
             return VisitAsyncBase(subSolutions, "subsln", async filePath =>
             {
-                SubSolutionContext subContext = await SubSolutionContext.FromConfigurationFileAsync(filePath, _projectReader, _fileSystem);
+                SolutionBuilderContext subContext = await SolutionBuilderContext.FromConfigurationFileAsync(filePath, _projectReader, _fileSystem);
                 subContext.Logger = _logger;
                 subContext.LogLevel = _logLevel;
 

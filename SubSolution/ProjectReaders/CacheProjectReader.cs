@@ -4,12 +4,12 @@ using SubSolution.FileSystems;
 
 namespace SubSolution.ProjectReaders
 {
-    public class CacheSolutionProjectReader : ISolutionProjectReader
+    public class CacheProjectReader : IProjectReader
     {
-        private readonly ISolutionProjectReader _baseProjectReader;
+        private readonly IProjectReader _baseProjectReader;
         private readonly Dictionary<string, ISolutionProject> _projectCacheByPath;
 
-        public CacheSolutionProjectReader(ISubSolutionFileSystem fileSystem, ISolutionProjectReader baseProjectReader)
+        public CacheProjectReader(IFileSystem fileSystem, IProjectReader baseProjectReader)
         {
             _baseProjectReader = baseProjectReader;
             _projectCacheByPath = new Dictionary<string, ISolutionProject>(fileSystem.PathComparer);

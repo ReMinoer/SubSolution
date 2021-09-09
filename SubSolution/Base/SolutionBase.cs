@@ -5,9 +5,9 @@ namespace SubSolution.Base
 {
     public abstract class SolutionBase<TSolution, TFolder> : ISolution
         where TSolution : SolutionBase<TSolution, TFolder>
-        where TFolder : FolderBase<TSolution, TFolder>
+        where TFolder : SolutionFolderBase<TSolution, TFolder>
     {
-        protected readonly ISubSolutionFileSystem _fileSystem;
+        protected readonly IFileSystem _fileSystem;
         protected readonly Dictionary<string, TFolder> _knownPaths;
 
         public string SolutionName { get; set; }
@@ -20,7 +20,7 @@ namespace SubSolution.Base
         protected abstract IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
         IReadOnlyList<ISolutionConfigurationPlatform> ISolution.ConfigurationPlatforms => ProtectedConfigurationPlatforms;
 
-        public SolutionBase(string outputPath, ISubSolutionFileSystem? fileSystem)
+        public SolutionBase(string outputPath, IFileSystem? fileSystem)
         {
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
             _knownPaths = new Dictionary<string, TFolder>(_fileSystem.PathComparer);

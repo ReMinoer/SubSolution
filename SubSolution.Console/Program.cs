@@ -3,9 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
-using SubSolution.Builders;
+using SubSolution.Configuration.Builders;
+using SubSolution.Converters;
 using SubSolution.FileSystems;
-using SubSolution.Generators;
 using SubSolution.MsBuild;
 using SubSolution.Raw;
 
@@ -23,24 +23,26 @@ namespace SubSolution.Console
             var loggerProvider = new NLogLoggerProvider();
             ILogger? logger = loggerProvider.CreateLogger(nameof(SubSolution));
 
-            SubSolutionContext context = await SubSolutionContext.FromConfigurationFileAsync(args[0], new SolutionProjectReader());
+            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(args[0], new MsBuildProjectReader());
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             SolutionBuilder solutionBuilder = new SolutionBuilder(context);
             Solution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Information)
+            var solutionLogger = new SolutionLogger
             {
                 ShowProjectContexts = true
             };
-            logGenerator.Generate(solution);
+            
+            string logMessage = solutionLogger.Convert(solution);
+            logger.LogInformation(logMessage);
 
             //var generator = new DotNetCommandLineGenerator();
             //generator.Generate(solution);
 
-            var rawGenerator = new SolutionToRawSolutionGenerator(StandardFileSystem.Instance);
-            RawSolution rawSolution = rawGenerator.Generate(solution);
+            var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
+            RawSolution rawSolution = solutionConverter.Convert(solution);
 
             await using (FileStream createStream = File.Create(solution.OutputPath))
                 await rawSolution.WriteAsync(createStream);

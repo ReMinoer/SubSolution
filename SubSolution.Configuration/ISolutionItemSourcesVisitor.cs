@@ -2,7 +2,7 @@
 
 namespace SubSolution.Configuration
 {
-    public interface ISubSolutionConfigurationVisitor
+    public interface ISolutionItemSourcesVisitor
     {
         Task VisitAsync(Folder folder);
         Task VisitAsync(Files files);

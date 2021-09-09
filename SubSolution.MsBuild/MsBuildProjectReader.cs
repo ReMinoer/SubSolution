@@ -7,7 +7,7 @@ using SubSolution.ProjectReaders;
 namespace SubSolution.MsBuild
 {
     [ExcludeFromCodeCoverage]
-    public class SolutionProjectReader : ISolutionProjectReader
+    public class MsBuildProjectReader : IProjectReader
     {
         public async Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {

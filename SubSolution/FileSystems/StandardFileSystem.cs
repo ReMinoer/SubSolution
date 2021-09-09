@@ -9,7 +9,7 @@ using SubSolution.Utils;
 namespace SubSolution.FileSystems
 {
     [ExcludeFromCodeCoverage]
-    public class StandardFileSystem : SubSolutionFileSystemBase
+    public class StandardFileSystem : FileSystemBase
     {
         static private StandardFileSystem? _instance;
         static public StandardFileSystem Instance => _instance ??= new StandardFileSystem();

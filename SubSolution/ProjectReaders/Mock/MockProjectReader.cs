@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace SubSolution.ProjectReaders.Mock
 {
-    public class MockSolutionProjectReader : ISolutionProjectReader
+    public class MockProjectReader : IProjectReader
     {
         public Dictionary<string, string[]> ProjectConfigurations { get; } = new Dictionary<string, string[]>();
         public Dictionary<string, string[]> ProjectPlatforms { get; } = new Dictionary<string, string[]>();
@@ -12,7 +12,7 @@ namespace SubSolution.ProjectReaders.Mock
         public bool ProjectCanBuild { get; set; }
         public bool ProjectCanDeploy { get; set; }
 
-        public MockSolutionProjectReader(string[] projectDefaultConfigurations, string[] projectDefaultPlatforms)
+        public MockProjectReader(string[] projectDefaultConfigurations, string[] projectDefaultPlatforms)
         {
             ProjectDefaultConfigurations = projectDefaultConfigurations;
             ProjectDefaultPlatforms = projectDefaultPlatforms;

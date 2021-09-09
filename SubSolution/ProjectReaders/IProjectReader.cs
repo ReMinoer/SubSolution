@@ -2,7 +2,7 @@
 
 namespace SubSolution.ProjectReaders
 {
-    public interface ISolutionProjectReader
+    public interface IProjectReader
     {
         Task<ISolutionProject> ReadAsync(string absoluteProjectPath);
     }

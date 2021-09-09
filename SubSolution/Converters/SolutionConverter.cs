@@ -4,18 +4,18 @@ using System.Linq;
 using SubSolution.FileSystems;
 using SubSolution.Raw;
 
-namespace SubSolution.Generators
+namespace SubSolution.Converters
 {
-    public class SolutionToRawSolutionGenerator
+    public class SolutionConverter
     {
-        private readonly ISubSolutionFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
-        public SolutionToRawSolutionGenerator(ISubSolutionFileSystem fileSystem)
+        public SolutionConverter(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
         }
 
-        public RawSolution Generate(ISolution solution)
+        public RawSolution Convert(ISolution solution)
         {
             RawSolution rawSolution = new RawSolution
             {
@@ -36,13 +36,13 @@ namespace SubSolution.Generators
         {
             foreach (string projectPath in solutionFolder.Projects.Keys)
             {
-                RawSolution.Project project = GetOrCreateProject(rawSolution, folderProject, ProjectTypeGuid.CSharp, _fileSystem.GetFileNameWithoutExtension(projectPath), projectPath, NewGuid());
+                RawSolution.Project project = GetOrCreateProject(rawSolution, folderProject, RawProjectTypeGuid.CSharp, _fileSystem.GetFileNameWithoutExtension(projectPath), projectPath, NewGuid());
                 projectGuids.Add(projectPath, project.Arguments[2]);
             }
 
             foreach ((string name, ISolutionFolder subFolder) in solutionFolder.SubFolders.Select(x => (x.Key, x.Value)))
             {
-                RawSolution.Project subFolderProject = GetOrCreateProject(rawSolution, folderProject, ProjectTypeGuid.Folder, name, name, NewGuid());
+                RawSolution.Project subFolderProject = GetOrCreateProject(rawSolution, folderProject, RawProjectTypeGuid.Folder, name, name, NewGuid());
                 GenerateFolderContent(rawSolution, projectGuids, subFolder, subFolderProject);
             }
 
@@ -106,7 +106,7 @@ namespace SubSolution.Generators
             if (project != null)
                 return project;
 
-            project = new RawSolution.Project(ProjectTypeGuid.Folder, RawKeyword.DefaultRootFileFolderName, RawKeyword.DefaultRootFileFolderName, $"{{{Guid.NewGuid().ToString().ToUpper()}}}");
+            project = new RawSolution.Project(RawProjectTypeGuid.Folder, RawKeyword.DefaultRootFileFolderName, RawKeyword.DefaultRootFileFolderName, $"{{{Guid.NewGuid().ToString().ToUpper()}}}");
             rawSolution.Projects.Add(project);
             return project;
         }

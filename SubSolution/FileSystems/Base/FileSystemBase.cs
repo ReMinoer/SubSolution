@@ -7,7 +7,7 @@ using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace SubSolution.FileSystems.Base
 {
-    public abstract class SubSolutionFileSystemBase : ISubSolutionFileSystem
+    public abstract class FileSystemBase : IFileSystem
     {
         public abstract IEqualityComparer<string> PathComparer { get; }
         public abstract string GetName(string path);

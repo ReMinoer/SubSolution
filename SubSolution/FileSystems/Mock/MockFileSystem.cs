@@ -9,7 +9,7 @@ using SubSolution.Utils;
 namespace SubSolution.FileSystems.Mock
 {
     [ExcludeFromCodeCoverage]
-    public class MockFileSystem : SubSolutionFileSystemBase
+    public class MockFileSystem : FileSystemBase
     {
         // Do not use System.IO !
 

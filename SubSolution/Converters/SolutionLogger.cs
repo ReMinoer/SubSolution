@@ -1,18 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using SubSolution.FileSystems;
 using SubSolution.Utils;
 
-namespace SubSolution.Generators
+namespace SubSolution.Converters
 {
-    public class LogGenerator
+    public class SolutionLogger
     {
-        private readonly ILogger _logger;
-        private readonly LogLevel _logLevel;
         private readonly int _indentSize;
-        private readonly ISubSolutionFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
         
         public bool ShowHierarchy { get; set; } = true;
         public bool ShowConfigurationPlatforms { get; set; } = true;
@@ -21,15 +18,13 @@ namespace SubSolution.Generators
         public bool ShowFilePath { get; set; }
         public bool ShowHeaders { get; set; } = true;
 
-        public LogGenerator(ILogger logger, LogLevel logLevel, int indentSize = 4, ISubSolutionFileSystem? fileSystem = null)
+        public SolutionLogger(int indentSize = 4, IFileSystem? fileSystem = null)
         {
-            _logger = logger;
-            _logLevel = logLevel;
             _indentSize = indentSize;
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
         }
 
-        public void Generate(ISolution solution)
+        public string Convert(ISolution solution)
         {
             StringBuilder messageBuilder = new StringBuilder();
 
@@ -49,7 +44,7 @@ namespace SubSolution.Generators
                 LogConfigurationPlatforms(messageBuilder, solution.ConfigurationPlatforms);
             }
 
-            _logger.Log(_logLevel, messageBuilder.ToString());
+            return messageBuilder.ToString();
         }
 
         private void LogFolder(StringBuilder messageBuilder, ISolutionFolder folder, List<bool> showPreviousConnections)

@@ -12,7 +12,7 @@ namespace SubSolution
         public List<ConfigurationPlatform> ConfigurationPlatforms { get; }
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
-        public ManualSolution(string outputPath, ISubSolutionFileSystem? fileSystem = null)
+        public ManualSolution(string outputPath, IFileSystem? fileSystem = null)
             : base(outputPath, fileSystem)
         {
             Root = new Folder(this, _fileSystem, _knownPaths);
@@ -21,7 +21,7 @@ namespace SubSolution
             ProtectedConfigurationPlatforms = ConfigurationPlatforms.AsReadOnly();
         }
 
-        public ManualSolution(ISolution solution, string outputPath, ISubSolutionFileSystem? fileSystem = null)
+        public ManualSolution(ISolution solution, string outputPath, IFileSystem? fileSystem = null)
             : this(outputPath, fileSystem)
         {
             Root.AddFolderContent(solution.Root);
@@ -46,7 +46,7 @@ namespace SubSolution
             private readonly IReadOnlyDictionary<string, SolutionProjectContext> _readOnlyProjectContexts;
             IReadOnlyDictionary<string, SolutionProjectContext> ISolutionConfigurationPlatform.ProjectContexts => _readOnlyProjectContexts;
 
-            public ConfigurationPlatform(ISubSolutionFileSystem fileSystem, string configurationName, string platformName)
+            public ConfigurationPlatform(IFileSystem fileSystem, string configurationName, string platformName)
             {
                 ConfigurationName = configurationName;
                 PlatformName = platformName;
@@ -56,9 +56,9 @@ namespace SubSolution
             }
         }
 
-        public class Folder : FolderBase<ManualSolution, Folder>
+        public class Folder : SolutionFolderBase<ManualSolution, Folder>
         {
-            public Folder(ManualSolution solution, ISubSolutionFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
+            public Folder(ManualSolution solution, IFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
                 : base(solution, fileSystem, knownPaths, () => new Folder(solution, fileSystem, knownPaths)) {}
         }
     }

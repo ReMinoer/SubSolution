@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SubSolution.Configuration\SubSolution.Configuration.csproj" />
     <ProjectReference Include="..\SubSolution.MsBuild\SubSolution.MsBuild.csproj" />
   </ItemGroup>
 

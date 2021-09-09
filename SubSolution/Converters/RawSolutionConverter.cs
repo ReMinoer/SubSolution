@@ -6,22 +6,22 @@ using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 
-namespace SubSolution.Generators
+namespace SubSolution.Converters
 {
-    public class RawSolutionToSolutionGenerator
+    public class RawSolutionConverter
     {
-        private readonly ISubSolutionFileSystem _fileSystem;
-        private readonly ISolutionProjectReader _projectReader;
+        private readonly IFileSystem _fileSystem;
+        private readonly IProjectReader _projectReader;
 
         public bool SkipConfigurationPlatforms { get; set; }
 
-        public RawSolutionToSolutionGenerator(ISubSolutionFileSystem fileSystem, ISolutionProjectReader projectReader)
+        public RawSolutionConverter(IFileSystem fileSystem, IProjectReader projectReader)
         {
             _fileSystem = fileSystem;
             _projectReader = projectReader;
         }
 
-        public async Task<(ManualSolution, List<Issue>)> GenerateAsync(IRawSolution rawSolution, string solutionPath)
+        public async Task<(ManualSolution, List<Issue>)> ConvertAsync(IRawSolution rawSolution, string solutionPath)
         {
             List<Issue> issues = new List<Issue>();
 
@@ -77,7 +77,7 @@ namespace SubSolution.Generators
             Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph)
         {
             IRawSolutionProject? rootFilesFolderProject = projectsByGuid
-                .Where(x => x.Value.TypeGuid == ProjectTypeGuid.Folder
+                .Where(x => x.Value.TypeGuid == RawProjectTypeGuid.Folder
                     && x.Value.Arguments[0] == RawKeyword.DefaultRootFileFolderName
                     && !parentGraph.TryGetValue(x.Key, out _))
                 .Select(x => x.Value)
@@ -96,7 +96,7 @@ namespace SubSolution.Generators
             foreach (Guid childGuid in childrenGuids)
             {
                 IRawSolutionProject childProject = projectsByGuid[childGuid];
-                if (childProject.TypeGuid == ProjectTypeGuid.Folder)
+                if (childProject.TypeGuid == RawProjectTypeGuid.Folder)
                 {
                     ManualSolution.Folder subFolder = folder.GetOrAddSubFolder(childProject.Arguments[0]);
                     FillFolderFiles(subFolder, childProject);

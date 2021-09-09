@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SubSolution.FileSystems
 {
-    public interface ISubSolutionFileSystem
+    public interface IFileSystem
     {
         IEqualityComparer<string> PathComparer { get; }
         string GetName(string path);

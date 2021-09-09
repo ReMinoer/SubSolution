@@ -7,13 +7,13 @@ using SubSolution.Utils;
 
 namespace SubSolution.Base
 {
-    public abstract class FolderBase<TSolution, TFolder> : ISolutionFolder
+    public abstract class SolutionFolderBase<TSolution, TFolder> : ISolutionFolder
         where TSolution : SolutionBase<TSolution, TFolder>
-        where TFolder : FolderBase<TSolution, TFolder>
+        where TFolder : SolutionFolderBase<TSolution, TFolder>
     {
         protected readonly TFolder _owner;
         protected readonly TSolution _solution;
-        protected readonly ISubSolutionFileSystem _fileSystem;
+        protected readonly IFileSystem _fileSystem;
         protected readonly Dictionary<string, TFolder> _knownPaths;
         protected readonly Func<TFolder> _folderCreator;
 
@@ -31,7 +31,7 @@ namespace SubSolution.Base
 
         public bool IsEmpty => _filePaths.Count == 0 && _projects.Count == 0 && _subFolders.Count == 0;
 
-        public FolderBase(TSolution solution, ISubSolutionFileSystem fileSystem, Dictionary<string, TFolder> knownPaths, Func<TFolder> folderCreator)
+        public SolutionFolderBase(TSolution solution, IFileSystem fileSystem, Dictionary<string, TFolder> knownPaths, Func<TFolder> folderCreator)
         {
             _owner = (TFolder)this;
             _solution = solution;

@@ -7,10 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using SubSolution.Builders;
 using SubSolution.Configuration;
+using SubSolution.Configuration.Builders;
+using SubSolution.Converters;
 using SubSolution.FileSystems.Mock;
-using SubSolution.Generators;
 using SubSolution.ProjectReaders.Mock;
 using SubSolution.Raw;
 
@@ -27,21 +27,21 @@ namespace SubSolution.Tests
             const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => SubSolutionContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
+                => SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
         }
 
         private Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string workspaceDirectoryPath, bool haveSubSolutions = false)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => Task.FromResult(SubSolutionContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, workspaceDirectoryPath, fileSystem)));
+                => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, workspaceDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
         private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
-            Func<MockFileSystem, MockSolutionProjectReader, Task<SubSolutionContext>> createContext)
+            Func<MockFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
 
-            var mockProjectReader = new MockSolutionProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
+            var mockProjectReader = new MockProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
             {
                 ProjectCanBuild = true,
                 ProjectCanDeploy = false,
@@ -61,50 +61,52 @@ namespace SubSolution.Tests
 
             MockFileSystem mockFileSystem = await GetMockFileSystemAsync(configuration, haveSubSolutions, mockProjectReader);
 
-            SubSolutionContext context = await createContext(mockFileSystem, mockProjectReader);
+            SolutionBuilderContext context = await createContext(mockFileSystem, mockProjectReader);
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
             var solutionBuilder = new SolutionBuilder(context);
             ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
-            var logGenerator = new LogGenerator(logger, LogLevel.Debug, fileSystem: mockFileSystem)
+            var solutionLogger = new SolutionLogger(fileSystem: mockFileSystem)
             {
                 ShowHeaders = true,
                 ShowHierarchy = true,
                 ShowConfigurationPlatforms = true,
                 ShowProjectContexts = true
             };
-            logGenerator.Generate(solution);
+
+            string logMessage = solutionLogger.Convert(solution);
+            logger.LogDebug(logMessage);
 
             // Full pipe checks
-            var rawSolutionGenerator = new SolutionToRawSolutionGenerator(mockFileSystem);
-            var solutionGenerator = new RawSolutionToSolutionGenerator(mockFileSystem, mockProjectReader);
+            var rawSolutionConverter = new SolutionConverter(mockFileSystem);
+            var solutionConverter = new RawSolutionConverter(mockFileSystem, mockProjectReader);
 
             ISolution checkSolution = solution;
             RawSolution rawSolution;
             List<Issue> issues;
 
-            rawSolution = rawSolutionGenerator.Generate(checkSolution);
+            rawSolution = rawSolutionConverter.Convert(checkSolution);
             await using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(firstPassStream);
-            (checkSolution, issues) = await solutionGenerator.GenerateAsync(rawSolution, context.SolutionPath);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
             issues.Should().BeEmpty();
 
-            rawSolution = rawSolutionGenerator.Generate(checkSolution);
+            rawSolution = rawSolutionConverter.Convert(checkSolution);
             await using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
             await RawSolution.ReadAsync(secondPassStream);
-            (_, issues) = await solutionGenerator.GenerateAsync(rawSolution, context.SolutionPath);
+            (_, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
             issues.Should().BeEmpty();
 
             return solution;
         }
 
-        private async Task<MockFileSystem> GetMockFileSystemAsync(SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockSolutionProjectReader mockProjectReader)
+        private async Task<MockFileSystem> GetMockFileSystemAsync(SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
         {
             var mockFileSystem = new MockFileSystem();
             var relativeFilePath = new List<string>();
@@ -195,12 +197,12 @@ namespace SubSolution.Tests
             {
                 string defaultWorkspaceDirectoryPath = mockFileSystem.GetParentDirectoryPath(filePath)!;
 
-                SubSolutionContext context = SubSolutionContext.FromConfiguration(configuration, mockProjectReader, defaultWorkspaceDirectoryPath, defaultWorkspaceDirectoryPath, mockFileSystem);
+                SolutionBuilderContext context = SolutionBuilderContext.FromConfiguration(configuration, mockProjectReader, defaultWorkspaceDirectoryPath, defaultWorkspaceDirectoryPath, mockFileSystem);
                 var solutionBuilder = new SolutionBuilder(context);
                 ISolution solution = await solutionBuilder.BuildAsync(configuration);
 
-                var rawSolutionGenerator = new SolutionToRawSolutionGenerator(mockFileSystem);
-                RawSolution rawSolution = rawSolutionGenerator.Generate(solution);
+                var rawSolutionConverter = new SolutionConverter(mockFileSystem);
+                RawSolution rawSolution = rawSolutionConverter.Convert(solution);
 
                 await using var memoryStream = new MemoryStream();
                 await rawSolution.WriteAsync(memoryStream);

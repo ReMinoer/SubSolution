@@ -13,7 +13,7 @@ namespace SubSolution
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
-        public Solution(string outputPath, ISubSolutionFileSystem? fileSystem = null)
+        public Solution(string outputPath, IFileSystem? fileSystem = null)
             : base(outputPath, fileSystem)
         {
             Root = new Folder(this, _fileSystem, _knownPaths);
@@ -40,7 +40,7 @@ namespace SubSolution
             private readonly Dictionary<string, SolutionProjectContext> _projectContexts;
             public IReadOnlyDictionary<string, SolutionProjectContext> ProjectContexts { get; }
 
-            public ConfigurationPlatform(ISubSolutionFileSystem fileSystem, string configurationName, string platformName)
+            public ConfigurationPlatform(IFileSystem fileSystem, string configurationName, string platformName)
             {
                 ConfigurationName = configurationName;
                 PlatformName = platformName;
@@ -81,9 +81,9 @@ namespace SubSolution
             }
         }
 
-        public class Folder : FolderBase<Solution, Folder>
+        public class Folder : SolutionFolderBase<Solution, Folder>
         {
-            public Folder(Solution solution, ISubSolutionFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
+            public Folder(Solution solution, IFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
                 : base(solution, fileSystem, knownPaths, () => new Folder(solution, fileSystem, knownPaths))
             {
             }
