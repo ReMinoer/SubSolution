@@ -34,7 +34,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessProjectsMatchingFilter()
+        public async Task ProcessProjectsMatchingPath()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -60,7 +60,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessProjectsMatchingMultipleFilters()
+        public async Task ProcessProjectsMatchingMultiplePath()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -92,7 +92,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessProjectsMatchingMultipleFiltersInDifferentSolutionFolders()
+        public async Task ProcessProjectsMatchingMultiplePathsInDifferentSolutionFolders()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -136,7 +136,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessProjectsMatchingMultipleFiltersWithOverwrite()
+        public async Task ProcessProjectsMatchingMultiplePathsWithOverwrite()
         {
             var configuration = new SubSolutionConfiguration
             {

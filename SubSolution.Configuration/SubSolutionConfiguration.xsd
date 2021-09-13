@@ -226,9 +226,6 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionItemsSourceBase">
-                <xs:sequence>
-                    <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded" />
-                </xs:sequence>
                 <xs:attribute ref="Path" />
                 <xs:attribute name="Overwrite" type="xs:boolean">
                     <xs:annotation>
@@ -255,7 +252,11 @@
             <xs:documentation>Represent a set of projects.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="SolutionFilesSourceBase" />
+            <xs:extension base="SolutionFilesSourceBase">
+                <xs:all>
+                    <xs:element name="Where" type="ProjectFilterRoot" minOccurs="0" />
+                </xs:all>
+            </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
@@ -265,7 +266,9 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionFilesSourceBase">
-                <xs:attribute ref="Path" use="required" />
+                <xs:all>
+                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
+                </xs:all>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -276,6 +279,11 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionFilesSourceBase">
+                <xs:all>
+                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
+                    <xs:element name="WhereProjects" type="IgnorableProjectFilterRoot" minOccurs="0" />
+                    <xs:element name="WhereFiles" type="IgnorableFileFilterRoot" minOccurs="0" />
+                </xs:all>
                 <xs:attribute name="CreateRootFolder" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>True to create a dedicated folder for each solution. Folder name will be its SolutionName.</xs:documentation>
@@ -308,35 +316,153 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="ProjectFilterRoot">
+        <xs:annotation>
+            <xs:documentation>Project filter root.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="ProjectFilters" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FileFilterRoot">
+        <xs:annotation>
+            <xs:documentation>File filter root.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="IgnorableProjectFilterRoot">
+        <xs:annotation>
+            <xs:documentation>Project filter root able to ignore all.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="ProjectFilterRoot">
+                <xs:attribute name="IgnoreAll" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to ignore all projects.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="IgnorableFileFilterRoot">
+        <xs:annotation>
+            <xs:documentation>File filter root able to ignore all.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="FileFilterRoot">
+                <xs:attribute name="IgnoreAll" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to ignore all files.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="ProjectFilters" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Project filter.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="ProjectNot" substitutionGroup="ProjectFilters">
+        <xs:annotation>
+            <xs:documentation>Reverse filter.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ProjectFilters" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ProjectMatchAll" substitutionGroup="ProjectFilters">
+        <xs:annotation>
+            <xs:documentation>Match all children filters.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ProjectMatchAnyOf" substitutionGroup="ProjectFilters">
+        <xs:annotation>
+            <xs:documentation>Match any of children filters.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ProjectPath" substitutionGroup="ProjectFilters">
+        <xs:annotation>
+            <xs:documentation>Filter matching file path pattern.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="Match" type="PathGlobPattern" use="required">
+                <xs:annotation>
+                    <xs:documentation>Project path pattern.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="FileFilters" abstract="true">
         <xs:annotation>
             <xs:documentation>File filter.</xs:documentation>
         </xs:annotation>
     </xs:element>
 
-    <xs:element name="MatchingPath" substitutionGroup="FileFilters">
+    <xs:element name="FileNot" substitutionGroup="FileFilters">
         <xs:annotation>
-            <xs:documentation>Filter on file path.</xs:documentation>
+            <xs:documentation>Reverse filter.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:attribute ref="Path" />
+            <xs:sequence>
+                <xs:element ref="FileFilters" />
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="ProjectFilter" abstract="true">
+    <xs:element name="FileMatchAll" substitutionGroup="FileFilters">
         <xs:annotation>
-            <xs:documentation>Project filter.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
-
-    <xs:element name="DependenciesOf" substitutionGroup="ProjectFilter">
-        <xs:annotation>
-            <xs:documentation>Filter on dependent projects.</xs:documentation>
+            <xs:documentation>Match all children filters.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="ProjectName" type="ProjectName" use="required">
+            <xs:sequence>
+                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="FileMatchAnyOf" substitutionGroup="FileFilters">
+        <xs:annotation>
+            <xs:documentation>Match any of children filters.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="FilePath" substitutionGroup="FileFilters">
+        <xs:annotation>
+            <xs:documentation>Filter matching file path pattern.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="Match" type="PathGlobPattern" use="required">
                 <xs:annotation>
-                    <xs:documentation>Dependent project name.</xs:documentation>
+                    <xs:documentation>File path pattern.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>

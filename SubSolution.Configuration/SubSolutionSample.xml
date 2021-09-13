@@ -9,9 +9,24 @@
                 CollapseEmptyFolders="true"
                 ConflictProjectsOutputDirectory=".Conflicts">
             <SubSolutions CreateRootFolder="true" CreateFolders="true">
-                <MatchingPath Path="**/*.custom.csproj" />
+                <WhereProjects>
+                    <ProjectPath Match="**/*.custom.csproj" />
+                    <ProjectMatchAnyOf>
+                        <DependenciesOf Project="Hello.Me" />
+                        <ProjectMatchAll>
+                            <ProjectPath Match="**/*.custom.csproj" />
+                            <DependenciesOf Project="Hello.Me" />
+                        </ProjectMatchAll>
+                    </ProjectMatchAnyOf>
+                </WhereProjects>
             </SubSolutions>
-            <Projects />
+            <Projects Path="**/*.Tests.csproj">
+                <Where>
+                    <ProjectNot>
+                        <DependenciesOf Project="Diese" />
+                    </ProjectNot>
+                </Where>
+            </Projects>
         </Folder>
         <SubSolutions CreateRootFolder="true" CreateFolders="true" />
         <Projects />

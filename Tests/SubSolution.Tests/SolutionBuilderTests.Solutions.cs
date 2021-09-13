@@ -29,9 +29,9 @@ namespace SubSolution.Tests
             CheckFolderContainsMyFramework(solution.Root);
         }
 
-        [Test] public Task ProcessSolutionsMatchingFilter() => ProcessSolutionsMatchingFilterBase<Solutions>();
-        [Test] public Task ProcessSubSolutionsMatchingFilter() => ProcessSolutionsMatchingFilterBase<SubSolutions>();
-        private async Task ProcessSolutionsMatchingFilterBase<T>()
+        [Test] public Task ProcessSolutionsMatchingPath() => ProcessSolutionsMatchingPathBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingPath() => ProcessSolutionsMatchingPathBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingPathBase<T>()
             where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
@@ -50,9 +50,9 @@ namespace SubSolution.Tests
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
 
-        [Test] public Task ProcessSolutionsMatchingMultipleFilters() => ProcessSolutionsMatchingMultipleFiltersBase<Solutions>();
-        [Test] public Task ProcessSubSolutionsMatchingMultipleFilters() => ProcessSolutionsMatchingMultipleFiltersBase<SubSolutions>();
-        private async Task ProcessSolutionsMatchingMultipleFiltersBase<T>()
+        [Test] public Task ProcessSolutionsMatchingMultiplePaths() => ProcessSolutionsMatchingMultiplePathsBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultiplePaths() => ProcessSolutionsMatchingMultiplePathsBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultiplePathsBase<T>()
             where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
@@ -72,9 +72,9 @@ namespace SubSolution.Tests
             CheckFolderContainsMyFramework(solution.Root);
         }
 
-        [Test] public Task ProcessSolutionsMatchingMultipleFiltersInDifferentFolder() => ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<Solutions>();
-        [Test] public Task ProcessSubSolutionsMatchingMultipleFiltersInDifferentFolder() => ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<SubSolutions>();
-        private async Task ProcessSolutionsMatchingMultipleFiltersInDifferentFolderBase<T>()
+        [Test] public Task ProcessSolutionsMatchingMultiplePathsInDifferentFolder() => ProcessSolutionsMatchingMultiplePathsInDifferentFolderBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultiplePathsInDifferentFolder() => ProcessSolutionsMatchingMultiplePathsInDifferentFolderBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultiplePathsInDifferentFolderBase<T>()
             where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration
@@ -104,9 +104,9 @@ namespace SubSolution.Tests
             CheckFolderContainsMySubModule(subModuleFolder, only: true);
         }
 
-        [Test] public Task ProcessSolutionsMatchingMultipleFiltersWithOverwrite() => ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<Solutions>();
-        [Test] public Task ProcessSubSolutionsMatchingMultipleFiltersWithOverwrite() => ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<SubSolutions>();
-        private async Task ProcessSolutionsMatchingMultipleFiltersWithOverwriteBase<T>()
+        [Test] public Task ProcessSolutionsMatchingMultiplePathsWithOverwrite() => ProcessSolutionsMatchingMultiplePathsWithOverwriteBase<Solutions>();
+        [Test] public Task ProcessSubSolutionsMatchingMultiplePathsWithOverwrite() => ProcessSolutionsMatchingMultiplePathsWithOverwriteBase<SubSolutions>();
+        private async Task ProcessSolutionsMatchingMultiplePathsWithOverwriteBase<T>()
             where T : SolutionContentFiles, new()
         {
             var configuration = new SubSolutionConfiguration

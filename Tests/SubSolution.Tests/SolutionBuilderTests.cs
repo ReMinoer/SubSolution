@@ -41,6 +41,7 @@ namespace SubSolution.Tests
             Func<MockFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
+            logger.LogDebug("Configuration XML:" + Environment.NewLine + configuration.Untyped);
 
             var mockProjectReader = new MockProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
             {
@@ -114,6 +115,7 @@ namespace SubSolution.Tests
 
             relativeFilePath.AddRange(new[]
             {
+                @"tools\pull.bat",
                 @"tools\submit.bat",
                 @"tools\debug\Debug.exe",
                 @"src\MyApplication\MyClass.cs",
@@ -139,6 +141,7 @@ namespace SubSolution.Tests
                     @"external\MyFramework\src\MyFramework\MyClass.cs",
                     @"external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj",
                     @"external\MyFramework\tests\MyFramework.Tests\MyTests.cs",
+                    @"external\MyFramework\external\MySubModule\README.txt",
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj",
                     @"external\MyFramework\external\MySubModule\src\MySubModule\MyClass.cs",
                 });
@@ -295,6 +298,7 @@ namespace SubSolution.Tests
             {
                 SolutionItems = new List<SolutionItems>
                 {
+                    new Files { Path = "*.txt" },
                     new Projects { Path = "src/**" }
                 }
             }
@@ -302,11 +306,12 @@ namespace SubSolution.Tests
 
         private void CheckFolderContainsMySubModule(ISolutionFolder rootFolder, bool only = false)
         {
+            rootFolder.FilePaths.Should().Contain("external/MyFramework/external/MySubModule/README.txt");
             rootFolder.Projects.Keys.Should().Contain("external/MyFramework/external/MySubModule/src/MySubModule/MySubModule.csproj");
 
             if (only)
             {
-                rootFolder.FilePaths.Should().BeEmpty();
+                rootFolder.FilePaths.Should().HaveCount(1);
                 rootFolder.Projects.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().BeEmpty();
             }

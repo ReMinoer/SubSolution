@@ -9,7 +9,7 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         [Test]
-        public async Task ProcessFilesMatchingFilter()
+        public async Task ProcessFilesMatchingPath()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -30,13 +30,14 @@ namespace SubSolution.Tests
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.FilePaths.Should().HaveCount(2);
+            solution.Root.FilePaths.Should().HaveCount(3);
             solution.Root.FilePaths.Should().Contain("tools/submit.bat");
+            solution.Root.FilePaths.Should().Contain("tools/pull.bat");
             solution.Root.FilePaths.Should().Contain("tools/debug/Debug.exe");
         }
 
         [Test]
-        public async Task ProcessFilesMatchingMultipleFilters()
+        public async Task ProcessFilesMatchingMultiplePaths()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -61,13 +62,14 @@ namespace SubSolution.Tests
             solution.Root.Projects.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.FilePaths.Should().HaveCount(2);
+            solution.Root.FilePaths.Should().HaveCount(3);
             solution.Root.FilePaths.Should().Contain("tools/submit.bat");
+            solution.Root.FilePaths.Should().Contain("tools/pull.bat");
             solution.Root.FilePaths.Should().Contain("tools/debug/Debug.exe");
         }
 
         [Test]
-        public async Task ProcessFilesMatchingMultipleFiltersInDifferentSolutionFolders()
+        public async Task ProcessFilesMatchingMultiplePathsInDifferentSolutionFolders()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -103,14 +105,15 @@ namespace SubSolution.Tests
             {
                 ISolutionFolder batchFolder = solution.Root.SubFolders["Batch"];
                 batchFolder.Projects.Should().BeEmpty();
-                batchFolder.FilePaths.Should().HaveCount(1);
+                batchFolder.FilePaths.Should().HaveCount(2);
                 batchFolder.FilePaths.Should().Contain("tools/submit.bat");
+                batchFolder.FilePaths.Should().Contain("tools/pull.bat");
                 batchFolder.SubFolders.Should().BeEmpty();
             }
         }
 
         [Test]
-        public async Task ProcessFilesMatchingMultipleFiltersWithOverwrite()
+        public async Task ProcessFilesMatchingMultiplePathsWithOverwrite()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -152,12 +155,15 @@ namespace SubSolution.Tests
             solution.Root.SubFolders.Should().HaveCount(2);
             {
                 ISolutionFolder toolsFolder = solution.Root.SubFolders["Tools"];
-                toolsFolder.FilePaths.Should().BeEquivalentTo("tools/debug/Debug.exe");
+                toolsFolder.FilePaths.Should().HaveCount(1);
+                toolsFolder.FilePaths.Should().Contain("tools/debug/Debug.exe");
                 toolsFolder.Projects.Should().BeEmpty();
                 toolsFolder.SubFolders.Should().BeEmpty();
 
                 ISolutionFolder batchFolder = solution.Root.SubFolders["Batch"];
-                batchFolder.FilePaths.Should().BeEquivalentTo("tools/submit.bat");
+                batchFolder.FilePaths.Should().HaveCount(2);
+                batchFolder.FilePaths.Should().Contain("tools/submit.bat");
+                batchFolder.FilePaths.Should().Contain("tools/pull.bat");
                 batchFolder.Projects.Should().BeEmpty();
                 batchFolder.SubFolders.Should().BeEmpty();
             }
@@ -188,7 +194,9 @@ namespace SubSolution.Tests
             solution.Root.SubFolders.Should().HaveCount(1);
             {
                 ISolutionFolder toolsFolder = solution.Root.SubFolders["tools"];
-                toolsFolder.FilePaths.Should().BeEquivalentTo("tools/submit.bat");
+                toolsFolder.FilePaths.Should().HaveCount(2);
+                toolsFolder.FilePaths.Should().Contain("tools/submit.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/pull.bat");
                 toolsFolder.Projects.Should().BeEmpty();
                 toolsFolder.SubFolders.Should().HaveCount(1);
                 {

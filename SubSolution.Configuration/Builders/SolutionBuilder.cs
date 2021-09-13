@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using SubSolution.Configuration.Builders.Filters;
 using SubSolution.Converters;
 using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
@@ -160,13 +161,21 @@ namespace SubSolution.Configuration.Builders
 
         public async Task VisitAsync(Files files)
         {
-            foreach (string relativeFilePath in GetMatchingFilePaths(files.Path, defaultFileExtension: "*"))
-                await AddFoldersAndFileToSolution(relativeFilePath, AddFile, files.CreateFolders == true, files.Overwrite == true);
+            IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(files.Path, defaultFileExtension: "*");
 
-            static Task AddFile(Solution.Folder folder, string filePath, bool overwrite)
+            IFilter<string>? filter = await BuildFilterAsync(files.Where);
+            if (filter != null)
+            {
+                Log("Filter files: " + filter.TextFormat);
+                matchingFilePaths = matchingFilePaths.Where(filter.Match);
+            }
+
+            foreach (string relativeFilePath in matchingFilePaths)
+                AddFoldersAndFileToSolution(relativeFilePath, AddFile, files.CreateFolders == true, files.Overwrite == true);
+
+            static void AddFile(Solution.Folder folder, string filePath, bool overwrite)
             {
                 folder.AddFile(filePath, overwrite);
-                return Task.CompletedTask;
             }
         }
         
@@ -177,12 +186,22 @@ namespace SubSolution.Configuration.Builders
 
             await Task.WhenAll(matchingProjectByPath.Values);
 
-            foreach (string relativeFilePath in matchingProjectByPath.Keys)
-                await AddFoldersAndFileToSolution(relativeFilePath, AddProject, projects.CreateFolders == true, projects.Overwrite == true);
-
-            async Task AddProject(Solution.Folder folder, string projectPath, bool overwrite)
+            IFilter<(string, ISolutionProject)>? filter = await BuildFilterAsync(projects.Where);
+            if (filter != null)
             {
-                ISolutionProject project = await matchingProjectByPath[projectPath];
+                Log("Filter project: " + filter.TextFormat);
+
+                IEnumerable<string> ignoredProjectPaths = matchingProjectByPath.Where(x => !filter.Match((x.Key, x.Value.Result))).Select(x => x.Key);
+                foreach (string ignoredProjectPath in ignoredProjectPaths)
+                    matchingProjectByPath.Remove(ignoredProjectPath);
+            }
+
+            foreach (string relativeFilePath in matchingProjectByPath.Keys)
+                AddFoldersAndFileToSolution(relativeFilePath, AddProject, projects.CreateFolders == true, projects.Overwrite == true);
+
+            void AddProject(Solution.Folder folder, string projectPath, bool overwrite)
+            {
+                ISolutionProject project = matchingProjectByPath[projectPath].Result;
                 if (folder.AddProject(projectPath, project, overwrite))
                 {
                     foreach (string projectConfiguration in project.Configurations)
@@ -236,6 +255,13 @@ namespace SubSolution.Configuration.Builders
                 matchingFilePaths = matchingFilePaths.Reverse();
             }
 
+            IFilter<string>? filter = await BuildFilterAsync(solutionContentFiles.Where);
+            if (filter != null)
+            {
+                Log("Filter solutions: " + filter.TextFormat);
+                matchingFilePaths = matchingFilePaths.Where(filter.Match);
+            }
+
             foreach (string relativeFilePath in matchingFilePaths)
             {
                 string filePath = _fileSystem.Combine(_workspaceDirectoryPath, relativeFilePath);
@@ -244,6 +270,34 @@ namespace SubSolution.Configuration.Builders
 
                 (ISolution solution, string solutionName) = await solutionLoader(filePath);
                 solution.SetOutputDirectory(_solution.OutputDirectory);
+
+                if (solutionContentFiles.WhereProjects?.IgnoreAll == true)
+                {
+                    solution.Root.FilterProjects((_, __) => false);
+                }
+                else
+                {
+                    IFilter<(string, ISolutionProject)>? projectFilter = await BuildFilterAsync(solutionContentFiles.WhereProjects);
+                    if (projectFilter != null)
+                    {
+                        Log($"Filter \"{solutionName}\" solution projects: " + projectFilter.TextFormat);
+                        solution.Root.FilterProjects((path, project) => projectFilter.Match((path, project)));
+                    }
+                }
+
+                if (solutionContentFiles.WhereFiles?.IgnoreAll == true)
+                {
+                    solution.Root.FilterFiles(_ => false);
+                }
+                else
+                {
+                    IFilter<string>? fileFilter = await BuildFilterAsync(solutionContentFiles.WhereFiles);
+                    if (fileFilter != null)
+                    {
+                        Log($"Filter \"{solutionName}\" solution files: " + fileFilter.TextFormat);
+                        solution.Root.FilterFiles(fileFilter.Match);
+                    }
+                }
 
                 if (solutionContentFiles.CreateRootFolder == true)
                 {
@@ -275,19 +329,13 @@ namespace SubSolution.Configuration.Builders
 
         private IEnumerable<string> GetMatchingFilePaths(string? globPattern, string defaultFileExtension)
         {
-            if (string.IsNullOrEmpty(globPattern))
-                globPattern = "**/*." + defaultFileExtension;
-            else if (globPattern.EndsWith("/") || globPattern.EndsWith("\\"))
-                globPattern += "*." + defaultFileExtension;
-            else if (globPattern.EndsWith("**"))
-                globPattern += "/*." + defaultFileExtension;
+            globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
 
             Log($"Search for files matching pattern: {globPattern}");
-
             return _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, globPattern);
         }
 
-        private async Task AddFoldersAndFileToSolution(string relativeFilePath, Func<Solution.Folder, string, bool, Task> addEntry, bool createFolders, bool overwrite)
+        private void AddFoldersAndFileToSolution(string relativeFilePath, Action<Solution.Folder, string, bool> addEntry, bool createFolders, bool overwrite)
         {
             //string absoluteFilePath = _fileSystem.Combine(_workspaceDirectoryPath, workspaceRelativeFilePath);
             //string relativeFilePath = _fileSystem.MakeRelativePath(_solution.OutputDirectory, absoluteFilePath);
@@ -300,13 +348,13 @@ namespace SubSolution.Configuration.Builders
                 using (MoveCurrentFolder(solutionFolderPath))
                 {
                     Log($"Add: {relativeFilePath}");
-                    await addEntry(CurrentFolder, relativeFilePath, overwrite);
+                    addEntry(CurrentFolder, relativeFilePath, overwrite);
                 }
             }
             else
             {
                 Log($"Add: {relativeFilePath}");
-                await addEntry(CurrentFolder, relativeFilePath, overwrite);
+                addEntry(CurrentFolder, relativeFilePath, overwrite);
             }
         }
 
@@ -340,6 +388,42 @@ namespace SubSolution.Configuration.Builders
             IEnumerable<string> emptySubFolderNames = folder.SubFolders.Where(x => x.Value.IsEmpty).Select(x => x.Key);
             foreach (string emptySubFolderName in emptySubFolderNames)
                 folder.RemoveSubFolder(emptySubFolderName);
+        }
+
+        private async Task<IFilter<(string, ISolutionProject)>?> BuildFilterAsync(ProjectFilterRoot? filterRoot)
+        {
+            if (filterRoot is null)
+                return null;
+
+            var filter = new AllFilter<(string, ISolutionProject)>();
+            var filterBuilder = new ProjectFilterBuilder(_fileSystem, _workspaceDirectoryPath);
+
+            foreach (ProjectFilters filterNode in filterRoot.ProjectFilters)
+            {
+                await filterNode.AcceptAsync(filterBuilder);
+                filter.Filters.Add(filterBuilder.BuiltFilter);
+            }
+
+            await filter.PrepareAsync();
+            return filter;
+        }
+
+        private async Task<IFilter<string>?> BuildFilterAsync(FileFilterRoot? filterRoot)
+        {
+            if (filterRoot is null)
+                return null;
+
+            var filter = new AllFilter<string>();
+            var filterBuilder = new FileFilterBuilder(_fileSystem, _workspaceDirectoryPath);
+
+            foreach (FileFilters filterNode in filterRoot.FileFilters)
+            {
+                await filterNode.AcceptAsync(filterBuilder);
+                filter.Filters.Add(filterBuilder.BuiltFilter);
+            }
+
+            await filter.PrepareAsync();
+            return filter;
         }
 
         private void Log(string message) => _logger.Log(_logLevel, message);

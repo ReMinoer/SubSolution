@@ -166,5 +166,35 @@ namespace SubSolution.Base
                 _knownPaths.Add(newFilePath, _owner);
             }
         }
+
+        public void FilterProjects(Func<string, ISolutionProject, bool> predicate)
+        {
+            string[] projectPathsToRemove = _projects.Where(x => !predicate(x.Key, x.Value)).Select(x => x.Key).ToArray();
+
+            foreach (string removedPath in projectPathsToRemove)
+                RemoveProject(removedPath);
+
+            foreach (TFolder subFolder in _subFolders.Values)
+                subFolder.FilterProjects(predicate);
+
+            string[] emptySubFolderNames = _subFolders.Where(x => x.Value.IsEmpty).Select(x => x.Key).ToArray();
+            foreach (string emptySubFolderName in emptySubFolderNames)
+                _subFolders.Remove(emptySubFolderName);
+        }
+
+        public void FilterFiles(Func<string, bool> predicate)
+        {
+            string[] filePathsToRemove = _filePaths.Where(x => !predicate(x)).ToArray();
+
+            foreach (string removedPath in filePathsToRemove)
+                RemoveFile(removedPath);
+
+            foreach (TFolder subFolder in _subFolders.Values)
+                subFolder.FilterFiles(predicate);
+
+            string[] emptySubFolderNames = _subFolders.Where(x => x.Value.IsEmpty).Select(x => x.Key).ToArray();
+            foreach (string emptySubFolderName in emptySubFolderNames)
+                _subFolders.Remove(emptySubFolderName);
+        }
     }
 }
