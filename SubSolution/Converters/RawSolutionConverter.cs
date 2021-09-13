@@ -86,7 +86,7 @@ namespace SubSolution.Converters
             if (rootFilesFolderProject != null)
                 FillFolderFiles(solution.Root, rootFilesFolderProject);
 
-            IEnumerable<Guid> rootProjectGuids = projectsByGuid.Keys.Except(parentGraph.Keys);
+            IEnumerable<Guid> rootProjectGuids = projectsByGuid.Where(x => x.Value != rootFilesFolderProject).Select(x => x.Key).Except(parentGraph.Keys);
             await FillSubFolder(solution, solution.Root, rootProjectGuids, projectsByGuid, childrenGraph);
         }
 
