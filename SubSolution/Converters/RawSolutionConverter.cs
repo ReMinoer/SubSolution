@@ -109,7 +109,7 @@ namespace SubSolution.Converters
                 else
                 {
                     string relativeProjectPath = childProject.Arguments[1];
-                    string absoluteProjectPath = _fileSystem.Combine(solution.OutputDirectory, relativeProjectPath);
+                    string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectory, relativeProjectPath);
 
                     ISolutionProject solutionProject = await _projectReader.ReadAsync(absoluteProjectPath);
                     folder.AddProject(relativeProjectPath, solutionProject);

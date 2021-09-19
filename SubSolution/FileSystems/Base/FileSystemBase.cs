@@ -19,13 +19,23 @@ namespace SubSolution.FileSystems.Base
 
         public string MakeRelativePath(string rootPath, string filePath)
         {
-            var rootPathSplit = SplitPath(rootPath);
-            var filePathSplit = SplitPath(filePath);
+            string[] rootPathSplit = SplitPath(rootPath);
+            string[] filePathSplit = SplitPath(filePath);
 
             int commonPartsCount = rootPathSplit.Zip(filePathSplit, (x, y) => x == y).TakeWhile(x => x).Count();
             int backMoveCount = rootPathSplit.Length - commonPartsCount;
 
             return Enumerable.Repeat("..", backMoveCount).Concat(filePathSplit[commonPartsCount..]).Aggregate(Combine);
+        }
+
+        public string MakeAbsolutePath(string rootPath, string relativeFilePath)
+        {
+            string[] rootPathSplit = SplitPath(rootPath);
+            string[] relativeFilePathSplit = SplitPath(relativeFilePath);
+
+            int backtrackCount = relativeFilePathSplit.TakeWhile(x => x == "..").Count();
+
+            return rootPathSplit[..^backtrackCount].Concat(relativeFilePathSplit[backtrackCount..]).Aggregate(Combine);
         }
 
         public IEnumerable<string> GetFilesMatchingGlobPattern(string directoryPath, string globPattern)
