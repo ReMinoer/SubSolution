@@ -30,6 +30,7 @@ namespace SubSolution.Configuration.Builders
 
         private readonly IFileSystem _fileSystem;
         private readonly CacheProjectReader _projectReader;
+        private readonly ProjectGraph _projectGraph;
 
         private readonly ILogger _logger;
         private readonly LogLevel _logLevel;
@@ -37,6 +38,14 @@ namespace SubSolution.Configuration.Builders
         private readonly ISet<string> _ignoredSolutionPaths;
         private readonly ISet<string> _projectConfigurations;
         private readonly ISet<string> _projectPlatforms;
+        private readonly bool _ignoreConfigurationsAndPlatforms;
+
+        private readonly ISet<string> _allAddedProjects;
+        private readonly Dictionary<string, ISet<string>> _solutionSetsById;
+        private ISet<string>? _projectsInDefaultScope;
+        private bool _virtualizing;
+
+        public List<Issue> Issues { get; }
 
         public SolutionBuilder(SolutionBuilderContext context)
         {
@@ -49,6 +58,10 @@ namespace SubSolution.Configuration.Builders
 
             _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
             _projectReader = new CacheProjectReader(_fileSystem, context.ProjectReader);
+            _projectGraph = new ProjectGraph(_fileSystem, _projectReader);
+
+            _logger = context.Logger ?? NullLogger.Instance;
+            _logLevel = context.LogLevel;
 
             _ignoredSolutionPaths = new HashSet<string>(_fileSystem.PathComparer);
             if (context.ConfigurationFilePath != null)
@@ -57,25 +70,41 @@ namespace SubSolution.Configuration.Builders
 
             _projectConfigurations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _projectPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _ignoreConfigurationsAndPlatforms = context.IgnoreConfigurationsAndPlatforms;
 
-            _logger = context.Logger ?? NullLogger.Instance;
-            _logLevel = context.LogLevel;
+            _solutionSetsById = new Dictionary<string, ISet<string>>();
+            _allAddedProjects = new HashSet<string>(_fileSystem.PathComparer);
+
+            Issues = new List<Issue>();
         }
         
         public async Task<Solution> BuildAsync(SubSolutionConfiguration configuration)
         {
+            Issues.Clear();
+
             Log("Start building solution");
             Log($"Configuration file: {_ignoredSolutionPaths.FirstOrDefault() ?? LogTokenNone}");
             Log($"Solution output file: {_solution.OutputPath}");
             Log($"Initial workspace directory: {_workspaceDirectoryPath}");
 
+            if (_ignoreConfigurationsAndPlatforms)
+            {
+                if (configuration.Root != null)
+                    await VisitRootAsync(configuration.Root);
+
+                return _solution;
+            }
+
             bool hasFullConfigurationPlatforms = (configuration.Configurations?.Configuration.Count ?? 0) > 0 && (configuration.Platforms?.Platform.Count ?? 0) > 0;
             if (hasFullConfigurationPlatforms)
                 VisitConfigurationsAndPlatforms(configuration.Configurations!, configuration.Platforms!);
 
+            if (configuration.Virtual != null)
+                await VisitVirtualAsync(configuration.Virtual);
+
             if (configuration.Root != null)
                 await VisitRootAsync(configuration.Root);
-
+            
             if (!hasFullConfigurationPlatforms)
                 FillMissingConfigurationsPlatformsFromProjects(configuration.Configurations, configuration.Platforms);
 
@@ -147,7 +176,21 @@ namespace SubSolution.Configuration.Builders
             VisitConfigurationsAndPlatforms(configurations, platforms);
         }
 
-        private async Task VisitRootAsync(SolutionRoot root)
+        private IDisposable Virtualize()
+        {
+            bool previousValue = _virtualizing;
+            _virtualizing = true;
+            return new Disposable(() => _virtualizing = previousValue);
+        }
+
+        private async Task VisitVirtualAsync(VirtualProjectsSets virtualProjectsSets)
+        {
+            using (Virtualize())
+                foreach (SolutionProjects solutionProjects in virtualProjectsSets.SolutionProjects)
+                    await solutionProjects.AcceptAsync(this);
+        }
+
+        private async Task VisitRootAsync(SolutionFolderBase root)
         {
             foreach (SolutionItems items in root.SolutionItems)
                 await items.AcceptAsync(this);
@@ -181,29 +224,127 @@ namespace SubSolution.Configuration.Builders
         
         public async Task VisitAsync(Projects projects)
         {
-            IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj");
-            Dictionary<string, Task<ISolutionProject>> matchingProjectByPath = matchingFilePaths.ToDictionary(x => x, x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectory, x)));
+            string[] matchingFilePaths = GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj").ToArray();
+            
+            Task<ISolutionProject>[] readProjectTasks = matchingFilePaths
+                .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectory, x)))
+                .ToArray();
 
-            await Task.WhenAll(matchingProjectByPath.Values);
+            await Task.WhenAll(readProjectTasks);
 
+            Dictionary<string, ISolutionProject> matchingProjectByPath = matchingFilePaths
+                .Zip(readProjectTasks.Select(x => x.Result), (k, v) => (k, v))
+                .ToDictionary(x => x.k, x => x.v);
+
+            await VisitAsyncBase(projects, matchingProjectByPath);
+        }
+
+        public async Task VisitAsync(Dependencies dependencies)
+        {
+            ISet<string> targetPaths;
+            if (dependencies.Target is null)
+            {
+                targetPaths = GetDefaultTarget();
+            }
+            else if (!_solutionSetsById.TryGetValue(dependencies.Target, out targetPaths))
+            {
+                Issues.Add(new Issue(IssueLevel.Warning, $"Unknown target \"{dependencies.Target}\". {nameof(Dependencies)} element ignored."));
+                return;
+            }
+
+            var matchingDependencies = new Dictionary<string, ISolutionProject>(_fileSystem.PathComparer);
+            foreach (string targetPath in targetPaths)
+            {
+                string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
+
+                foreach (string absoluteDependencyPath in await _projectGraph.GetDependencies(absoluteTargetPath))
+                {
+                    string dependencyPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependencyPath);
+
+                    if (!matchingDependencies.ContainsKey(dependencyPath))
+                        matchingDependencies.TryAdd(dependencyPath, await _projectReader.ReadAsync(dependencyPath));
+                }
+            }
+
+            await VisitAsyncBase(dependencies, matchingDependencies);
+        }
+
+        public async Task VisitAsync(Dependents dependents)
+        {
+            ISet<string> targetPaths;
+            if (dependents.Target is null)
+            {
+                targetPaths = GetDefaultTarget();
+            }
+            else if (!_solutionSetsById.TryGetValue(dependents.Target, out targetPaths))
+            {
+                Issues.Add(new Issue(IssueLevel.Warning, $"Unknown target \"{dependents.Target}\". {nameof(Dependents)} element ignored."));
+                return;
+            }
+
+            ISet<string> scopePaths;
+            if (dependents.Scope is null)
+            {
+                scopePaths = GetDefaultScope();
+            }
+            else if (!_solutionSetsById.TryGetValue(dependents.Scope, out scopePaths))
+            {
+                Issues.Add(new Issue(IssueLevel.Warning, $"Unknown scope \"{dependents.Scope}\". {nameof(Dependents)} element ignored."));
+                return;
+            }
+
+            await Task.WhenAll(scopePaths.Select(x => _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x)).Select(_projectGraph.GetDependencies));
+
+            var matchingDependents = new Dictionary<string, ISolutionProject>(_fileSystem.PathComparer);
+            foreach (string targetPath in targetPaths)
+            {
+                string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
+
+                foreach (string absoluteDependentPath in await _projectGraph.GetDependents(absoluteTargetPath))
+                {
+                    string dependentPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependentPath);
+                    if (!scopePaths.Contains(dependentPath))
+                        continue;
+
+                    if (!matchingDependents.ContainsKey(dependentPath))
+                        matchingDependents.Add(dependentPath, await _projectReader.ReadAsync(dependentPath));
+                }
+            }
+
+            await VisitAsyncBase(dependents, matchingDependents);
+        }
+
+        private ISet<string> GetDefaultTarget() => _allAddedProjects.ToHashSet();
+        private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingFilePaths("**", defaultFileExtension: "csproj").ToHashSet();
+
+        private async Task VisitAsyncBase(ProjectsBase projects, Dictionary<string, ISolutionProject> matchingProjectByPath)
+        {
             IFilter<(string, ISolutionProject)>? filter = await BuildFilterAsync(projects.Where);
             if (filter != null)
             {
-                Log("Filter project: " + filter.TextFormat);
+                Log("Filter projects: " + filter.TextFormat);
 
-                IEnumerable<string> ignoredProjectPaths = matchingProjectByPath.Where(x => !filter.Match((x.Key, x.Value.Result))).Select(x => x.Key);
+                IEnumerable<string> ignoredProjectPaths = matchingProjectByPath.Where(x => !filter.Match((x.Key, x.Value))).Select(x => x.Key);
                 foreach (string ignoredProjectPath in ignoredProjectPaths)
                     matchingProjectByPath.Remove(ignoredProjectPath);
             }
+
+            if (!string.IsNullOrEmpty(projects.Id))
+                _solutionSetsById.Add(projects.Id, matchingProjectByPath.Keys.ToHashSet(_fileSystem.PathComparer));
+
+            if (_virtualizing)
+                return;
 
             foreach (string relativeFilePath in matchingProjectByPath.Keys)
                 AddFoldersAndFileToSolution(relativeFilePath, AddProject, projects.CreateFolders == true, projects.Overwrite == true);
 
             void AddProject(Solution.Folder folder, string projectPath, bool overwrite)
             {
-                ISolutionProject project = matchingProjectByPath[projectPath].Result;
-                if (folder.AddProject(projectPath, project, overwrite))
+                ISolutionProject project = matchingProjectByPath[projectPath];
+                if (folder.AddProject(projectPath, project, overwrite) && !_ignoreConfigurationsAndPlatforms)
                 {
+                    _allAddedProjects.Add(projectPath);
+
                     foreach (string projectConfiguration in project.Configurations)
                         _projectConfigurations.Add(projectConfiguration);
                     foreach (string projectPlatform in project.Platforms)
@@ -239,6 +380,7 @@ namespace SubSolution.Configuration.Builders
                 SolutionBuilderContext subContext = await SolutionBuilderContext.FromConfigurationFileAsync(filePath, _projectReader, _fileSystem);
                 subContext.Logger = _logger;
                 subContext.LogLevel = _logLevel;
+                subContext.IgnoreConfigurationsAndPlatforms = true;
 
                 SolutionBuilder solutionBuilder = new SolutionBuilder(subContext);
                 ISolution solution = await solutionBuilder.BuildAsync(subContext.Configuration);
@@ -262,9 +404,11 @@ namespace SubSolution.Configuration.Builders
                 matchingFilePaths = matchingFilePaths.Where(filter.Match);
             }
 
+            HashSet<string> allSolutionsProjects = new HashSet<string>(_fileSystem.PathComparer);
+
             foreach (string relativeFilePath in matchingFilePaths)
             {
-                string filePath = _fileSystem.Combine(_workspaceDirectoryPath, relativeFilePath);
+                string filePath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, relativeFilePath);
                 if (!_ignoredSolutionPaths.Add(filePath) && solutionContentFiles.Overwrite != true)
                     continue;
 
@@ -298,6 +442,15 @@ namespace SubSolution.Configuration.Builders
                         solution.Root.FilterFiles(fileFilter.Match);
                     }
                 }
+                
+                foreach (string addedProject in solution.Root.AllProjectPaths)
+                {
+                    allSolutionsProjects.Add(addedProject);
+                    _allAddedProjects.Add(addedProject);
+                }
+
+                if (_virtualizing)
+                    continue;
 
                 if (solutionContentFiles.CreateRootFolder == true)
                 {
@@ -309,7 +462,8 @@ namespace SubSolution.Configuration.Builders
                     CurrentFolder.AddFolderContent(solution.Root, solutionContentFiles.Overwrite == true);
                 }
 
-                FillProjectConfigurationPlatformList(solution.Root);
+                if (!_ignoreConfigurationsAndPlatforms)
+                    FillProjectConfigurationPlatformList(solution.Root);
 
                 void FillProjectConfigurationPlatformList(ISolutionFolder folder)
                 {
@@ -325,6 +479,9 @@ namespace SubSolution.Configuration.Builders
                         FillProjectConfigurationPlatformList(subFolder);
                 }
             }
+
+            if (!string.IsNullOrEmpty(solutionContentFiles.Id))
+                _solutionSetsById.Add(solutionContentFiles.Id, allSolutionsProjects);
         }
 
         private IEnumerable<string> GetMatchingFilePaths(string? globPattern, string defaultFileExtension)

@@ -1,4 +1,4 @@
-﻿namespace SubSolution.Converters
+﻿namespace SubSolution
 {
     public enum IssueLevel
     {

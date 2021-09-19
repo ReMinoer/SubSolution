@@ -1,35 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using SubSolution.FileSystems;
 
 namespace SubSolution.ProjectReaders.Mock
 {
     public class MockProjectReader : IProjectReader
     {
-        public Dictionary<string, string[]> ProjectConfigurations { get; } = new Dictionary<string, string[]>();
-        public Dictionary<string, string[]> ProjectPlatforms { get; } = new Dictionary<string, string[]>();
-        public string[] ProjectDefaultConfigurations { get; }
-        public string[] ProjectDefaultPlatforms { get; }
-        public bool ProjectCanBuild { get; set; }
-        public bool ProjectCanDeploy { get; set; }
+        public Dictionary<string, ISolutionProject> Projects { get; }
+        public ISolutionProject DefaultProject { get; set; }
 
-        public MockProjectReader(string[] projectDefaultConfigurations, string[] projectDefaultPlatforms)
+        public MockProjectReader(IFileSystem fileSystem, ISolutionProject defaultProject)
         {
-            ProjectDefaultConfigurations = projectDefaultConfigurations;
-            ProjectDefaultPlatforms = projectDefaultPlatforms;
+            Projects = new Dictionary<string, ISolutionProject>(fileSystem.PathComparer);
+            DefaultProject = defaultProject;
         }
 
         public Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
-            var solutionProject = new SolutionProject
-            {
-                CanBuild = ProjectCanBuild,
-                CanDeploy = ProjectCanDeploy
-            };
+            if (Projects.TryGetValue(absoluteProjectPath, out ISolutionProject project))
+                return Task.FromResult(project);
 
-            solutionProject.Configurations.AddRange(ProjectConfigurations.TryGetValue(absoluteProjectPath, out string[] x) ? x : ProjectDefaultConfigurations);
-            solutionProject.Platforms.AddRange(ProjectPlatforms.TryGetValue(absoluteProjectPath, out string[] y) ? y : ProjectDefaultPlatforms);
-
-            return Task.FromResult<ISolutionProject>(solutionProject);
+            return Task.FromResult<ISolutionProject>(new SolutionProject(DefaultProject));
         }
     }
 }

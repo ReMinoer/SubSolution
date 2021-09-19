@@ -9,5 +9,7 @@ namespace SubSolution.Configuration
         Task VisitAsync(Projects projects);
         Task VisitAsync(Solutions solutions);
         Task VisitAsync(SubSolutions subSolutions);
+        Task VisitAsync(Dependencies dependencies);
+        Task VisitAsync(Dependents dependents);
     }
 }

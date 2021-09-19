@@ -6,27 +6,26 @@
           ConflictProjectsOutputDirectory=".Conflicts">
         <Folder Name="FolderName"
                 RemoveUniqueItemFolders="true"
-                CollapseEmptyFolders="true"
-                ConflictProjectsOutputDirectory=".Conflicts">
+                CollapseEmptyFolders="true">
             <SubSolutions CreateRootFolder="true" CreateFolders="true">
                 <WhereProjects>
-                    <ProjectPath Match="**/*.custom.csproj" />
                     <ProjectMatchAnyOf>
-                        <DependenciesOf Project="Hello.Me" />
+                        <ProjectPath Match="**/*.custom.csproj" />
                         <ProjectMatchAll>
+                            <ProjectNot>
+                                <ProjectPath Match="**/*.custom.csproj" />
+                            </ProjectNot>
                             <ProjectPath Match="**/*.custom.csproj" />
-                            <DependenciesOf Project="Hello.Me" />
                         </ProjectMatchAll>
                     </ProjectMatchAnyOf>
                 </WhereProjects>
             </SubSolutions>
-            <Projects Path="**/*.Tests.csproj">
+            <Projects Path="MyApplication.csproj" Id="Application" />
+            <Dependencies Target="Application">
                 <Where>
-                    <ProjectNot>
-                        <DependenciesOf Project="Diese" />
-                    </ProjectNot>
+                    <ProjectPath Match="**/*.Tests.csproj" />
                 </Where>
-            </Projects>
+            </Dependencies>
         </Folder>
         <SubSolutions CreateRootFolder="true" CreateFolders="true" />
         <Projects />

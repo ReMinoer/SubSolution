@@ -7,6 +7,11 @@
                 <xs:documentation>Root element of a SubSolution configuration.</xs:documentation>
             </xs:annotation>
             <xs:all>
+                <xs:element name="Virtual" type="VirtualProjectsSets" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Virtual project sets.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element name="Root" type="SolutionRoot" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>Root of the solution.</xs:documentation>
@@ -130,12 +135,12 @@
             <xs:documentation>Solution item source.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="Root" type="SolutionRoot" abstract="true" substitutionGroup="SolutionItems">
+    <xs:element name="FolderBase" type="SolutionFolderBase" abstract="true" substitutionGroup="SolutionItems">
         <xs:annotation>
-            <xs:documentation>Solution root.</xs:documentation>
+            <xs:documentation>Solution folder base.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="Folder" type="SolutionFolder" substitutionGroup="Root">
+    <xs:element name="Folder" type="SolutionFolder" substitutionGroup="FolderBase">
         <xs:annotation>
             <xs:documentation>Solution folder.</xs:documentation>
         </xs:annotation>
@@ -145,17 +150,37 @@
             <xs:documentation>Solution file source.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="Projects" type="ProjectsSource" substitutionGroup="SolutionFiles">
-        <xs:annotation>
-            <xs:documentation>Set of projects.</xs:documentation>
-        </xs:annotation>
-    </xs:element>
     <xs:element name="Files" type="FilesSource" substitutionGroup="SolutionFiles">
         <xs:annotation>
             <xs:documentation>Set of files.</xs:documentation>
         </xs:annotation>
     </xs:element>
-    <xs:element name="SolutionContentFiles" type="SolutionsContentSourceBase" abstract="true" substitutionGroup="SolutionFiles">
+    <xs:element name="SolutionProjects" type="SolutionProjectsSourceBase" abstract="true" substitutionGroup="SolutionFiles">
+        <xs:annotation>
+            <xs:documentation>Solution project source.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="ProjectsBase" type="ProjectsSourceBase" abstract="true" substitutionGroup="SolutionProjects">
+        <xs:annotation>
+            <xs:documentation>Projects base.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Projects" type="ProjectsSource" substitutionGroup="ProjectsBase">
+        <xs:annotation>
+            <xs:documentation>Set of projects.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Dependencies" type="DependenciesSource" substitutionGroup="ProjectsBase">
+        <xs:annotation>
+            <xs:documentation>Set of project dependencies.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="Dependents" type="DependentsSource" substitutionGroup="ProjectsBase">
+        <xs:annotation>
+            <xs:documentation>Set of dependent projects.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="SolutionContentFiles" type="SolutionsContentSourceBase" abstract="true" substitutionGroup="SolutionProjects">
         <xs:annotation>
             <xs:documentation>Solution file source.</xs:documentation>
         </xs:annotation>
@@ -171,15 +196,24 @@
         </xs:annotation>
     </xs:element>
 
+    <xs:complexType name="VirtualProjectsSets">
+        <xs:annotation>
+            <xs:documentation>Represent a list of virtual project set that can be used as targets.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="SolutionProjects" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="SolutionItemsSourceBase" abstract="true">
         <xs:annotation>
             <xs:documentation>Base representation of a set of solution items.</xs:documentation>
         </xs:annotation>
     </xs:complexType>
 
-    <xs:complexType name="SolutionRoot">
+    <xs:complexType name="SolutionFolderBase">
         <xs:annotation>
-            <xs:documentation>Represent a solution root.</xs:documentation>
+            <xs:documentation>Base representation a solution root.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionItemsSourceBase">
@@ -196,6 +230,16 @@
                         <xs:documentation>True to remove folder with an unique item. Propagate to sub-folders.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionRoot">
+        <xs:annotation>
+            <xs:documentation>Represent a solution root.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionFolderBase">
                 <xs:attribute name="ConflictProjectsOutputDirectory" type="xs:anyURI">
                     <xs:annotation>
                         <xs:documentation>Output directory used to create conflict solving projects.</xs:documentation>
@@ -210,7 +254,7 @@
             <xs:documentation>Represent a solution folder.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="SolutionRoot">
+            <xs:extension base="SolutionFolderBase">
                 <xs:attribute name="Name" type="SolutionFolderName" use="required">
                     <xs:annotation>
                         <xs:documentation>Name of the solution folder.</xs:documentation>
@@ -226,7 +270,6 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionItemsSourceBase">
-                <xs:attribute ref="Path" />
                 <xs:attribute name="Overwrite" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>True to process files already contained in solution.</xs:documentation>
@@ -247,19 +290,6 @@
         </xs:annotation>
     </xs:attribute>
 
-    <xs:complexType name="ProjectsSource">
-        <xs:annotation>
-            <xs:documentation>Represent a set of projects.</xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="SolutionFilesSourceBase">
-                <xs:all>
-                    <xs:element name="Where" type="ProjectFilterRoot" minOccurs="0" />
-                </xs:all>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
     <xs:complexType name="FilesSource">
         <xs:annotation>
             <xs:documentation>Represent a set of files.</xs:documentation>
@@ -269,21 +299,88 @@
                 <xs:all>
                     <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
                 </xs:all>
+                <xs:attribute ref="Path" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+
+    <xs:complexType name="SolutionProjectsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Base representation of a set of solution files.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionFilesSourceBase">
+                <xs:attribute name="Id" type="ProjectSetId">
+                    <xs:annotation>
+                        <xs:documentation>ID used to store the project set result.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ProjectsSourceBase" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Base representation a set of projects.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="SolutionProjectsSourceBase">
+                <xs:all>
+                    <xs:element name="Where" type="ProjectFilterRoot" minOccurs="0" />
+                </xs:all>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ProjectsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of projects.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="ProjectsSourceBase">
+                <xs:attribute ref="Path" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="DependenciesSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of project dependencies.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="ProjectsSourceBase">
+                <xs:attribute ref="Target" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="DependentsSource">
+        <xs:annotation>
+            <xs:documentation>Represent a set of dependent projects.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="ProjectsSourceBase">
+                <xs:attribute ref="Target" />
+                <xs:attribute ref="Scope" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:attribute name="Target" type="ProjectSetId" />
+    <xs:attribute name="Scope" type="ProjectSetId" />
 
     <xs:complexType name="SolutionsContentSourceBase" abstract="true">
         <xs:annotation>
             <xs:documentation>Represent a file defining a solution content.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="SolutionFilesSourceBase">
+            <xs:extension base="SolutionProjectsSourceBase">
                 <xs:all>
                     <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
                     <xs:element name="WhereProjects" type="IgnorableProjectFilterRoot" minOccurs="0" />
                     <xs:element name="WhereFiles" type="IgnorableFileFilterRoot" minOccurs="0" />
                 </xs:all>
+                <xs:attribute ref="Path" />
                 <xs:attribute name="CreateRootFolder" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>True to create a dedicated folder for each solution. Folder name will be its SolutionName.</xs:documentation>
@@ -517,5 +614,14 @@
             <xs:pattern value="[0-9a-zA-Z ]+" />
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:simpleType name="ProjectSetId">
+        <xs:annotation>
+            <xs:documentation>Project set ID.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z]+" />
+        </xs:restriction>
+    </xs:simpleType>  
 
 </xs:schema>

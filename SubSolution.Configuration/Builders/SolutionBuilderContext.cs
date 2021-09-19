@@ -19,8 +19,9 @@ namespace SubSolution.Configuration.Builders
 
         public ILogger? Logger { get; set; }
         public LogLevel LogLevel { get; set; } = LogLevel.Trace;
+        public bool IgnoreConfigurationsAndPlatforms { get; set; }
 
-        private SolutionBuilderContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IFileSystem? fileSystem)
+        public SolutionBuilderContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IFileSystem? fileSystem)
         {
             Configuration = configuration;
             ConfigurationFilePath = configurationFilePath;

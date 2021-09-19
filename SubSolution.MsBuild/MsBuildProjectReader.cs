@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using SubSolution.ProjectReaders;
@@ -40,6 +41,9 @@ namespace SubSolution.MsBuild
             {
                 solutionProject.Platforms.AddRange(platformConfigurations.Split(';', StringSplitOptions.RemoveEmptyEntries));
             }
+            
+            foreach (string projectDependencyPath in project.Items.Where(x => x.ItemType == "ProjectReference").Select(x => x.EvaluatedInclude))
+                solutionProject.ProjectDependencies.Add(projectDependencyPath.Replace('\\', '/'));
 
             return solutionProject;
         }

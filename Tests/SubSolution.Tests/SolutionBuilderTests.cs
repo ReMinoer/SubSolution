@@ -23,7 +23,14 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
-        private Task<ISolution> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        private async Task<ISolution> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        {
+            (ISolution solution, Issue[] issues) = await ProcessConfigurationMockFileWithIssuesAsync(configuration, haveSubSolutions);
+            issues.Should().BeEmpty();
+            return solution;
+        }
+
+        private Task<(ISolution, Issue[])> ProcessConfigurationMockFileWithIssuesAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
             const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
@@ -31,37 +38,92 @@ namespace SubSolution.Tests
                 => SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
         }
 
-        private Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
+        private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
+        {
+            (ISolution solution, Issue[] issues) = await ProcessConfigurationWithIssuesAsync(configuration, outputDirectoryPath, workspaceDirectoryPath, haveSubSolutions);
+            issues.Should().BeEmpty();
+            return solution;
+        }
+
+        private Task<(ISolution, Issue[])> ProcessConfigurationWithIssuesAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
                 => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
-        private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+        private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
             Func<MockFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
             logger.LogDebug("Configuration XML:" + Environment.NewLine + configuration.Untyped);
 
-            var mockProjectReader = new MockProjectReader(new[] { "Debug", "Release" }, new[] { "Any CPU" })
+            MockFileSystem mockFileSystem = new MockFileSystem();
+
+            var mockProjectReader = new MockProjectReader(mockFileSystem, new SolutionProject
             {
-                ProjectCanBuild = true,
-                ProjectCanDeploy = false,
-                ProjectConfigurations =
+                Configurations = { "Debug, Release" },
+                Platforms = { "Any CPU" },
+                CanBuild = true
+            })
+            {
+                Projects =
                 {
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj", new []{"Debug", "Release"}},
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj", new []{"debug", "release"}},
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj", new []{"Debug", "Release", "Final"}}
-                },
-                ProjectPlatforms =
-                {
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj", new []{"Any CPU"}},
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj", new []{"any cpu"}},
-                    {@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj", new []{"x86", "x64"}}
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release"},
+                        Platforms = {"Any CPU"},
+                        CanBuild = true
+                    },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"debug", "release"},
+                        Platforms = {"any cpu"},
+                        CanBuild = true,
+                        ProjectDependencies =
+                        {
+                            "../MyApplication/MyApplication.csproj"
+                        }
+                    },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release", "Final"},
+                        Platforms = {"x86", "x64"},
+                        CanBuild = true,
+                        ProjectDependencies =
+                        {
+                            "../../MyApplication.Configuration/MyApplication.Configuration.csproj"
+                        }
+                    },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release"},
+                        Platforms = {"Any CPU"},
+                        CanBuild = true,
+                        ProjectDependencies =
+                        {
+                            "../../external/MySubModule/src/MySubModule/MySubModule.csproj"
+                        }
+                    },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release"},
+                        Platforms = {"Any CPU"},
+                        CanBuild = true,
+                        ProjectDependencies =
+                        {
+                            "../../src/MyFramework/MyFramework.csproj"
+                        }
+                    },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release"},
+                        Platforms = {"Any CPU"},
+                        CanBuild = true
+                    },
                 }
             };
 
-            MockFileSystem mockFileSystem = await GetMockFileSystemAsync(configuration, haveSubSolutions, mockProjectReader);
+            await ConfigureMockFileSystemAsync(mockFileSystem, configuration, haveSubSolutions, mockProjectReader);
 
             SolutionBuilderContext context = await createContext(mockFileSystem, mockProjectReader);
             context.Logger = logger;
@@ -69,6 +131,8 @@ namespace SubSolution.Tests
 
             var solutionBuilder = new SolutionBuilder(context);
             ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
+
+            Issue[] buildIssues = solutionBuilder.Issues.ToArray();
 
             var solutionLogger = new SolutionLogger(fileSystem: mockFileSystem)
             {
@@ -105,12 +169,11 @@ namespace SubSolution.Tests
             (_, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
             issues.Should().BeEmpty();
 
-            return solution;
+            return (solution, buildIssues);
         }
 
-        private async Task<MockFileSystem> GetMockFileSystemAsync(SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
+        private async Task ConfigureMockFileSystemAsync(MockFileSystem mockFileSystem, SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
         {
-            var mockFileSystem = new MockFileSystem();
             var relativeFilePath = new List<string>();
 
             relativeFilePath.AddRange(new[]
@@ -181,7 +244,6 @@ namespace SubSolution.Tests
             await AddSolutionToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.sln", configurationContent);
 
             mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
-            return mockFileSystem;
             
             async Task AddConfigurationToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
             {
