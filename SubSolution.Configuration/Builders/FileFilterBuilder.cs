@@ -6,8 +6,8 @@ namespace SubSolution.Configuration.Builders
 {
     public class FileFilterBuilder : FilterBuilderBase<string, FileFilters, IFileFiltersVisitor>, IFileFiltersVisitor
     {
-        public FileFilterBuilder(IFileSystem fileSystem, string workingDirectory)
-            : base(fileSystem, workingDirectory)
+        public FileFilterBuilder(IFileSystem fileSystem, string workspaceDirectoryPath)
+            : base(fileSystem, workspaceDirectoryPath)
         {
         }
 

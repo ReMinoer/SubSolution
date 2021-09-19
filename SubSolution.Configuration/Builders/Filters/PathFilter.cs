@@ -7,23 +7,24 @@ namespace SubSolution.Configuration.Builders.Filters
 {
     public class PathFilter : IFilter<string>
     {
-        public IFileSystem FileSystem { get; }
-        public string WorkingDirectory { get; }
         public string GlobPattern { get; }
+        public IFileSystem FileSystem { get; }
+        public string WorkspaceDirectoryPath { get; }
+
         public string TextFormat => $"Path=\"{GlobPattern}\"";
 
         private IEnumerable<string> _matchingPaths = Enumerable.Empty<string>();
 
-        public PathFilter(IFileSystem fileSystem, string workingDirectory, string globPattern)
+        public PathFilter(string globPattern, IFileSystem fileSystem, string workspaceDirectoryPath)
         {
-            FileSystem = fileSystem;
-            WorkingDirectory = workingDirectory;
             GlobPattern = globPattern;
+            FileSystem = fileSystem;
+            WorkspaceDirectoryPath = workspaceDirectoryPath;
         }
 
         public Task PrepareAsync()
         {
-            _matchingPaths = FileSystem.GetFilesMatchingGlobPattern(WorkingDirectory, GlobPattern);
+            _matchingPaths = FileSystem.GetFilesMatchingGlobPattern(WorkspaceDirectoryPath, GlobPattern);
             return Task.CompletedTask;
         }
 

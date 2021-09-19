@@ -6,17 +6,17 @@ namespace SubSolution.Configuration.Builders
 {
     public class ProjectFilterBuilder : FilterBuilderBase<(string, ISolutionProject), ProjectFilters, IProjectFiltersVisitor>, IProjectFiltersVisitor
     {
-        public ProjectFilterBuilder(IFileSystem fileSystem, string workingDirectory)
-            : base(fileSystem, workingDirectory)
+        public ProjectFilterBuilder(IFileSystem fileSystem, string workspaceDirectoryPath)
+            : base(fileSystem, workspaceDirectoryPath)
         {
         }
 
         protected override Task AcceptAsync(ProjectFilters visitable) => visitable.AcceptAsync(this);
         protected override string GetItemPath((string, ISolutionProject) item) => item.Item1;
 
-        public Task VisitAsync(ProjectNot fileNot) => BuildNot(fileNot.ProjectFilters);
-        public Task VisitAsync(ProjectMatchAll fileMatchAll) => BuildAll(fileMatchAll.ProjectFilters);
-        public Task VisitAsync(ProjectMatchAnyOf fileMatchAnyOf) => BuildAnyOf(fileMatchAnyOf.ProjectFilters);
-        public Task VisitAsync(ProjectPath filePath) => BuildPath(filePath.Match, "csproj");
+        public Task VisitAsync(ProjectNot projectNot) => BuildNot(projectNot.ProjectFilters);
+        public Task VisitAsync(ProjectMatchAll projectMatchAll) => BuildAll(projectMatchAll.ProjectFilters);
+        public Task VisitAsync(ProjectMatchAnyOf projectMatchAnyOf) => BuildAnyOf(projectMatchAnyOf.ProjectFilters);
+        public Task VisitAsync(ProjectPath projectPath) => BuildPath(projectPath.Match, "csproj");
     }
 }

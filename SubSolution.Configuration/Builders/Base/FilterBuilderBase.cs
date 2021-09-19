@@ -9,14 +9,14 @@ namespace SubSolution.Configuration.Builders.Base
     public abstract class FilterBuilderBase<TItem, TVisitable, TVisitor>
         where TVisitable : IAsyncVisitable<TVisitor>
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly string _workingDirectory;
-        public IFilter<TItem> BuiltFilter { get; private set; } = new AllFilter<TItem>();
+        protected readonly IFileSystem _fileSystem;
+        protected readonly string _workspaceDirectoryPath;
+        public IFilter<TItem> BuiltFilter { get; protected set; } = new AllFilter<TItem>();
 
-        protected FilterBuilderBase(IFileSystem fileSystem, string workingDirectory)
+        protected FilterBuilderBase(IFileSystem fileSystem, string workspaceDirectoryPath)
         {
             _fileSystem = fileSystem;
-            _workingDirectory = workingDirectory;
+            _workspaceDirectoryPath = workspaceDirectoryPath;
         }
 
         protected abstract Task AcceptAsync(TVisitable visitable);
@@ -54,7 +54,7 @@ namespace SubSolution.Configuration.Builders.Base
         {
             globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
 
-            BuiltFilter = new CastFilter<TItem, string>(new PathFilter(_fileSystem, _workingDirectory, globPattern), GetItemPath);
+            BuiltFilter = new PathFilter(globPattern, _fileSystem, _workspaceDirectoryPath).Cast<TItem, string>(GetItemPath);
             return Task.CompletedTask;
         }
     }
