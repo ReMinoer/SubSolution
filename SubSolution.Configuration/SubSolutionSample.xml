@@ -2,8 +2,7 @@
 <SubSolutionConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                           xsi:noNamespaceSchemaLocation="SubSolutionConfiguration.xsd">
     <Root RemoveUniqueItemFolders="true"
-          CollapseEmptyFolders="true"
-          ConflictProjectsOutputDirectory=".Conflicts">
+          CollapseEmptyFolders="true">
         <Folder Name="FolderName"
                 RemoveUniqueItemFolders="true"
                 CollapseEmptyFolders="true">

@@ -239,13 +239,7 @@
             <xs:documentation>Represent a solution root.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="SolutionFolderBase">
-                <xs:attribute name="ConflictProjectsOutputDirectory" type="xs:anyURI">
-                    <xs:annotation>
-                        <xs:documentation>Output directory used to create conflict solving projects.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
+            <xs:extension base="SolutionFolderBase" />
         </xs:complexContent>
     </xs:complexType>
 
