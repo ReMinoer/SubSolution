@@ -74,6 +74,12 @@ namespace SubSolution.Tests
                         Platforms = {"Any CPU"},
                         CanBuild = true
                     },
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Core\MyApplication.Core.csproj"] = new SolutionProject
+                    {
+                        Configurations = {"Debug", "Release"},
+                        Platforms = {"Any CPU"},
+                        CanBuild = true
+                    },
                     [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj"] = new SolutionProject
                     {
                         Configurations = {"debug", "release"},
@@ -91,6 +97,7 @@ namespace SubSolution.Tests
                         CanBuild = true,
                         ProjectDependencies =
                         {
+                            "../../MyApplication.Core/MyApplication.Core.csproj",
                             "../../MyApplication.Configuration/MyApplication.Configuration.csproj"
                         }
                     },
@@ -183,6 +190,8 @@ namespace SubSolution.Tests
                 @"tools\debug\Debug.exe",
                 @"src\MyApplication\MyClass.cs",
                 @"src\MyApplication\MyApplication.csproj",
+                @"src\MyApplication.Core\MyClass.cs",
+                @"src\MyApplication.Core\MyApplication.Core.csproj",
                 @"src\MyApplication.Configuration\MyConfiguration.cs",
                 @"src\MyApplication.Configuration\MyApplication.Configuration.csproj",
                 @"src\Executables\MyApplication.Console\Program.cs",
@@ -386,11 +395,12 @@ namespace SubSolution.Tests
             solutionConfiguration.ConfigurationName.Should().Be(configurationName);
             solutionConfiguration.PlatformName.Should().Be(platformName);
             solutionConfiguration.FullName.Should().Be($"{configurationName}|{platformName}");
-            solutionConfiguration.ProjectContexts.Should().HaveCount(3);
+            solutionConfiguration.ProjectContexts.Should().HaveCount(4);
 
             string[] projectPaths =
             {
                 "src/MyApplication/MyApplication.csproj",
+                "src/MyApplication.Core/MyApplication.Core.csproj",
                 "src/MyApplication.Configuration/MyApplication.Configuration.csproj",
                 "src/Executables/MyApplication.Console/MyApplication.Console.csproj"
             };

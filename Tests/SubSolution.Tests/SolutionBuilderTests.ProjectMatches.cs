@@ -36,9 +36,9 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(3);
-            CheckConfigurationPlatforms(solution, "Custom", "Any CPU", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Custom", "x86", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Custom", "x64", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, false });
+            CheckConfigurationPlatforms(solution, "Custom", "Any CPU", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Custom", "x86", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Custom", "x64", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, false });
         }
 
         [Test]
@@ -69,9 +69,9 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(3);
-            CheckConfigurationPlatforms(solution, "Debug", "Console", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Release", "Console", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Final", "Console", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
+            CheckConfigurationPlatforms(solution, "Debug", "Console", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Release", "Console", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Final", "Console", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
         }
 
         [Test]
@@ -105,9 +105,9 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(3);
-            CheckConfigurationPlatforms(solution, "Custom", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Custom", "x86", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Custom", "x64", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
+            CheckConfigurationPlatforms(solution, "Custom", "Any CPU", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Custom", "x86", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Custom", "x64", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
         }
 
         [Test]
@@ -141,9 +141,9 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(3);
-            CheckConfigurationPlatforms(solution, "Debug", "Console", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Release", "Console", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Final", "Console", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
+            CheckConfigurationPlatforms(solution, "Debug", "Console", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Release", "Console", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Final", "Console", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
         }
 
         [Test]
@@ -185,7 +185,7 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(1);
-            CheckConfigurationPlatforms(solution, "Custom", "Console", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
+            CheckConfigurationPlatforms(solution, "Custom", "Console", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
         }
 
         [Test]
@@ -235,7 +235,7 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(1);
-            CheckConfigurationPlatforms(solution, "Custom", "Console", new[] { "Release", "release", "Final" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { true, true, true });
+            CheckConfigurationPlatforms(solution, "Custom", "Console", new[] { "Release", "Release", "release", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { true, true, true, true });
         }
     }
 }

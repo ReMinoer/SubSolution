@@ -311,6 +311,38 @@ namespace SubSolution.Configuration.Builders
                 }
             }
 
+            if (dependents.SatisfiedOnly == true)
+            {
+                List<string> remainingDependents = new List<string>(matchingDependents.Keys);
+                HashSet<string> addedProjects = new HashSet<string>(_allAddedProjects, _fileSystem.PathComparer);
+
+                bool anySatisfied;
+                do
+                {
+                    anySatisfied = false;
+                    for (int i = 0; i < remainingDependents.Count; i++)
+                    {
+                        string dependentPath = remainingDependents[i];
+                        string absoluteDependentPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, dependentPath);
+
+                        IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependencies(absoluteDependentPath);
+                        IEnumerable<string> dependentDependencyPaths = absoluteDependentDependenciesPath.Select(x => _fileSystem.MakeRelativePath(_workspaceDirectoryPath, x));
+
+                        if (!addedProjects.IsSupersetOf(dependentDependencyPaths))
+                            continue;
+
+                        addedProjects.Add(dependentPath);
+                        remainingDependents.RemoveAt(i);
+                        i--;
+                        anySatisfied = true;
+                    }
+                }
+                while (anySatisfied);
+
+                foreach (string remainingDependent in remainingDependents)
+                    matchingDependents.Remove(remainingDependent);
+            }
+
             await VisitAsyncBase(dependents, matchingDependents);
         }
 

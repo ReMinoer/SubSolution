@@ -27,8 +27,9 @@ namespace SubSolution.Tests
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Should().HaveCount(4);
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
@@ -85,8 +86,9 @@ namespace SubSolution.Tests
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Should().HaveCount(4);
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
@@ -122,8 +124,9 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Should().HaveCount(3);
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
             solution.Root.SubFolders.Should().HaveCount(1);
             {
@@ -179,8 +182,9 @@ namespace SubSolution.Tests
             {
                 ISolutionFolder librariesFolder = solution.Root.SubFolders["Libraries"];
                 librariesFolder.FilePaths.Should().BeEmpty();
-                librariesFolder.Projects.Should().HaveCount(2);
+                librariesFolder.Projects.Should().HaveCount(3);
                 librariesFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+                librariesFolder.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
                 librariesFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
                 librariesFolder.SubFolders.Should().BeEmpty();
 
@@ -218,13 +222,19 @@ namespace SubSolution.Tests
                 ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
                 srcFolder.FilePaths.Should().BeEmpty();
                 srcFolder.Projects.Should().BeEmpty();
-                srcFolder.SubFolders.Should().HaveCount(3);
+                srcFolder.SubFolders.Should().HaveCount(4);
                 {
                     ISolutionFolder myApplicationFolder = srcFolder.SubFolders["MyApplication"];
                     myApplicationFolder.FilePaths.Should().BeEmpty();
                     myApplicationFolder.Projects.Should().HaveCount(1);
                     myApplicationFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
                     myApplicationFolder.SubFolders.Should().BeEmpty();
+
+                    ISolutionFolder myApplicationCoreFolder = srcFolder.SubFolders["MyApplication.Core"];
+                    myApplicationCoreFolder.FilePaths.Should().BeEmpty();
+                    myApplicationCoreFolder.Projects.Should().HaveCount(1);
+                    myApplicationCoreFolder.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+                    myApplicationCoreFolder.SubFolders.Should().BeEmpty();
 
                     ISolutionFolder myApplicationConfigurationFolder = srcFolder.SubFolders["MyApplication.Configuration"];
                     myApplicationConfigurationFolder.FilePaths.Should().BeEmpty();

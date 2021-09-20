@@ -30,9 +30,10 @@ namespace SubSolution.Tests
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Should().HaveCount(4);
             solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
         }
 
@@ -63,9 +64,10 @@ namespace SubSolution.Tests
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Should().HaveCount(4);
             solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
         }
 
@@ -102,8 +104,9 @@ namespace SubSolution.Tests
             solution.Root.FilePaths.Should().BeEmpty();
             solution.Root.SubFolders.Should().BeEmpty();
 
-            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Should().HaveCount(3);
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
         }
 

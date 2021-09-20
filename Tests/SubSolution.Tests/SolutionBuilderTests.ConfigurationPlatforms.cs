@@ -25,15 +25,15 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(9);
-            CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new []{"Debug", "debug", "Debug"}, new[] {"Any CPU", "any cpu", "x86"}, new []{true, true, false});
-            CheckConfigurationPlatforms(solution, "Debug", "x86", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Debug", "x64", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Release", "x86", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Final", "x86", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
+            CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new []{ "Debug", "Debug", "debug", "Debug"}, new[] {"Any CPU", "Any CPU", "any cpu", "x86"}, new []{ true, true, true, false});
+            CheckConfigurationPlatforms(solution, "Debug", "x86", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Debug", "x64", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Release", "x86", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Final", "x86", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
         }
 
         [Test]
@@ -176,12 +176,12 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(6);
-            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Release", "x86", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Final", "x86", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Release", "x86", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Final", "x86", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
         }
 
         [Test]
@@ -209,12 +209,12 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(6);
-            CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Debug", "x64", new[] { "Debug", "debug", "Debug" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
+            CheckConfigurationPlatforms(solution, "Debug", "Any CPU", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Debug", "x64", new[] { "Debug", "Debug", "debug", "Debug" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
         }
 
         [Test]
@@ -250,10 +250,10 @@ namespace SubSolution.Tests
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
 
             solution.ConfigurationPlatforms.Should().HaveCount(4);
-            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { true, true, false });
-            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "release", "Release" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
-            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x86" }, new[] { false, false, false });
-            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "debug", "Final" }, new[] { "Any CPU", "any cpu", "x64" }, new[] { false, false, true });
+            CheckConfigurationPlatforms(solution, "Release", "Any CPU", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { true, true, true, false });
+            CheckConfigurationPlatforms(solution, "Release", "x64", new[] { "Release", "Release", "release", "Release" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
+            CheckConfigurationPlatforms(solution, "Final", "Any CPU", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x86" }, new[] { false, false, false, false });
+            CheckConfigurationPlatforms(solution, "Final", "x64", new[] { "Debug", "Debug", "debug", "Final" }, new[] { "Any CPU", "Any CPU", "any cpu", "x64" }, new[] { false, false, false, true });
         }
     }
 }

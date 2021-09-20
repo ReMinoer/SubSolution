@@ -355,13 +355,25 @@
         <xs:complexContent>
             <xs:extension base="ProjectsSourceBase">
                 <xs:attribute ref="Target" />
-                <xs:attribute ref="Scope" />
+                <xs:attribute name="Scope" type="ProjectSetId">
+                    <xs:annotation>
+                        <xs:documentation>Project set ID used as scope. If not provided, scope will be all project contained in workspace directories.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="SatisfiedOnly" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to only add projects whose dependencies will be satisfied with already added + currently added projects.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:attribute name="Target" type="ProjectSetId" />
-    <xs:attribute name="Scope" type="ProjectSetId" />
+    <xs:attribute name="Target" type="ProjectSetId">
+        <xs:annotation>
+            <xs:documentation>Project set ID used as target. If not provided, target will be already added projects.</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
 
     <xs:complexType name="SolutionsContentSourceBase" abstract="true">
         <xs:annotation>
