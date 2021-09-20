@@ -360,9 +360,14 @@
                         <xs:documentation>Project set ID used as scope. If not provided, scope will be all project contained in workspace directories.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="SatisfiedOnly" type="xs:boolean">
+                <xs:attribute name="KeepOnlySatisfied" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to only add projects whose dependencies will be satisfied with already added + currently added projects.</xs:documentation>
+                        <xs:documentation>True to only add projects whose dependencies will be satisfied with already added + current dependent projects. Applied after filter.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="KeepOnlySatisfiedBeforeFilter" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to only keep projects whose dependencies will be satisfied with already added + current dependent projects. Applied before filter.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

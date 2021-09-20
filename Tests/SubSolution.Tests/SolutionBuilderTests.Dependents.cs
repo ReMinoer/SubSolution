@@ -37,7 +37,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsSatisfiedOnly()
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnly()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -51,7 +51,7 @@ namespace SubSolution.Tests
                         },
                         new Dependents
                         {
-                            SatisfiedOnly = true
+                            KeepOnlySatisfied = true
                         }
                     }
                 }
@@ -68,7 +68,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsSatisfiedOnlyBis()
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBis()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -86,7 +86,7 @@ namespace SubSolution.Tests
                         },
                         new Dependents
                         {
-                            SatisfiedOnly = true
+                            KeepOnlySatisfied = true
                         }
                     }
                 }
@@ -101,6 +101,159 @@ namespace SubSolution.Tests
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+        }
+
+        [Test]
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyWithFilter()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects
+                        {
+                            Path = "**/MyApplication.csproj"
+                        },
+                        new Projects
+                        {
+                            Path = "**/MyApplication.Core.csproj"
+                        },
+                        new Dependents
+                        {
+                            Where = new ProjectFilterRoot
+                            {
+                                ProjectFilters =
+                                {
+                                    new ProjectPath { Match = "**/MyApplication.Console.csproj" }
+                                }
+                            },
+                            KeepOnlySatisfied = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+        }
+
+        [Test]
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilter()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects
+                        {
+                            Path = "**/MyApplication.csproj"
+                        },
+                        new Dependents
+                        {
+                            KeepOnlySatisfiedBeforeFilter = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+        }
+
+        [Test]
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilterBis()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects
+                        {
+                            Path = "**/MyApplication.csproj"
+                        },
+                        new Projects
+                        {
+                            Path = "**/MyApplication.Core.csproj"
+                        },
+                        new Dependents
+                        {
+                            KeepOnlySatisfiedBeforeFilter = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(4);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+        }
+
+        [Test]
+        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilterWithFilter()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects
+                        {
+                            Path = "**/MyApplication.csproj"
+                        },
+                        new Projects
+                        {
+                            Path = "**/MyApplication.Core.csproj"
+                        },
+                        new Dependents
+                        {
+                            KeepOnlySatisfiedBeforeFilter = true,
+                            Where = new ProjectFilterRoot
+                            {
+                                ProjectFilters =
+                                {
+                                    new ProjectPath { Match = "**/MyApplication.Console.csproj" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(3);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
             solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
         }
 

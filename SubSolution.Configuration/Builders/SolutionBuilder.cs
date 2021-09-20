@@ -235,8 +235,9 @@ namespace SubSolution.Configuration.Builders
             Dictionary<string, ISolutionProject> matchingProjectByPath = matchingFilePaths
                 .Zip(readProjectTasks.Select(x => x.Result), (k, v) => (k, v))
                 .ToDictionary(x => x.k, x => x.v);
-
-            await VisitAsyncBase(projects, matchingProjectByPath);
+            
+            await FilterProjectsAsync(projects, matchingProjectByPath);
+            AddProjects(projects, matchingProjectByPath);
         }
 
         public async Task VisitAsync(Dependencies dependencies)
@@ -265,8 +266,9 @@ namespace SubSolution.Configuration.Builders
                         matchingDependencies.TryAdd(dependencyPath, await _projectReader.ReadAsync(dependencyPath));
                 }
             }
-
-            await VisitAsyncBase(dependencies, matchingDependencies);
+            
+            await FilterProjectsAsync(dependencies, matchingDependencies);
+            AddProjects(dependencies, matchingDependencies);
         }
 
         public async Task VisitAsync(Dependents dependents)
@@ -311,45 +313,53 @@ namespace SubSolution.Configuration.Builders
                 }
             }
 
-            if (dependents.SatisfiedOnly == true)
-            {
-                List<string> remainingDependents = new List<string>(matchingDependents.Keys);
-                HashSet<string> addedProjects = new HashSet<string>(_allAddedProjects, _fileSystem.PathComparer);
+            if (dependents.KeepOnlySatisfiedBeforeFilter == true)
+                await KeepOnlySatisfiedAsync(matchingDependents);
 
-                bool anySatisfied;
-                do
-                {
-                    anySatisfied = false;
-                    for (int i = 0; i < remainingDependents.Count; i++)
-                    {
-                        string dependentPath = remainingDependents[i];
-                        string absoluteDependentPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, dependentPath);
+            await FilterProjectsAsync(dependents, matchingDependents);
 
-                        IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependencies(absoluteDependentPath);
-                        IEnumerable<string> dependentDependencyPaths = absoluteDependentDependenciesPath.Select(x => _fileSystem.MakeRelativePath(_workspaceDirectoryPath, x));
+            if (dependents.KeepOnlySatisfied == true)
+                await KeepOnlySatisfiedAsync(matchingDependents);
 
-                        if (!addedProjects.IsSupersetOf(dependentDependencyPaths))
-                            continue;
-
-                        addedProjects.Add(dependentPath);
-                        remainingDependents.RemoveAt(i);
-                        i--;
-                        anySatisfied = true;
-                    }
-                }
-                while (anySatisfied);
-
-                foreach (string remainingDependent in remainingDependents)
-                    matchingDependents.Remove(remainingDependent);
-            }
-
-            await VisitAsyncBase(dependents, matchingDependents);
+            AddProjects(dependents, matchingDependents);
         }
 
         private ISet<string> GetDefaultTarget() => _allAddedProjects.ToHashSet();
         private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingFilePaths("**", defaultFileExtension: "csproj").ToHashSet();
 
-        private async Task VisitAsyncBase(ProjectsBase projects, Dictionary<string, ISolutionProject> matchingProjectByPath)
+        private async Task KeepOnlySatisfiedAsync(Dictionary<string, ISolutionProject> matchingDependents)
+        {
+            List<string> remainingDependents = new List<string>(matchingDependents.Keys);
+            HashSet<string> addedProjects = new HashSet<string>(_allAddedProjects, _fileSystem.PathComparer);
+
+            bool anySatisfied;
+            do
+            {
+                anySatisfied = false;
+                for (int i = 0; i < remainingDependents.Count; i++)
+                {
+                    string dependentPath = remainingDependents[i];
+                    string absoluteDependentPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, dependentPath);
+
+                    IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependencies(absoluteDependentPath);
+                    IEnumerable<string> dependentDependencyPaths = absoluteDependentDependenciesPath.Select(x => _fileSystem.MakeRelativePath(_workspaceDirectoryPath, x));
+
+                    if (!addedProjects.IsSupersetOf(dependentDependencyPaths))
+                        continue;
+
+                    addedProjects.Add(dependentPath);
+                    remainingDependents.RemoveAt(i);
+                    i--;
+                    anySatisfied = true;
+                }
+            }
+            while (anySatisfied);
+
+            foreach (string remainingDependent in remainingDependents)
+                matchingDependents.Remove(remainingDependent);
+        }
+
+        private async Task FilterProjectsAsync(ProjectsBase projects, Dictionary<string, ISolutionProject> matchingProjectByPath)
         {
             IFilter<(string, ISolutionProject)>? filter = await BuildFilterAsync(projects.Where);
             if (filter != null)
@@ -360,7 +370,10 @@ namespace SubSolution.Configuration.Builders
                 foreach (string ignoredProjectPath in ignoredProjectPaths)
                     matchingProjectByPath.Remove(ignoredProjectPath);
             }
+        }
 
+        private void AddProjects(ProjectsBase projects, Dictionary<string, ISolutionProject> matchingProjectByPath)
+        {
             if (!string.IsNullOrEmpty(projects.Id))
                 _solutionSetsById.Add(projects.Id, matchingProjectByPath.Keys.ToHashSet(_fileSystem.PathComparer));
 
