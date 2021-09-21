@@ -13,7 +13,7 @@ namespace SubSolution.MsBuild
         public async Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
             Project project = await Task.Run(()
-                => new Project(absoluteProjectPath, null, null, ProjectCollection.GlobalProjectCollection, ProjectLoadSettings.IgnoreMissingImports));
+                => new Project(absoluteProjectPath, null, null, new ProjectCollection(), ProjectLoadSettings.IgnoreMissingImports));
 
             var solutionProject = new SolutionProject
             {
