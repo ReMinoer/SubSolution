@@ -324,8 +324,8 @@ namespace SubSolution.Configuration.Builders
             AddProjects(dependents, matchingDependents);
         }
 
-        private ISet<string> GetDefaultTarget() => _allAddedProjects.ToHashSet();
-        private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingFilePaths("**", defaultFileExtension: "csproj").ToHashSet();
+        private ISet<string> GetDefaultTarget() => _allAddedProjects.ToHashSet(_fileSystem.PathComparer);
+        private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingFilePaths("**", defaultFileExtension: "csproj").ToHashSet(_fileSystem.PathComparer);
 
         private async Task KeepOnlySatisfiedAsync(Dictionary<string, ISolutionProject> matchingDependents)
         {
