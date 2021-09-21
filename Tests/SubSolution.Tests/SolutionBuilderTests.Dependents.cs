@@ -68,7 +68,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnly()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfied()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -99,7 +99,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBis()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfiedBis()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -136,7 +136,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyWithFilter()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfiedWithFilter()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -178,7 +178,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilter()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilter()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -209,7 +209,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilterBis()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilterBis()
         {
             var configuration = new SubSolutionConfiguration
             {
@@ -246,7 +246,7 @@ namespace SubSolution.Tests
         }
 
         [Test]
-        public async Task ProcessDependentsProjectsKeepSatisfiedOnlyBeforeFilterWithFilter()
+        public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilterWithFilter()
         {
             var configuration = new SubSolutionConfiguration
             {
