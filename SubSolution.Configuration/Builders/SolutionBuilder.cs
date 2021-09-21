@@ -263,7 +263,7 @@ namespace SubSolution.Configuration.Builders
                     string dependencyPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependencyPath);
 
                     if (!matchingDependencies.ContainsKey(dependencyPath))
-                        matchingDependencies.TryAdd(dependencyPath, await _projectReader.ReadAsync(dependencyPath));
+                        matchingDependencies.TryAdd(dependencyPath, await _projectReader.ReadAsync(absoluteDependencyPath));
                 }
             }
             
@@ -309,7 +309,7 @@ namespace SubSolution.Configuration.Builders
                         continue;
 
                     if (!matchingDependents.ContainsKey(dependentPath))
-                        matchingDependents.Add(dependentPath, await _projectReader.ReadAsync(dependentPath));
+                        matchingDependents.Add(dependentPath, await _projectReader.ReadAsync(absoluteDependentPath));
                 }
             }
 
