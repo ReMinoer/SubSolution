@@ -360,6 +360,11 @@
                         <xs:documentation>Project set ID used as scope. If not provided, scope will be all project contained in workspace directories.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="KeepOnlyDirect" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>True to keep only the direct dependents.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="KeepOnlySatisfied" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>True to only add projects whose dependencies will be satisfied with already added + current dependent projects. Applied after filter.</xs:documentation>

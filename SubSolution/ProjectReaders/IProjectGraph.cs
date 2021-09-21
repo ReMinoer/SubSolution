@@ -6,6 +6,6 @@ namespace SubSolution.ProjectReaders
     public interface IProjectGraph
     {
         Task<IReadOnlyCollection<string>> GetDependencies(string projectPath);
-        Task<IReadOnlyCollection<string>> GetDependents(string absoluteProjectPath);
+        Task<IReadOnlyCollection<string>> GetDependents(string absoluteProjectPath, bool directOnly = false);
     }
 }

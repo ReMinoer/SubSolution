@@ -37,6 +37,37 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public async Task ProcessDependentsProjectsKeepOnlyDirect()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects
+                        {
+                            Path = "**/MyApplication.csproj"
+                        },
+                        new Dependents
+                        {
+                            KeepOnlyDirect = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(2);
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+            solution.Root.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+        }
+
+        [Test]
         public async Task ProcessDependentsProjectsKeepSatisfiedOnly()
         {
             var configuration = new SubSolutionConfiguration

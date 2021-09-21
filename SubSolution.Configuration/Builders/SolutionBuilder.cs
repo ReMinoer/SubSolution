@@ -301,8 +301,9 @@ namespace SubSolution.Configuration.Builders
             foreach (string targetPath in targetPaths)
             {
                 string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
+                bool directOnly = dependents.KeepOnlyDirect == true;
 
-                foreach (string absoluteDependentPath in await _projectGraph.GetDependents(absoluteTargetPath))
+                foreach (string absoluteDependentPath in await _projectGraph.GetDependents(absoluteTargetPath, directOnly))
                 {
                     string dependentPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependentPath);
                     if (!scopePaths.Contains(dependentPath))
