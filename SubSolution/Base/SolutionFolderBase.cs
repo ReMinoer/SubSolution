@@ -105,6 +105,9 @@ namespace SubSolution.Base
 
         public void Clear()
         {
+            foreach (TFolder subFolder in _subFolders.Values)
+                subFolder.Clear();
+
             foreach (string filePath in _filePaths)
                 _knownPaths.Remove(filePath);
 
@@ -114,6 +117,29 @@ namespace SubSolution.Base
             _filePaths.Clear();
             _projects.Clear();
             _subFolders.Clear();
+        }
+
+        public bool CollapseSubFolder(string subFolderName)
+        {
+            if (!_subFolders.TryGetValue(subFolderName, out TFolder subFolder))
+                return false;
+
+            PrepareFolderMove();
+            _subFolders.Remove(subFolderName);
+
+            AddFolderContent(subFolder);
+            return true;
+        }
+
+        private void PrepareFolderMove()
+        {
+            foreach (string filePath in _filePaths)
+                _knownPaths.Remove(filePath);
+            foreach (string projectPath in _projects.Keys)
+                _knownPaths.Remove(projectPath);
+
+            foreach (TFolder subFolder in _subFolders.Values)
+                subFolder.PrepareFolderMove();
         }
 
         public TFolder GetOrAddSubFolder(string folderName)

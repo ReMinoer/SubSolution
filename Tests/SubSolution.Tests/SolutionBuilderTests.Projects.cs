@@ -256,5 +256,138 @@ namespace SubSolution.Tests
                 }
             }
         }
+
+        [Test]
+        public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueSubFolder()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueSubFolder = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Projects
+                        {
+                            CreateFolders = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
+                srcFolder.FilePaths.Should().BeEmpty();
+                srcFolder.Projects.Should().BeEmpty();
+                srcFolder.SubFolders.Should().HaveCount(4);
+                {
+                    ISolutionFolder myApplicationFolder = srcFolder.SubFolders["MyApplication"];
+                    myApplicationFolder.FilePaths.Should().BeEmpty();
+                    myApplicationFolder.Projects.Should().HaveCount(1);
+                    myApplicationFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+                    myApplicationFolder.SubFolders.Should().BeEmpty();
+
+                    ISolutionFolder myApplicationCoreFolder = srcFolder.SubFolders["MyApplication.Core"];
+                    myApplicationCoreFolder.FilePaths.Should().BeEmpty();
+                    myApplicationCoreFolder.Projects.Should().HaveCount(1);
+                    myApplicationCoreFolder.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+                    myApplicationCoreFolder.SubFolders.Should().BeEmpty();
+
+                    ISolutionFolder myApplicationConfigurationFolder = srcFolder.SubFolders["MyApplication.Configuration"];
+                    myApplicationConfigurationFolder.FilePaths.Should().BeEmpty();
+                    myApplicationConfigurationFolder.Projects.Should().HaveCount(1);
+                    myApplicationConfigurationFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                    myApplicationConfigurationFolder.SubFolders.Should().BeEmpty();
+
+                    ISolutionFolder myApplicationConsoleFolder = srcFolder.SubFolders["MyApplication.Console"];
+                    myApplicationConsoleFolder.FilePaths.Should().BeEmpty();
+                    myApplicationConsoleFolder.Projects.Should().HaveCount(1);
+                    myApplicationConsoleFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                    myApplicationConsoleFolder.SubFolders.Should().BeEmpty();
+                }
+            }
+        }
+
+        [Test]
+        public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueItem()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueItem = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Projects
+                        {
+                            CreateFolders = true,
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
+                srcFolder.FilePaths.Should().BeEmpty();
+                srcFolder.Projects.Should().HaveCount(3);
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                srcFolder.SubFolders.Should().HaveCount(1);
+                {
+                    ISolutionFolder executablesFolder = srcFolder.SubFolders["Executables"];
+                    executablesFolder.FilePaths.Should().BeEmpty();
+                    executablesFolder.Projects.Should().HaveCount(1);
+                    executablesFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                    executablesFolder.SubFolders.Should().BeEmpty();
+                }
+            }
+        }
+
+        [Test]
+        public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueSubFolderOrItem()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueSubFolder = true,
+                    CollapseFoldersWithUniqueItem = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Projects
+                        {
+                            CreateFolders = true,
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder srcFolder = solution.Root.SubFolders["src"];
+                srcFolder.FilePaths.Should().BeEmpty();
+                srcFolder.Projects.Should().HaveCount(4);
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication/MyApplication.csproj");
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication.Core/MyApplication.Core.csproj");
+                srcFolder.Projects.Keys.Should().Contain("src/MyApplication.Configuration/MyApplication.Configuration.csproj");
+                srcFolder.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+                srcFolder.SubFolders.Should().BeEmpty();
+            }
+        }
     }
 }

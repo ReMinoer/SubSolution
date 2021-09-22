@@ -220,14 +220,14 @@
                 <xs:sequence>
                     <xs:element ref="SolutionItems" minOccurs="0" maxOccurs="unbounded" />
                 </xs:sequence>
-                <xs:attribute name="CollapseEmptyFolders" type="xs:boolean">
+                <xs:attribute name="CollapseFoldersWithUniqueSubFolder" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to collapse empty folder with its child folders. Propagate to sub-folders.</xs:documentation>
+                        <xs:documentation>True to collapse sub-folders containing an unique sub-folder.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="RemoveUniqueItemFolders" type="xs:boolean">
+                <xs:attribute name="CollapseFoldersWithUniqueItem" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to remove folder with an unique item. Propagate to sub-folders.</xs:documentation>
+                        <xs:documentation>True to collapse sub-folders containing an unique item.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

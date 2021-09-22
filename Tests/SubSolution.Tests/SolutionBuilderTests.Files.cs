@@ -207,5 +207,116 @@ namespace SubSolution.Tests
                 }
             }
         }
+
+        [Test]
+        public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueSubFolder()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueSubFolder = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Files
+                        {
+                            Path = "tools/**",
+                            CreateFolders = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder toolsFolder = solution.Root.SubFolders["tools"];
+                toolsFolder.FilePaths.Should().HaveCount(2);
+                toolsFolder.FilePaths.Should().Contain("tools/submit.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/pull.bat");
+                toolsFolder.Projects.Should().BeEmpty();
+                toolsFolder.SubFolders.Should().HaveCount(1);
+                {
+                    ISolutionFolder debugFolder = toolsFolder.SubFolders["debug"];
+                    debugFolder.FilePaths.Should().BeEquivalentTo("tools/debug/Debug.exe");
+                    debugFolder.Projects.Should().BeEmpty();
+                    debugFolder.SubFolders.Should().BeEmpty();
+                }
+            }
+        }
+
+        [Test]
+        public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueItem()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueItem = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Files
+                        {
+                            Path = "tools/**",
+                            CreateFolders = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder toolsFolder = solution.Root.SubFolders["tools"];
+                toolsFolder.FilePaths.Should().HaveCount(3);
+                toolsFolder.FilePaths.Should().Contain("tools/submit.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/pull.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/debug/Debug.exe");
+                toolsFolder.Projects.Should().BeEmpty();
+                toolsFolder.SubFolders.Should().BeEmpty();
+            }
+        }
+
+        [Test]
+        public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueSubFolderOrItem()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    CollapseFoldersWithUniqueSubFolder = true,
+                    CollapseFoldersWithUniqueItem = true,
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Files
+                        {
+                            Path = "tools/**",
+                            CreateFolders = true
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().HaveCount(1);
+            {
+                ISolutionFolder toolsFolder = solution.Root.SubFolders["tools"];
+                toolsFolder.FilePaths.Should().HaveCount(3);
+                toolsFolder.FilePaths.Should().Contain("tools/submit.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/pull.bat");
+                toolsFolder.FilePaths.Should().Contain("tools/debug/Debug.exe");
+                toolsFolder.Projects.Should().BeEmpty();
+                toolsFolder.SubFolders.Should().BeEmpty();
+            }
+        }
     }
 }

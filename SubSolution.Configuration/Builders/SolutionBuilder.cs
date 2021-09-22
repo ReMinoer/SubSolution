@@ -194,12 +194,46 @@ namespace SubSolution.Configuration.Builders
         {
             foreach (SolutionItems items in root.SolutionItems)
                 await items.AcceptAsync(this);
+
+            if (root.CollapseFoldersWithUniqueSubFolder == true)
+                CollapseFoldersWithUniqueSubFolder(CurrentFolder);
+
+            if (root.CollapseFoldersWithUniqueItem == true)
+                CollapseFoldersWithUniqueItem(CurrentFolder);
         }
 
         public async Task VisitAsync(Folder folder)
         {
             using (MoveCurrentFolder(folder.Name))
                 await VisitRootAsync(folder.Content);
+        }
+
+        private void CollapseFoldersWithUniqueSubFolder(Solution.Folder folder)
+        {
+            foreach (Solution.Folder subFolder in folder.SubFolders.Values)
+                CollapseFoldersWithUniqueSubFolder(subFolder);
+
+            CollapseSubFoldersIf(folder, x => x.Projects.Count == 0 && x.FilePaths.Count == 0 && x.SubFolders.Count == 1);
+        }
+
+        private void CollapseFoldersWithUniqueItem(Solution.Folder folder)
+        {
+            CollapseSubFoldersIf(folder, x => x.Projects.Count + x.FilePaths.Count == 1 && x.SubFolders.Count == 0);
+
+            foreach (Solution.Folder subFolder in folder.SubFolders.Values)
+                CollapseFoldersWithUniqueItem(subFolder);
+        }
+
+        private void CollapseSubFoldersIf(Solution.Folder folder, Predicate<ISolutionFolder> folderPredicate)
+        {
+            var subFoldersToCollapse = new List<string>();
+
+            foreach ((string subFolderName, Solution.Folder subFolder) in folder.SubFolders.Select(x => (x.Key, x.Value)))
+                if (folderPredicate(subFolder))
+                    subFoldersToCollapse.Add(subFolderName);
+
+            foreach (string subFolderName in subFoldersToCollapse)
+                folder.CollapseSubFolder(subFolderName);
         }
 
         public async Task VisitAsync(Files files)
