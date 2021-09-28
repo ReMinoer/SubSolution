@@ -6,7 +6,9 @@ namespace SubSolution.Raw
     public interface IRawSolutionProject
     {
         Guid TypeGuid { get; }
-        IReadOnlyList<string> Arguments { get; }
+        string Name { get; }
+        string Path { get; }
+        Guid ProjectGuid { get; }
         IReadOnlyList<IRawSolutionSection> Sections { get; }
     }
 }

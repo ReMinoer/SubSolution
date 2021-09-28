@@ -55,7 +55,12 @@ namespace SubSolution.Raw
 
             foreach (Project project in Projects)
             {
-                await writer.WriteLineAsync($"{ProjectBlockName}(\"{{{project.TypeGuid.ToString().ToUpper()}}}\") = {string.Join(", ", project.Arguments.Select(x => '"' + x + '"'))}");
+                string typeGuid = project.TypeGuid.ToRawFormat();
+                string name = project.Name;
+                string path = project.Path;
+                string projectGuid = project.ProjectGuid.ToRawFormat();
+
+                await writer.WriteLineAsync($"{ProjectBlockName}(\"{typeGuid}\") = \"{name}\", \"{path}\", \"{projectGuid}\"");
 
                 foreach (Section section in project.Sections)
                     await WriteSectionAsync(writer, section);
@@ -104,11 +109,12 @@ namespace SubSolution.Raw
                 {
                     case ProjectBlockName:
                     {
-                        if (!Guid.TryParse(TrimValue(block.Parameter!), out Guid typeGuid))
-                            throw new Exception($"Expected a valid GUID but got \"{block.Parameter}\"");
-                                    
-                        var project = new Project(typeGuid);
-                        project.Arguments.AddRange(block.Arguments);
+                        if (!RawGuid.TryParse(TrimValue(block.Parameter!), out Guid typeGuid))
+                            throw new Exception($"Expected a valid GUID but got \"{TrimValue(block.Parameter!)[1..^1]}\"");
+                        if (!RawGuid.TryParse(block.Arguments[2], out Guid projectGuid))
+                            throw new Exception($"Expected a valid GUID but got \"{block.Arguments[2][1..^1]}\"");
+
+                        var project = new Project(typeGuid, block.Arguments[0], block.Arguments[1], projectGuid);
                         project.Sections.AddRange(block.Sections);
 
                         solution.Projects.Add(project);
@@ -159,7 +165,7 @@ namespace SubSolution.Raw
         static private async Task<Section> ReadSectionAsync(StreamReader reader, string line)
         {
             Block blockHeader = ReadBlockHeader(line);
-            Section section = new Section(blockHeader.Name, blockHeader.Parameter);
+            Section section = new Section(blockHeader.Name, blockHeader.Parameter, blockHeader.Arguments);
 
             while (true)
             {
@@ -170,7 +176,7 @@ namespace SubSolution.Raw
                     break;
 
                 string[] pair = nextLine.Split('=');
-                section.SetOrAddValue(TrimValue(pair[0]), TrimValue(pair[1]));
+                section.AddValue(TrimValue(pair[0]), TrimValue(pair[1]));
             }
 
             return section;
@@ -201,11 +207,7 @@ namespace SubSolution.Raw
                 return new Block(name) { Parameter = parameter };
 
             currentIndex = equalIndex + 1;
-
-            foreach (string argumentString in line[currentIndex..].Split(',').Select(x => x.Trim()))
-            {
-                newBlock.Arguments.Add(TrimValue(argumentString));
-            }
+            newBlock.Arguments = line[currentIndex..].Split(',').Select(x => x.Trim()).Select(TrimValue).ToArray();
 
             return newBlock;
         }
@@ -271,7 +273,7 @@ namespace SubSolution.Raw
         {
             public string Name { get; }
             public string? Parameter { get; set; }
-            public List<string> Arguments { get; } = new List<string>();
+            public string[] Arguments { get; set; } = Array.Empty<string>();
             public List<Section> Sections { get; } = new List<Section>();
 
             public Block(string name)
@@ -283,22 +285,21 @@ namespace SubSolution.Raw
         public class Project : IRawSolutionProject
         {
             public Guid TypeGuid { get; set; }
-            public List<string> Arguments { get; }
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public Guid ProjectGuid { get; set; }
             public List<Section> Sections { get; }
-
-            private readonly IReadOnlyList<string> _readOnlyArguments;
+            
             private readonly IReadOnlyList<IRawSolutionSection> _readOnlySections;
-
-            IReadOnlyList<string> IRawSolutionProject.Arguments => _readOnlyArguments;
             IReadOnlyList<IRawSolutionSection> IRawSolutionProject.Sections => _readOnlySections;
 
-            public Project(Guid typeGuid, params string[] arguments)
+            public Project(Guid typeGuid, string name, string path, Guid projectGuid)
             {
                 TypeGuid = typeGuid;
-                Arguments = new List<string>(arguments);
+                Name = name;
+                Path = path;
+                ProjectGuid = projectGuid;
                 Sections = new List<Section>();
-
-                _readOnlyArguments = Arguments.AsReadOnly();
                 _readOnlySections = Sections.AsReadOnly();
             }
         }
@@ -333,21 +334,45 @@ namespace SubSolution.Raw
                 ValuesByKey = new ReadOnlyDictionary<string, string>(_valuesByKey);
             }
 
-            public Section(string name, string parameter, params string[] arguments)
+            public Section(string name, string? parameter, params string[] arguments)
                 : this(name, parameter)
             {
                 Arguments.AddRange(arguments);
             }
 
+            public void AddValue(string key, string value)
+            {
+                _valuesByKey.Add(key, value);
+                _orderedValuePairs.Add(FormatValue(key, value));
+            }
+
+            public void ReplaceValue(string key, string value)
+            {
+                if (!TryReplaceValue(key, value))
+                    throw new KeyNotFoundException();
+            }
+
             public void SetOrAddValue(string key, string value)
             {
-                if (!_valuesByKey.TryAdd(key, value))
-                {
-                    _orderedValuePairs.Remove(FormatValue(key, _valuesByKey[key]));
-                    _valuesByKey[key] = value;
-                }
+                if (!TryReplaceValue(key, value))
+                    AddValue(key, value);
+            }
 
-                _orderedValuePairs.Add(FormatValue(key, value));
+            public bool TryReplaceValue(string key, string value)
+            {
+                if (!_valuesByKey.TryGetValue(key, out string currentValue))
+                    return false;
+
+                if (currentValue == value)
+                    return true;
+
+                _valuesByKey[key] = value;
+
+                string currentFormattedValue = FormatValue(key, currentValue);
+                int currentIndex = _orderedValuePairs.IndexOf(currentFormattedValue);
+                _orderedValuePairs[currentIndex] = FormatValue(key, value);
+
+                return true;
             }
 
             public void RemoveValue(string key)

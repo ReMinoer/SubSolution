@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SubSolution.Configuration;
 using SubSolution.Configuration.Builders;
 using SubSolution.Converters;
@@ -153,9 +154,13 @@ namespace SubSolution.Tests
             logger.LogDebug(logMessage);
 
             // Full pipe checks
-            var rawSolutionConverter = new SolutionConverter(mockFileSystem);
+            var rawSolutionConverter = new SolutionConverter(mockFileSystem)
+            {
+                Logger = NullLogger.Instance,
+                LogLevel = LogLevel.Trace
+            };
             var solutionConverter = new RawSolutionConverter(mockFileSystem, mockProjectReader);
-
+            
             ISolution checkSolution = solution;
             RawSolution rawSolution;
             List<Issue> issues;
@@ -172,8 +177,35 @@ namespace SubSolution.Tests
             await using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
-            await RawSolution.ReadAsync(secondPassStream);
-            (_, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
+            rawSolution = await RawSolution.ReadAsync(secondPassStream);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
+            issues.Should().BeEmpty();
+
+            SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(MyApplicationConfiguration, mockProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, mockFileSystem);
+            var referenceSolutionBuilder = new SolutionBuilder(referenceContext);
+            ISolution referenceSolution = await referenceSolutionBuilder.BuildAsync(referenceContext.Configuration);
+            RawSolution referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
+
+            rawSolutionConverter.Update(referenceRawSolution, checkSolution);
+            CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
+
+            await using var thirdPassStream = new MemoryStream();
+            await referenceRawSolution.WriteAsync(thirdPassStream);
+            thirdPassStream.Position = 0;
+            referenceRawSolution = await RawSolution.ReadAsync(thirdPassStream);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionPath);
+            issues.Should().BeEmpty();
+
+            referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
+
+            rawSolutionConverter.Update(referenceRawSolution, checkSolution);
+            CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
+            
+            await using var forthPassStream = new MemoryStream();
+            await referenceRawSolution.WriteAsync(forthPassStream);
+            forthPassStream.Position = 0;
+            await RawSolution.ReadAsync(forthPassStream);
+            (_, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionPath);
             issues.Should().BeEmpty();
 
             return (solution, buildIssues);
@@ -283,6 +315,33 @@ namespace SubSolution.Tests
                 mockFileSystem.AddFileContent(filePath, content);
             }
         }
+
+        static private readonly SubSolutionConfiguration MyApplicationConfiguration = new SubSolutionConfiguration
+        {
+            Root = new SolutionRoot
+            {
+                SolutionItems = new List<SolutionItems>
+                {
+                    new Folder
+                    {
+                        Name = "Tools",
+                        SolutionItems = new List<SolutionItems>
+                        {
+                            new Files { Path = "tools/**" }
+                        }
+                    },
+                    new Folder
+                    {
+                        Name = "Executables",
+                        SolutionItems = new List<SolutionItems>
+                        {
+                            new Projects { Path = "src/Executables/**" }
+                        }
+                    },
+                    new Projects { Path = "src/**" }
+                }
+            }
+        };
 
         static private readonly SubSolutionConfiguration MyFrameworkConfiguration = new SubSolutionConfiguration
         {
@@ -414,6 +473,43 @@ namespace SubSolution.Tests
                 projectContext.Build.Should().Be(projectBuild[i]);
                 projectContext.Deploy.Should().BeFalse();
                 i++;
+            }
+        }
+
+        private void CheckRawSolutionAreEqual(RawSolution rawSolution, RawSolution expected)
+        {
+            rawSolution.Projects.Should().HaveCount(expected.Projects.Count);
+
+            foreach (RawSolution.Project project in rawSolution.Projects)
+            {
+                RawSolution.Project expectedProject = expected.Projects.Should().Contain(x => x.Path == project.Path).Which;
+                project.TypeGuid.Should().Be(expectedProject.TypeGuid);
+                project.Name.Should().Be(expectedProject.Name);
+                //project.ProjectGuid.Should().Be(expectedProject.ProjectGuid);
+
+                project.Sections.Should().HaveCount(expectedProject.Sections.Count);
+
+                foreach (RawSolution.Section section in project.Sections)
+                {
+                    RawSolution.Section expectedSection = expectedProject.Sections.Should().Contain(x => x.Parameter == section.Parameter).Which;
+                    section.Name.Should().Be(expectedSection.Name);
+                    section.Arguments.Should().ContainInOrder(expectedSection.Arguments);
+                    section.OrderedValuePairs.Should().BeEquivalentTo(expectedSection.OrderedValuePairs);
+                    section.ValuesByKey.Should().BeEquivalentTo(expectedSection.ValuesByKey);
+                }
+            }
+
+            rawSolution.GlobalSections.Should().HaveCount(expected.GlobalSections.Count);
+
+            foreach (RawSolution.Section globalSection in rawSolution.GlobalSections)
+            {
+                RawSolution.Section expectedGlobalSection = expected.GlobalSections.Should().Contain(x => x.Parameter == globalSection.Parameter).Which;
+                globalSection.Name.Should().Be(expectedGlobalSection.Name);
+                globalSection.Arguments.Should().ContainInOrder(expectedGlobalSection.Arguments);
+                //globalSection.OrderedValuePairs.Should().BeEquivalentTo(expectedGlobalSection.OrderedValuePairs);
+                //globalSection.ValuesByKey.Should().BeEquivalentTo(expectedGlobalSection.ValuesByKey);
+                globalSection.OrderedValuePairs.Should().HaveCount(expectedGlobalSection.OrderedValuePairs.Count);
+                globalSection.ValuesByKey.Should().HaveCount(expectedGlobalSection.ValuesByKey.Count);
             }
         }
 

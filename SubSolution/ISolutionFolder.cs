@@ -12,13 +12,13 @@ namespace SubSolution
         void FilterProjects(Func<string, ISolutionProject, bool> predicate);
         void FilterFiles(Func<string, bool> predicate);
 
-        IEnumerable<string> AllProjectPaths
+        IReadOnlyCollection<string> AllProjectPaths
         {
             get
             {
                 List<string> result = new List<string>();
                 Add(this);
-                return result;
+                return result.AsReadOnly();
 
                 void Add(ISolutionFolder solutionFolder)
                 {

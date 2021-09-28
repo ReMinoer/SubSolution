@@ -19,5 +19,7 @@
         public const string ActiveCfg = "ActiveCfg";
         public const string Build0 = "Build.0";
         public const string Deploy0 = "Deploy.0";
+
+        static public string GetGlobalSectionArgument(string sectionParameter) => sectionParameter == ProjectConfigurationPlatforms ? PostSolution : PreSolution;
     }
 }

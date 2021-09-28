@@ -25,8 +25,8 @@ namespace SubSolution.Converters
         {
             List<Issue> issues = new List<Issue>();
 
-            Dictionary<Guid, IRawSolutionProject> projectsByGuid = rawSolution.Projects.ToDictionary(x => Guid.Parse(x.Arguments[2]), x => x);
-            Dictionary<Guid, string> projectPathsByGuid = rawSolution.Projects.ToDictionary(x => Guid.Parse(x.Arguments[2]), x => x.Arguments[1]);
+            Dictionary<Guid, IRawSolutionProject> projectsByGuid = rawSolution.Projects.ToDictionary(x => x.ProjectGuid, x => x);
+            Dictionary<Guid, string> projectPathsByGuid = rawSolution.Projects.ToDictionary(x => x.ProjectGuid, x => x.Path);
 
             var childrenGraph = new Dictionary<Guid, List<Guid>>();
             var parentGraph = new Dictionary<Guid, Guid>();
@@ -49,13 +49,13 @@ namespace SubSolution.Converters
 
             foreach ((string childGuidText, string parentGuidText) in nestedProjectSection.ValuesByKey)
             {
-                if (!Guid.TryParse(childGuidText[1..^1], out Guid childGuid))
+                if (!RawGuid.TryParse(childGuidText, out Guid childGuid))
                 {
                     issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {childGuidText} in {RawKeyword.NestedProjects} section."));
                     continue;
                 }
 
-                if (!Guid.TryParse(parentGuidText[1..^1], out Guid parentGuid))
+                if (!RawGuid.TryParse(parentGuidText, out Guid parentGuid))
                 {
                     issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {parentGuidText} in {RawKeyword.NestedProjects} section."));
                     continue;
@@ -77,8 +77,8 @@ namespace SubSolution.Converters
             Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph)
         {
             IRawSolutionProject? rootFilesFolderProject = projectsByGuid
-                .Where(x => x.Value.TypeGuid == RawProjectTypeGuid.Folder
-                    && x.Value.Arguments[0] == RawKeyword.DefaultRootFileFolderName
+                .Where(x => x.Value.TypeGuid == RawGuid.Folder
+                    && x.Value.Name == RawKeyword.DefaultRootFileFolderName
                     && !parentGraph.TryGetValue(x.Key, out _))
                 .Select(x => x.Value)
                 .FirstOrDefault();
@@ -96,9 +96,9 @@ namespace SubSolution.Converters
             foreach (Guid childGuid in childrenGuids)
             {
                 IRawSolutionProject childProject = projectsByGuid[childGuid];
-                if (childProject.TypeGuid == RawProjectTypeGuid.Folder)
+                if (childProject.TypeGuid == RawGuid.Folder)
                 {
-                    ManualSolution.Folder subFolder = folder.GetOrAddSubFolder(childProject.Arguments[0]);
+                    ManualSolution.Folder subFolder = folder.GetOrAddSubFolder(childProject.Name);
                     FillFolderFiles(subFolder, childProject);
 
                     if (!childrenGraph.TryGetValue(childGuid, out List<Guid> subFolderChildrenGuid))
@@ -108,7 +108,7 @@ namespace SubSolution.Converters
                 }
                 else
                 {
-                    string relativeProjectPath = childProject.Arguments[1];
+                    string relativeProjectPath = childProject.Path;
                     string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectory, relativeProjectPath);
 
                     ISolutionProject solutionProject = await _projectReader.ReadAsync(absoluteProjectPath);
@@ -156,22 +156,22 @@ namespace SubSolution.Converters
             foreach ((string key, string projectConfigurationPlatformFullName) in projectConfigurationPlatformsSection.ValuesByKey.Where(x => x.Key.EndsWith(RawKeyword.ActiveCfg)))
             {
                 string[] splitKey = key.Split('.');
-                string projectGuidText = splitKey[0][1..^1];
+
+                if (!RawGuid.TryParse(splitKey[0], out Guid projectGuid))
+                {
+                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
+                    continue;
+                }
+                
                 string solutionConfigurationPlatformFullName = splitKey[1];
 
                 string[] splitNames = projectConfigurationPlatformFullName.Split('|');
                 string projectConfigurationName = splitNames[0];
                 string projectPlatformName = splitNames[1];
 
-                if (!Guid.TryParse(projectGuidText, out Guid projectGuid))
-                {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {projectGuidText} in {RawKeyword.ActiveCfg} key."));
-                    continue;
-                }
-
                 if (!projectPathsByGuid.TryGetValue(projectGuid, out string projectPath))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to get project associated to GUID {projectGuidText} found in {RawKeyword.ActiveCfg} key."));
+                    issues.Add(new Issue(IssueLevel.Error, $"Failed to get project associated to GUID {projectGuid} found in {RawKeyword.ActiveCfg} key."));
                     continue;
                 }
 
@@ -184,15 +184,15 @@ namespace SubSolution.Converters
             foreach (string key in projectConfigurationPlatformsSection.ValuesByKey.Keys.Where(x => !x.EndsWith(RawKeyword.ActiveCfg)))
             {
                 string[] splitKey = key.Split('.');
-                string projectGuidText = splitKey[0][1..^1];
-                string solutionConfigurationPlatformFullName = splitKey[1];
-                string type = string.Join('.', splitKey.Skip(2));
 
-                if (!Guid.TryParse(projectGuidText, out Guid projectGuid))
+                if (!RawGuid.TryParse(splitKey[0], out Guid projectGuid))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {projectGuidText} in {RawKeyword.ActiveCfg} key."));
+                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
                     continue;
                 }
+
+                string solutionConfigurationPlatformFullName = splitKey[1];
+                string type = string.Join('.', splitKey.Skip(2));
 
                 if (!projectContextsByGuidAndSolutionConfigurationPlatforms.TryGetValue((projectGuid, solutionConfigurationPlatformFullName), out SolutionProjectContext projectContext))
                 {
