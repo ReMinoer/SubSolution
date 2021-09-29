@@ -524,10 +524,7 @@ namespace SubSolution.Configuration.Builders
                 }
                 
                 foreach (string addedProject in solution.Root.AllProjectPaths)
-                {
                     allSolutionsProjects.Add(addedProject);
-                    _allAddedProjects.Add(addedProject);
-                }
 
                 if (_virtualizing)
                     continue;
@@ -558,6 +555,9 @@ namespace SubSolution.Configuration.Builders
                     foreach (ISolutionFolder subFolder in folder.SubFolders.Values)
                         FillProjectConfigurationPlatformList(subFolder);
                 }
+
+                foreach (string solutionProject in allSolutionsProjects)
+                    _allAddedProjects.Add(solutionProject);
             }
 
             if (!string.IsNullOrEmpty(solutionContentFiles.Id))
