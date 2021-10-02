@@ -51,7 +51,7 @@ namespace SubSolution.FileSystems.Mock
 
         public override string GetName(string path)
         {
-            var pathParts = SplitPath(path);
+            string[] pathParts = SplitPath(path);
             if (pathParts.Length == 0)
                 return string.Empty;
 
@@ -60,9 +60,9 @@ namespace SubSolution.FileSystems.Mock
 
         public override string GetFileNameWithoutExtension(string path)
         {
-            var fileName = GetName(path);
+            string fileName = GetName(path);
 
-            var dotIndex = fileName.LastIndexOf('.');
+            int dotIndex = fileName.LastIndexOf('.');
             if (dotIndex == -1)
                 return fileName;
 
@@ -71,7 +71,7 @@ namespace SubSolution.FileSystems.Mock
 
         public override string? GetParentDirectoryPath(string path)
         {
-            var lastSeparatorIndex = TrimPath(path).LastIndexOfAny(DirectorySeparators);
+            int lastSeparatorIndex = TrimPath(path).LastIndexOfAny(DirectorySeparators);
             if (lastSeparatorIndex == -1)
                 return null;
 
@@ -80,7 +80,7 @@ namespace SubSolution.FileSystems.Mock
 
         public override string Combine(string? firstPath, string? secondPath)
         {
-            var separator = GetLastSeparator(firstPath) ?? GetLastSeparator(secondPath) ?? DirectorySeparator;
+            char separator = GetLastSeparator(firstPath) ?? GetLastSeparator(secondPath) ?? DirectorySeparator;
             firstPath = TrimPath(firstPath);
             secondPath = TrimPath(secondPath);
 
