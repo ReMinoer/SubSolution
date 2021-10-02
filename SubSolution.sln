@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31313.79
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Console", "SubSolution.Console\SubSolution.Console.csproj", "{9B35C7E3-F33A-481F-BDB4-203AE6AFDD98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.CommandLine", "SubSolution.CommandLine\SubSolution.CommandLine.csproj", "{9B35C7E3-F33A-481F-BDB4-203AE6AFDD98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution", "SubSolution\SubSolution.csproj", "{8CECBB52-0776-440A-9B19-5F114228941E}"
 EndProject
