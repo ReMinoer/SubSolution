@@ -1,16 +1,15 @@
 ﻿using System;
+using SubSolution.FileSystems;
 
 namespace SubSolution.Converters
 {
-    public class SolutionChange
+    public class SolutionChange : IEquatable<SolutionChange>, IComparable<SolutionChange>
     {
         public SolutionChangeType ChangeType { get; }
         public SolutionObjectType ObjectType { get; }
         public string ObjectName { get; }
         public SolutionObjectType? TargetType { get; }
         public string? TargetName { get; }
-
-        public string Message { get; }
 
         public SolutionChange(SolutionChangeType changeType, SolutionObjectType objectType, string objectName, string? targetName)
         {
@@ -36,18 +35,80 @@ namespace SubSolution.Converters
                 default:
                     throw new NotSupportedException();
             }
-
-            if (targetName is null)
-            {
-                Message = $"{ChangeType} {ObjectType} \"{ObjectName}\"";
-            }
-            else
-            {
-                string targetWord = changeType == SolutionChangeType.Remove || changeType == SolutionChangeType.Edit ? "from" : "to";
-                Message = $"{ChangeType} {ObjectType} \"{ObjectName}\" {targetWord} {TargetType} \"{TargetName}\"";
-            }
         }
 
-        public override string ToString() => Message;
+        public string GetMessage(IFileSystem? getFileNameFileSystem = null)
+        {
+            string objectName = ObjectName;
+            if (getFileNameFileSystem != null)
+            {
+                switch (ObjectType)
+                {
+                    case SolutionObjectType.Project:
+                    case SolutionObjectType.ProjectContext:
+                        objectName = getFileNameFileSystem.GetFileNameWithoutExtension(objectName);
+                        break;
+                    case SolutionObjectType.File:
+                        objectName = getFileNameFileSystem.GetName(objectName);
+                        break;
+                }
+            }
+
+            if (TargetName is null)
+            {
+                return $"{ChangeType} {ObjectType} \"{objectName}\"";
+            }
+
+            string targetWord = ChangeType == SolutionChangeType.Remove || ChangeType == SolutionChangeType.Edit ? "from" : "to";
+            return $"{ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
+        }
+
+        public override string ToString() => GetMessage();
+
+        public bool Equals(SolutionChange? other)
+        {
+            if (ReferenceEquals(null, other))
+                return false;
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return ChangeType == other.ChangeType
+                && ObjectType == other.ObjectType
+                && ObjectName == other.ObjectName
+                && TargetType == other.TargetType
+                && TargetName == other.TargetName;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            if (obj.GetType() != GetType())
+                return false;
+
+            return Equals((SolutionChange)obj);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(ChangeType, ObjectType, ObjectName, TargetType, TargetName);
+
+        public int CompareTo(SolutionChange? other)
+        {
+            if (ReferenceEquals(this, other))
+                return 0;
+            if (ReferenceEquals(null, other))
+                return 1;
+
+            int comparison = ChangeType.CompareTo(other.ChangeType);
+            if (comparison != 0)
+                return comparison;
+
+            comparison = ObjectType.CompareTo(other.ObjectType);
+            if (comparison != 0)
+                return comparison;
+
+            return string.Compare(ObjectName, other.ObjectName, StringComparison.Ordinal);
+        }
     }
 }

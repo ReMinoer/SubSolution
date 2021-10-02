@@ -2,10 +2,10 @@
 {
     public enum SolutionObjectType
     {
-        File,
-        Project,
-        Folder,
-        ConfigurationPlatform,
-        ProjectContext
+        Folder = 0,
+        Project = 1,
+        File = 2,
+        ConfigurationPlatform = 3,
+        ProjectContext = 4
     }
 }

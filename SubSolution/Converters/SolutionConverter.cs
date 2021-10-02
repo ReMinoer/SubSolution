@@ -614,12 +614,12 @@ namespace SubSolution.Converters
 
             if (objectType == SolutionObjectType.Folder)
             {
-                Logger?.Log(LogLevel.Trace, change.Message);
+                Logger?.Log(LogLevel.Trace, change.GetMessage(_fileSystem));
             }
             else
             {
                 _changes.Add(change);
-                Logger?.Log(LogLevel, change.Message);
+                Logger?.Log(LogLevel, change.GetMessage(_fileSystem));
             }
         }
 
