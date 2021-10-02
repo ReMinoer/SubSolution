@@ -274,9 +274,10 @@ namespace SubSolution.Converters
 
                         CleanFiles(subFolderProject, subFolder);
 
-                        if (folderProjectChildren.TryGetValue(subFolderProject.ProjectGuid, out List<RawSolution.Project> childFolderProjects))
-                            UpdateExistingSubFolders(subFolder, subFolderProject.ProjectGuid, childFolderProjects, subFolderPath);
+                        if (!folderProjectChildren.TryGetValue(subFolderProject.ProjectGuid, out List<RawSolution.Project> childFolderProjects))
+                            childFolderProjects = new List<RawSolution.Project>();
 
+                        UpdateExistingSubFolders(subFolder, subFolderProject.ProjectGuid, childFolderProjects, subFolderPath);
                         continue;
                     }
                     
@@ -309,7 +310,7 @@ namespace SubSolution.Converters
                 // Add sub-folders
                 foreach ((string subFolderName, ISolutionFolder subFolder) in folder.SubFolders.Select(x => (x.Key, x.Value)))
                 {
-                    AddSubFolder(subFolderName, subFolder, folderProject.ProjectGuid, folderName);
+                    AddSubFolder(subFolderName, subFolder, folderProject.ProjectGuid, newFolderPath);
                 }
             }
 
@@ -415,13 +416,12 @@ namespace SubSolution.Converters
                 {
                     projectGuidByPath.Add(rawProject.Path, rawProject.ProjectGuid);
                     projectPathByGuid.Add(rawProject.ProjectGuid, rawProject.Path);
-
-                    Guid? parentGuid = GetParentGuid(rawProject, nestedProjectsSection);
                     
                     ISolutionFolder newFolder = projectFolders[project];
                     RawSolution.Project? newFolderProject = newFolder != solution.Root ? existingFolders[newFolder] : null;
 
                     // If project kept the same parent, skip it.
+                    Guid? parentGuid = GetParentGuid(rawProject, nestedProjectsSection);
                     if (parentGuid == newFolderProject?.ProjectGuid)
                         continue;
 
