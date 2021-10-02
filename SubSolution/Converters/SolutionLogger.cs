@@ -38,6 +38,9 @@ namespace SubSolution.Converters
 
             if (ShowConfigurationPlatforms)
             {
+                if (messageBuilder.Length > 0)
+                    messageBuilder.AppendLine();
+
                 if (ShowHeaders)
                     messageBuilder.AppendLine("SOLUTION CONFIGURATION-PLATFORMS:");
 
@@ -54,7 +57,7 @@ namespace SubSolution.Converters
             int index = 0;
             int count = folder.SubFolders.Count + folder.FilePaths.Count + folder.Projects.Count;
 
-            foreach (ICovariantKeyValuePair<string, ISolutionFolder> pair in folder.SubFolders)
+            foreach (ICovariantKeyValuePair<string, ISolutionFolder> pair in folder.SubFolders.OrderBy(x => x.Key))
             {
                 messageBuilder.AppendLine(Bullet() + pair.Key);
 
@@ -63,10 +66,11 @@ namespace SubSolution.Converters
                 showPreviousConnections.RemoveAt(showPreviousConnections.Count - 1);
             }
 
-            foreach (string filePath in folder.FilePaths)
-                messageBuilder.AppendLine(Bullet() + GetFileDisplayName(filePath));
-            foreach (string projectPath in folder.Projects.Keys)
-                messageBuilder.AppendLine(Bullet() + GetProjectDisplayName(projectPath));
+            IEnumerable<string> fileLines = folder.FilePaths.Select(GetFileDisplayName);
+            IEnumerable<string> projectLines = folder.Projects.Keys.Select(GetProjectDisplayName);
+
+            foreach (string line in fileLines.Concat(projectLines).OrderBy(x => x))
+                messageBuilder.AppendLine(Bullet() + line);
 
             string Bullet() => lineHeader + GetBullet(index++, count);
         }
