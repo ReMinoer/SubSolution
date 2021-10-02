@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using SubSolution.FileSystems.Base;
-using SubSolution.Utils;
 
 namespace SubSolution.FileSystems
 {
@@ -15,7 +14,7 @@ namespace SubSolution.FileSystems
         static public StandardFileSystem Instance => _instance ??= new StandardFileSystem();
 
         static private readonly char[] DirectorySeparators = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
-        public override IEqualityComparer<string> PathComparer { get; } = new PathComparer();
+        public override IEqualityComparer<string> PathComparer => Utils.PathComparer.Default;
 
         private StandardFileSystem()
         {

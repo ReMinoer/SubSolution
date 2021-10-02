@@ -16,6 +16,9 @@ namespace SubSolution.Utils
 
     public class PathComparer : IEqualityComparer<string>, IComparer<string>
     {
+        static private PathComparer? _default;
+        static public PathComparer Default => _default ??= new PathComparer();
+
         public PathCaseComparison CaseComparison { get; }
 
         public PathComparer()
