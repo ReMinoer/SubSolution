@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SubSolution.Configuration
+namespace SubSolution.Builders.Configuration
 {
     public interface IAsyncVisitable<in TVisitor>
     {

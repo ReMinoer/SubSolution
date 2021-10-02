@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SubSolution.Configuration\SubSolution.Configuration.csproj" />
+    <ProjectReference Include="..\..\SubSolution.Builders\SubSolution.Builders.csproj" />
   </ItemGroup>
 
 </Project>

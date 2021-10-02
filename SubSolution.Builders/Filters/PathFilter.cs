@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SubSolution.FileSystems;
 
-namespace SubSolution.Configuration.Builders.Filters
+namespace SubSolution.Builders.Filters
 {
     public class PathFilter : IFilter<string>
     {

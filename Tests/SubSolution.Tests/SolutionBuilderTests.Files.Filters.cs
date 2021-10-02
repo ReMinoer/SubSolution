@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Configuration;
+using SubSolution.Builders.Configuration;
 
 namespace SubSolution.Tests
 {

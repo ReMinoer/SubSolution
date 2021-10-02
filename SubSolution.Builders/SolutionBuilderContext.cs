@@ -2,10 +2,11 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SubSolution.Builders.Configuration;
 using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 
-namespace SubSolution.Configuration.Builders
+namespace SubSolution.Builders
 {
     public class SolutionBuilderContext
     {

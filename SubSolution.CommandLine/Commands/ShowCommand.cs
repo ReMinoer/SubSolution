@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommandLine;
-using SubSolution.Configuration.Builders;
+using SubSolution.Builders;
 using SubSolution.Converters;
 using SubSolution.FileSystems;
 using SubSolution.MsBuild;

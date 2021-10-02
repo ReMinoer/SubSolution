@@ -14,13 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="SubSolutionConfiguration.xsd">
+    <None Update="Configuration\SubSolutionConfiguration.xsd">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PrepareForBuild">
-    <Exec Command="linqtoxsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot;" />
+    <Exec Command="linqtoxsd gen &quot;$(ProjectDir)Configuration\SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)Configuration\SubSolutionConfiguration.xsd.config&quot;" />
   </Target>
 
 </Project>

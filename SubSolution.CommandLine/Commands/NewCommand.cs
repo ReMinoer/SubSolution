@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using CommandLine;
+using SubSolution.Builders.Configuration;
 using SubSolution.CommandLine.Utils;
-using SubSolution.Configuration;
 
 namespace SubSolution.CommandLine.Commands
 {

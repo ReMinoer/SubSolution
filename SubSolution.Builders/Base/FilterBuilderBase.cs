@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using SubSolution.Configuration.Builders.Filters;
+using SubSolution.Builders.Configuration;
+using SubSolution.Builders.Filters;
 using SubSolution.FileSystems;
 using SubSolution.Utils;
 
-namespace SubSolution.Configuration.Builders.Base
+namespace SubSolution.Builders.Base
 {
     public abstract class FilterBuilderBase<TItem, TVisitable, TVisitor>
         where TVisitable : IAsyncVisitable<TVisitor>

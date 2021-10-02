@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SubSolution.Configuration.Builders.Filters
+namespace SubSolution.Builders.Filters
 {
     static class FilterExtension
     {

@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
-using SubSolution.Configuration.Builders.Base;
+using SubSolution.Builders.Base;
+using SubSolution.Builders.Configuration;
 using SubSolution.FileSystems;
 
-namespace SubSolution.Configuration.Builders
+namespace SubSolution.Builders
 {
     public class ProjectFilterBuilder : FilterBuilderBase<(string, ISolutionProject), ProjectFilters, IProjectFiltersVisitor>, IProjectFiltersVisitor
     {

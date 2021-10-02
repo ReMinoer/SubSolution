@@ -5,14 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SubSolution.Configuration.Builders.Filters;
+using SubSolution.Builders.Configuration;
+using SubSolution.Builders.Filters;
 using SubSolution.Converters;
 using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 using SubSolution.Utils;
 
-namespace SubSolution.Configuration.Builders
+namespace SubSolution.Builders
 {
     public class SolutionBuilder : ISolutionItemSourcesVisitor
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SubSolution.Configuration.Builders.Filters
+namespace SubSolution.Builders.Filters
 {
     public interface IFilter<in T>
     {

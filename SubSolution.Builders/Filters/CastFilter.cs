@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SubSolution.Configuration.Builders.Filters
+namespace SubSolution.Builders.Filters
 {
     public class CastFilter<TItem, TFilteredItem> : IFilter<TItem>
     {
