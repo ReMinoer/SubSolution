@@ -34,12 +34,14 @@ namespace SubSolution.Configuration.Builders
 
         static public async Task<SolutionBuilderContext> FromConfigurationFileAsync(string configurationFilePath, IProjectReader projectReader, IFileSystem? fileSystem = null)
         {
-            await using Stream stream = (fileSystem ?? StandardFileSystem.Instance).OpenStream(configurationFilePath);
+            IFileSystem activeFileSystem = fileSystem ?? StandardFileSystem.Instance;
+
+            await using Stream stream = activeFileSystem.OpenStream(configurationFilePath);
             using TextReader textReader = new StreamReader(stream);
 
             SubSolutionConfiguration configuration = await Task.Run(() => SubSolutionConfiguration.Load(textReader));
 
-            string defaultOutputDirectory = (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(configurationFilePath) ?? Environment.CurrentDirectory;
+            string defaultOutputDirectory = activeFileSystem.GetParentDirectoryPath(configurationFilePath)!;
             string solutionPath = ComputeSolutionPath(configuration, configurationFilePath, defaultOutputDirectory, fileSystem);
             string workspaceDirectoryPath = ComputeWorkspaceDirectoryPath(configuration, configurationFilePath, fileSystem);
 
@@ -53,6 +55,9 @@ namespace SubSolution.Configuration.Builders
 
             if (workspaceDirectoryPath is null)
                 throw new ArgumentNullException(nameof(defaultWorkspaceDirectory), "configuration.WorkspaceDirectory or defaultWorkspaceDirectory must be not null.");
+
+            workspaceDirectoryPath = (fileSystem ?? StandardFileSystem.Instance)
+                .MakeAbsolutePath(Environment.CurrentDirectory, workspaceDirectoryPath);
 
             return new SolutionBuilderContext(configuration, null, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
@@ -80,7 +85,10 @@ namespace SubSolution.Configuration.Builders
 
         static private string ComputeWorkspaceDirectoryPath(SubSolutionConfiguration configuration, string configurationFilePath, IFileSystem? fileSystem)
         {
-            return configuration.WorkspaceDirectory ?? (fileSystem ?? StandardFileSystem.Instance).GetParentDirectoryPath(configurationFilePath)!;
+            fileSystem ??= StandardFileSystem.Instance;
+
+            string workspaceDirectoryPath = configuration.WorkspaceDirectory ?? fileSystem.GetParentDirectoryPath(configurationFilePath)!;
+            return fileSystem.MakeAbsolutePath(Environment.CurrentDirectory, workspaceDirectoryPath);
         }
     }
 }

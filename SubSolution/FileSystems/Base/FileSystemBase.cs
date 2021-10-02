@@ -15,6 +15,7 @@ namespace SubSolution.FileSystems.Base
         public abstract string? GetParentDirectoryPath(string path);
         public abstract string Combine(string firstPath, string secondPath);
         public abstract string[] SplitPath(string path);
+        public abstract bool IsAbsolutePath(string path);
         public abstract Stream OpenStream(string filePath);
 
         public string MakeRelativePath(string rootPath, string filePath)
@@ -30,6 +31,9 @@ namespace SubSolution.FileSystems.Base
 
         public string MakeAbsolutePath(string rootPath, string relativeFilePath)
         {
+            if (IsAbsolutePath(relativeFilePath))
+                return relativeFilePath;
+
             string[] rootPathSplit = SplitPath(rootPath);
             string[] relativeFilePathSplit = SplitPath(relativeFilePath);
 

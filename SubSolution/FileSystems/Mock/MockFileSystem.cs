@@ -32,6 +32,15 @@ namespace SubSolution.FileSystems.Mock
 
         public override IEqualityComparer<string> PathComparer { get; } = new PathComparer(PathCaseComparison.RespectCase);
 
+        public override bool IsAbsolutePath(string path)
+        {
+            string[] pathParts = SplitPath(path);
+            if (pathParts.Length == 0)
+                return false;
+
+            return _rootDirectories.ContainsKey(pathParts[0]);
+        }
+
         public override Stream OpenStream(string filePath)
         {
             if (_fileContents.TryGetValue(NormalizePath(filePath), out byte[] content))

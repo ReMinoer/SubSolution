@@ -26,6 +26,7 @@ namespace SubSolution.FileSystems
         public override string Combine(string firstPath, string secondPath) => Path.Combine(firstPath, secondPath);
 
         public override string[] SplitPath(string path) => path.Split(DirectorySeparators, StringSplitOptions.RemoveEmptyEntries);
+        public override bool IsAbsolutePath(string path) => Path.IsPathRooted(path);
         public override Stream OpenStream(string filePath) => File.OpenRead(filePath);
 
         protected override DirectoryInfoBase? GetDirectoryInfo(string directoryPath)
