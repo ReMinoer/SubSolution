@@ -448,7 +448,8 @@ namespace SubSolution.Builders
                     SkipConfigurationPlatforms = true
                 };
 
-                (ISolution solution, _) = await solutionConverter.ConvertAsync(rawSolution, filePath);
+                (ISolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, filePath);
+                Issues.AddRange(issues);
 
                 return (solution, solutionName);
             });

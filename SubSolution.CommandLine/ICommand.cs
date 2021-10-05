@@ -4,6 +4,6 @@ namespace SubSolution.CommandLine
 {
     public interface ICommand
     {
-        Task ExecuteAsync();
+        Task<ErrorCode> ExecuteAsync();
     }
 }

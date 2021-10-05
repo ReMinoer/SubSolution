@@ -56,11 +56,31 @@ namespace SubSolution.Converters
 
             if (TargetName is null)
             {
-                return $"{ChangeType} {ObjectType} \"{objectName}\"";
+                return $"[{Bullet}] {ChangeType} {ObjectType} \"{objectName}\"";
             }
 
             string targetWord = ChangeType == SolutionChangeType.Remove || ChangeType == SolutionChangeType.Edit ? "from" : "to";
-            return $"{ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
+            return $"[{Bullet}] {ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
+        }
+
+        private char Bullet
+        {
+            get
+            {
+                switch (ChangeType)
+                {
+                    case SolutionChangeType.Add:
+                        return '+';
+                    case SolutionChangeType.Remove:
+                        return '-';
+                    case SolutionChangeType.Edit:
+                        return '*';
+                    case SolutionChangeType.Move:
+                        return '>';
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
         }
 
         public override string ToString() => GetMessage();
