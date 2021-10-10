@@ -64,7 +64,13 @@ namespace SubSolution.CommandLine.Commands
         {
             var configuration = new SubSolutionConfiguration
             {
-                Root = new SolutionRoot()
+                Root = new SolutionRoot
+                {
+                    SolutionItems =
+                    {
+                        new Projects()
+                    }
+                }
             };
 
             configuration.Save(filePath);
