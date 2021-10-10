@@ -17,7 +17,14 @@ namespace SubSolution.CommandLine.Commands.Base
 {
     public abstract class CommandBase : ICommand
     {
+        static private readonly ILogger Logger;
         private ErrorCode _errorCode;
+
+        static CommandBase()
+        {
+            var loggerProvider = new NLogLoggerProvider();
+            Logger = loggerProvider.CreateLogger(nameof(SubSolution));
+        }
 
         public async Task<ErrorCode> ExecuteAsync()
         {
@@ -109,11 +116,8 @@ namespace SubSolution.CommandLine.Commands.Base
             if (!CheckFileExist(configurationFilePath))
                 return null;
 
-            var loggerProvider = new NLogLoggerProvider();
-            ILogger? logger = loggerProvider.CreateLogger(nameof(SubSolution));
-
-            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, new MsBuildProjectReader());
-            context.Logger = logger;
+            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, new MsBuildProjectReader(Logger, LogLevel.Trace));
+            context.Logger = Logger;
             context.LogLevel = LogLevel.Trace;
 
             return context;
@@ -225,7 +229,7 @@ namespace SubSolution.CommandLine.Commands.Base
         {
             try
             {
-                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, new MsBuildProjectReader());
+                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, new MsBuildProjectReader(Logger, LogLevel.Trace));
                 (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath);
 
                 foreach (Issue issue in issues)

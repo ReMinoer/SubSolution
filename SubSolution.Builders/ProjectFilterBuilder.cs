@@ -2,6 +2,7 @@
 using SubSolution.Builders.Base;
 using SubSolution.Builders.Configuration;
 using SubSolution.FileSystems;
+using SubSolution.ProjectReaders;
 
 namespace SubSolution.Builders
 {
@@ -18,6 +19,6 @@ namespace SubSolution.Builders
         public Task VisitAsync(ProjectNot projectNot) => BuildNot(projectNot.ProjectFilters);
         public Task VisitAsync(ProjectMatchAll projectMatchAll) => BuildAll(projectMatchAll.ProjectFilters);
         public Task VisitAsync(ProjectMatchAnyOf projectMatchAnyOf) => BuildAnyOf(projectMatchAnyOf.ProjectFilters);
-        public Task VisitAsync(ProjectPath projectPath) => BuildPath(projectPath.Match, "csproj");
+        public Task VisitAsync(ProjectPath projectPath) => BuildPath(projectPath.Match, ProjectFileExtensions.Wildcard);
     }
 }

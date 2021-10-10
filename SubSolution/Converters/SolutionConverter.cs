@@ -77,15 +77,15 @@ namespace SubSolution.Converters
         {
             bool checkExisting = existingFolders != null;
 
-            foreach (string projectPath in solutionFolder.Projects.Keys)
+            foreach ((string projectPath, ISolutionProject project) in solutionFolder.Projects)
             {
                 if (checkExisting && projectGuids.ContainsKey(projectPath))
                     continue;
 
                 Log(SolutionChangeType.Add, SolutionObjectType.Project, projectPath, folderPath);
 
-                RawSolution.Project project = CreateProject(rawSolution, RawGuid.CSharp, projectPath, folderProject?.ProjectGuid);
-                projectGuids.Add(project.Path, project.ProjectGuid);
+                RawSolution.Project rawProject = CreateProject(rawSolution, project.TypeGuid, projectPath, folderProject?.ProjectGuid);
+                projectGuids.Add(rawProject.Path, rawProject.ProjectGuid);
             }
 
             foreach ((string subFolderName, ISolutionFolder subFolder) in solutionFolder.SubFolders.Select(x => (x.Key, x.Value)))
@@ -95,7 +95,7 @@ namespace SubSolution.Converters
                 {
                     Log(SolutionChangeType.Add, SolutionObjectType.Folder, subFolderName, folderPath);
 
-                    subFolderProject = CreateProject(rawSolution, RawGuid.Folder, subFolderName, folderProject?.ProjectGuid);
+                    subFolderProject = CreateProject(rawSolution, ProjectTypes.FolderGuid, subFolderName, folderProject?.ProjectGuid);
                 }
                 else
                     subFolderProject = existingFolders[subFolder];
@@ -138,7 +138,7 @@ namespace SubSolution.Converters
 
         private RawSolution.Project CreateProject(RawSolution rawSolution, Guid typeGuid, string path, Guid? parentGuid = null)
         {
-            string name = typeGuid == RawGuid.Folder ? path : _fileSystem.GetFileNameWithoutExtension(path);
+            string name = typeGuid == ProjectTypes.FolderGuid ? path : _fileSystem.GetFileNameWithoutExtension(path);
             var projectGuid = Guid.NewGuid();
 
             RawSolution.Project project = new RawSolution.Project(typeGuid, name, path, projectGuid);
@@ -231,7 +231,7 @@ namespace SubSolution.Converters
                         hasValidRootFileFolderProject = false;
                 }
 
-                if (rawProject.TypeGuid != RawGuid.Folder)
+                if (rawProject.TypeGuid != ProjectTypes.FolderGuid)
                     continue;
 
                 if (parentGuid.HasValue)
@@ -301,7 +301,7 @@ namespace SubSolution.Converters
                 // Add folder
                 Log(SolutionChangeType.Add, SolutionObjectType.Folder, folderName, folderPath);
 
-                RawSolution.Project folderProject = CreateProject(rawSolution, RawGuid.Folder, folderName, parentGuid);
+                RawSolution.Project folderProject = CreateProject(rawSolution, ProjectTypes.FolderGuid, folderName, parentGuid);
                 existingFolders.Add(folder, folderProject);
 
                 string newFolderPath = AppendFolderPath(folderPath, folderName);
@@ -409,7 +409,7 @@ namespace SubSolution.Converters
             List<RawSolution.Project> removedProjects = new List<RawSolution.Project>();
             foreach (RawSolution.Project rawProject in rawSolution.Projects)
             {
-                if (rawProject.TypeGuid == RawGuid.Folder)
+                if (rawProject.TypeGuid == ProjectTypes.FolderGuid)
                     continue;
 
                 if (projects.TryGetValue(rawProject.Path, out ISolutionProject project))
@@ -562,7 +562,7 @@ namespace SubSolution.Converters
             if (project != null)
                 return project;
 
-            project = new RawSolution.Project(RawGuid.Folder, RawKeyword.DefaultRootFileFolderName, RawKeyword.DefaultRootFileFolderName, Guid.NewGuid());
+            project = new RawSolution.Project(ProjectTypes.FolderGuid, RawKeyword.DefaultRootFileFolderName, RawKeyword.DefaultRootFileFolderName, Guid.NewGuid());
             rawSolution.Projects.Add(project);
             return project;
         }

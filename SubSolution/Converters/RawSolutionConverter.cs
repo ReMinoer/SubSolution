@@ -77,7 +77,7 @@ namespace SubSolution.Converters
             Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph)
         {
             IRawSolutionProject? rootFilesFolderProject = projectsByGuid
-                .Where(x => x.Value.TypeGuid == RawGuid.Folder
+                .Where(x => x.Value.TypeGuid == ProjectTypes.FolderGuid
                     && x.Value.Name == RawKeyword.DefaultRootFileFolderName
                     && !parentGraph.TryGetValue(x.Key, out _))
                 .Select(x => x.Value)
@@ -96,7 +96,7 @@ namespace SubSolution.Converters
             foreach (Guid childGuid in childrenGuids)
             {
                 IRawSolutionProject childProject = projectsByGuid[childGuid];
-                if (childProject.TypeGuid == RawGuid.Folder)
+                if (childProject.TypeGuid == ProjectTypes.FolderGuid)
                 {
                     ManualSolution.Folder subFolder = folder.GetOrAddSubFolder(childProject.Name);
                     FillFolderFiles(subFolder, childProject);

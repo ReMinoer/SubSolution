@@ -60,7 +60,7 @@ namespace SubSolution.Tests
 
             MockFileSystem mockFileSystem = new MockFileSystem();
 
-            var mockProjectReader = new MockProjectReader(mockFileSystem, new SolutionProject
+            var mockProjectReader = new MockProjectReader(mockFileSystem, new SolutionProject(ProjectType.CSharpDotNetSdk)
             {
                 Configurations = { "Debug, Release" },
                 Platforms = { "Any CPU" },
@@ -69,19 +69,19 @@ namespace SubSolution.Tests
             {
                 Projects =
                 {
-                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release"},
                         Platforms = {"Any CPU"},
                         CanBuild = true
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Core\MyApplication.Core.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Core\MyApplication.Core.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release"},
                         Platforms = {"Any CPU"},
                         CanBuild = true
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"debug", "release"},
                         Platforms = {"any cpu"},
@@ -91,7 +91,7 @@ namespace SubSolution.Tests
                             "../MyApplication/MyApplication.csproj"
                         }
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release", "Final"},
                         Platforms = {"x86", "x64"},
@@ -102,7 +102,7 @@ namespace SubSolution.Tests
                             "../../MyApplication.Configuration/MyApplication.Configuration.csproj"
                         }
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release"},
                         Platforms = {"Any CPU"},
@@ -112,7 +112,7 @@ namespace SubSolution.Tests
                             "../../external/MySubModule/src/MySubModule/MySubModule.csproj"
                         }
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release"},
                         Platforms = {"Any CPU"},
@@ -122,12 +122,12 @@ namespace SubSolution.Tests
                             "../../src/MyFramework/MyFramework.csproj"
                         }
                     },
-                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj"] = new SolutionProject
+                    [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
                         Configurations = {"Debug", "Release"},
                         Platforms = {"Any CPU"},
                         CanBuild = true
-                    },
+                    }
                 }
             };
 
@@ -147,7 +147,8 @@ namespace SubSolution.Tests
                 ShowHeaders = true,
                 ShowHierarchy = true,
                 ShowConfigurationPlatforms = true,
-                ShowProjectContexts = true
+                ShowAllProjectContexts = true,
+                ShowInterestingProjectContexts = false
             };
 
             string logMessage = solutionLogger.Convert(solution);

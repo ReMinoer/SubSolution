@@ -259,7 +259,7 @@ namespace SubSolution.Builders
         
         public async Task VisitAsync(Projects projects)
         {
-            string[] matchingFilePaths = GetMatchingFilePaths(projects.Path, defaultFileExtension: "csproj").ToArray();
+            string[] matchingFilePaths = GetMatchingProjectPaths(projects.Path).ToArray();
             
             Task<ISolutionProject>[] readProjectTasks = matchingFilePaths
                 .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectory, x)))
@@ -361,7 +361,7 @@ namespace SubSolution.Builders
         }
 
         private ISet<string> GetDefaultTarget() => _allAddedProjects.ToHashSet(_fileSystem.PathComparer);
-        private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingFilePaths("**", defaultFileExtension: "csproj").ToHashSet(_fileSystem.PathComparer);
+        private ISet<string> GetDefaultScope() => _projectsInDefaultScope ??= GetMatchingProjectPaths("**").ToHashSet(_fileSystem.PathComparer);
 
         private async Task KeepOnlySatisfiedAsync(Dictionary<string, ISolutionProject> matchingDependents)
         {
@@ -572,6 +572,20 @@ namespace SubSolution.Builders
 
             Log($"Search for files matching pattern: {globPattern}");
             return _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, globPattern);
+        }
+
+        private IEnumerable<string> GetMatchingProjectPaths(string? globPattern)
+        {
+            string fullGlobPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, ProjectFileExtensions.Wildcard);
+
+            Log($"Search for files matching pattern: {fullGlobPattern}");
+            IEnumerable<string> matchingProjects = _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, fullGlobPattern);
+
+            // If globPattern was updated to include project file extensions wildcard, keep only known extensions.
+            if (fullGlobPattern != globPattern)
+                matchingProjects = matchingProjects.Where(ProjectFileExtensions.MatchAny);
+
+            return matchingProjects;
         }
 
         private void AddFoldersAndFileToSolution(string relativeFilePath, Action<Solution.Folder, string, bool> addEntry, bool createFolders, bool overwrite)

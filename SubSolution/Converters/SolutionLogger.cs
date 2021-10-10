@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SubSolution.FileSystems;
@@ -8,14 +9,20 @@ namespace SubSolution.Converters
 {
     public class SolutionLogger
     {
-        private readonly int _indentSize;
         private readonly IFileSystem _fileSystem;
+
+        private readonly int _indentSize;
+        private string Tab => new string(' ', _indentSize);
         
         public bool ShowHierarchy { get; set; } = true;
         public bool ShowConfigurationPlatforms { get; set; } = true;
-        public bool ShowProjectContexts { get; set; }
 
-        public bool ShowFilePath { get; set; }
+        public bool ShowProjectTypes { get; set; }
+
+        public bool ShowAllProjectContexts { get; set; }
+        public bool ShowInterestingProjectContexts { get; set; }
+
+        public bool ShowFilePaths { get; set; }
         public bool ShowHeaders { get; set; } = true;
 
         public SolutionLogger(int indentSize = 4, IFileSystem? fileSystem = null)
@@ -44,7 +51,7 @@ namespace SubSolution.Converters
                 if (ShowHeaders)
                     messageBuilder.AppendLine("SOLUTION CONFIGURATION-PLATFORMS:");
 
-                LogConfigurationPlatforms(messageBuilder, solution.ConfigurationPlatforms);
+                LogConfigurationPlatforms(messageBuilder, solution);
             }
 
             return messageBuilder.ToString();
@@ -67,7 +74,7 @@ namespace SubSolution.Converters
             }
 
             IEnumerable<string> fileLines = folder.FilePaths.Select(GetFileDisplayName);
-            IEnumerable<string> projectLines = folder.Projects.Keys.Select(GetProjectDisplayName);
+            IEnumerable<string> projectLines = folder.Projects.Select(x => GetProjectDisplayName(x.Key, x.Value));
 
             foreach (string line in fileLines.Concat(projectLines).OrderBy(x => x))
                 messageBuilder.AppendLine(Bullet() + line);
@@ -75,32 +82,77 @@ namespace SubSolution.Converters
             string Bullet() => lineHeader + GetBullet(index++, count);
         }
 
-        private void LogConfigurationPlatforms(StringBuilder messageBuilder, IReadOnlyList<ISolutionConfigurationPlatform> configurationPlatforms)
+        private void LogConfigurationPlatforms(StringBuilder messageBuilder, ISolution solution)
         {
-            foreach (ISolutionConfigurationPlatform configurationPlatform in configurationPlatforms)
+            foreach (ISolutionConfigurationPlatform configurationPlatform in solution.ConfigurationPlatforms)
             {
                 messageBuilder.AppendLine($"- {{{configurationPlatform.FullName}}}");
-                if (!ShowProjectContexts)
-                    continue;
 
-                foreach ((string projectPath, SolutionProjectContext context) in configurationPlatform.ProjectContexts)
+                if (ShowAllProjectContexts)
                 {
-                    messageBuilder.AppendLine($"\t- [{GetProjectDisplayName(projectPath)}]");
-                    messageBuilder.AppendLine("\t\t- Configuration: " + context.ConfigurationName);
-                    messageBuilder.AppendLine("\t\t- Platform: " + context.PlatformName);
-                    messageBuilder.AppendLine("\t\t- Build: " + context.Build);
-                    messageBuilder.AppendLine("\t\t- Deploy: " + context.Deploy);
+                    foreach ((string projectPath, SolutionProjectContext context) in configurationPlatform.ProjectContexts)
+                    {
+                        messageBuilder.AppendLine(Tab + $"- [{GetProjectDisplayName(projectPath)}]");
+                        messageBuilder.AppendLine(Tab + Tab + "- Configuration: " + context.ConfigurationName);
+                        messageBuilder.AppendLine(Tab + Tab + "- Platform: " + context.PlatformName);
+                        messageBuilder.AppendLine(Tab + Tab + "- Build: " + context.Build);
+                        messageBuilder.AppendLine(Tab + Tab + "- Deploy: " + context.Deploy);
+                    }
+                }
+
+                if (ShowInterestingProjectContexts)
+                {
+                    var lines = new List<(string, string)>();
+                    foreach ((string projectPath, ISolutionProject project) in solution.Root.AllProjects)
+                    {
+                        if (!configurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
+                            continue;
+
+                        bool noBuild = project.CanBuild && !projectContext.Build;
+                        bool noDeploy = project.CanDeploy && !projectContext.Deploy;
+                        bool differentConfiguration = !projectContext.ConfigurationName.Equals(configurationPlatform.ConfigurationName, StringComparison.OrdinalIgnoreCase);
+                        bool differentPlatform = !projectContext.PlatformName.Equals(configurationPlatform.PlatformName, StringComparison.OrdinalIgnoreCase);
+
+                        if (noBuild || noDeploy || differentConfiguration || differentPlatform)
+                        {
+                            List<string> differences = new List<string>();
+                            if (!noBuild && (differentConfiguration || differentPlatform))
+                                differences.Add($"{(differentConfiguration ? projectContext.ConfigurationName : "*")}|{(differentPlatform ? projectContext.PlatformName : "*")}");
+                            if (noBuild)
+                                differences.Add("No build");
+                            if (noDeploy)
+                                differences.Add("No deploy");
+
+                            lines.Add((GetProjectDisplayName(projectPath), string.Join(", ", differences)));
+                        }
+                    }
+
+                    int longestNameSize = lines.Select(x => x.Item1.Length).Max();
+
+                    foreach ((string name, string differences) in lines)
+                        messageBuilder.AppendLine(Tab + $"- [{name}] {new string(' ', longestNameSize - name.Length)}-> {differences}");
                 }
             }
         }
 
-        private string GetFileDisplayName(string filePath) => ShowFilePath ? filePath : _fileSystem.GetName(filePath);
-        private string GetProjectDisplayName(string projectPath) => ShowFilePath ? projectPath : _fileSystem.GetFileNameWithoutExtension(projectPath);
+        private string GetFileDisplayName(string filePath) => ShowFilePaths ? filePath : _fileSystem.GetName(filePath);
+        private string GetProjectDisplayName(string projectPath, ISolutionProject? project = null)
+        {
+            string displayName = ShowFilePaths ? projectPath : _fileSystem.GetFileNameWithoutExtension(projectPath);
+
+            if (ShowProjectTypes && project != null)
+            {
+                string projectType = project.Type.HasValue ? ProjectTypes.DisplayNames[project.Type.Value] : "Unknown type";
+                displayName = $"{displayName} [{projectType}]";
+            }
+
+            return displayName;
+        }
 
         private string GetLineHeader(IEnumerable<bool> showPreviousConnections)
         {
             return showPreviousConnections
-                .Select(x => x ? "¦" + new string(' ', _indentSize - 1) : new string(' ', _indentSize))
+                .Select(x => x ? "¦" + new string(' ', _indentSize - 1) : Tab)
                 .Aggregate(string.Empty, (x, y) => x + y);
         }
 

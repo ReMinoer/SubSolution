@@ -64,7 +64,7 @@ namespace SubSolution
                 var solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration, resolvedProjectPlatform)
                 {
                     Build = project.CanBuild && isCompleteMatch,
-                    Deploy = project.CanDeploy && isCompleteMatch
+                    Deploy = project.AlwaysDeploy || (project.CanDeploy && isCompleteMatch)
                 };
 
                 _projectContexts.Add(projectPath, solutionProjectContext);
