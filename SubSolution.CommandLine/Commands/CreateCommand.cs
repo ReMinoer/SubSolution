@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using CommandLine;
 using SubSolution.Builders.Configuration;
 using SubSolution.CommandLine.Commands.Base;
@@ -73,7 +76,22 @@ namespace SubSolution.CommandLine.Commands
                 }
             };
 
-            configuration.Save(filePath);
+            string executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            string xsdFullPath = Path.Combine(executableLocation, "SubSolutionConfiguration.xsd");
+            if (File.Exists(xsdFullPath))
+            {
+                XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+                configuration.Untyped.SetAttributeValue(XNamespace.Xmlns + "xsi", xsi.NamespaceName);
+                configuration.Untyped.SetAttributeValue(xsi + "noNamespaceSchemaLocation", xsdFullPath);
+            }
+
+            using XmlWriter xmlWriter = new XmlTextWriter(filePath, null)
+            {
+                Formatting = Formatting.Indented,
+                Indentation = 4
+            };
+
+            configuration.Save(xmlWriter);
             Log($"Created {filePath}.");
 
             if (Open)
