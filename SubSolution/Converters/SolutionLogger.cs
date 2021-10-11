@@ -103,7 +103,7 @@ namespace SubSolution.Converters
                 if (ShowInterestingProjectContexts)
                 {
                     var lines = new List<(string, string)>();
-                    foreach ((string projectPath, ISolutionProject project) in solution.Root.AllProjects)
+                    foreach ((string projectPath, ISolutionProject project) in solution.Root.GetAllProjects())
                     {
                         if (!configurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
                             continue;

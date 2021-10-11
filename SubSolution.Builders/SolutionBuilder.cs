@@ -525,7 +525,7 @@ namespace SubSolution.Builders
                     }
                 }
                 
-                foreach (string addedProject in solution.Root.AllProjectPaths)
+                foreach (string addedProject in solution.Root.GetAllProjectPaths())
                     allSolutionsProjects.Add(addedProject);
 
                 if (_virtualizing)
