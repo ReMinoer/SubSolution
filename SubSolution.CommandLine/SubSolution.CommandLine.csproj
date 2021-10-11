@@ -17,10 +17,4 @@
     <ProjectReference Include="..\SubSolution.MsBuild\SubSolution.MsBuild.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

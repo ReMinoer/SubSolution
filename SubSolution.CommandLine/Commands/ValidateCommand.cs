@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommandLine;
@@ -17,13 +16,16 @@ namespace SubSolution.CommandLine.Commands
             "If not provided, all .subsln files in working directory and its sub-directories will be validated.")]
         public override IEnumerable<string>? FilePaths { get; set; }
 
+        [Option('s', "show", HelpText = "Show representation of validated solution.")]
+        public bool Show { get; set; }
+
         protected override async Task ExecuteCommandAsync(string configurationFilePath)
         {
             SolutionBuilderContext? context = await GetBuildContext(configurationFilePath);
             if (context is null)
                 return;
 
-            Console.WriteLine($"Validating {configurationFilePath}...");
+            Log($"Validating {configurationFilePath}...");
 
             if (!File.Exists(context.SolutionPath))
             {
@@ -35,6 +37,9 @@ namespace SubSolution.CommandLine.Commands
             Solution? expectedSolution = await BuildSolution(context);
             if (expectedSolution is null)
                 return;
+
+            if (Show)
+                LogSolution(expectedSolution);
 
             (RawSolution? rawSolution, bool changed) = await UpdateSolution(expectedSolution);
             if (rawSolution is null)

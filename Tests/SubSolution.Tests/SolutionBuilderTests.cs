@@ -149,7 +149,7 @@ namespace SubSolution.Tests
                 ShowHierarchy = true,
                 ShowConfigurationPlatforms = true,
                 ShowAllProjectContexts = true,
-                ShowInterestingProjectContexts = false
+                ShowDivergentProjectContexts = false
             };
 
             string logMessage = solutionLogger.Convert(solution);

@@ -20,7 +20,7 @@ namespace SubSolution.Converters
         public bool ShowProjectTypes { get; set; }
 
         public bool ShowAllProjectContexts { get; set; }
-        public bool ShowInterestingProjectContexts { get; set; }
+        public bool ShowDivergentProjectContexts { get; set; }
 
         public bool ShowFilePaths { get; set; }
         public bool ShowHeaders { get; set; } = true;
@@ -90,17 +90,36 @@ namespace SubSolution.Converters
 
                 if (ShowAllProjectContexts)
                 {
+                    var lines = new List<(string, string)>();
                     foreach ((string projectPath, SolutionProjectContext context) in configurationPlatform.ProjectContexts)
                     {
-                        messageBuilder.AppendLine(Tab + $"- [{GetProjectDisplayName(projectPath)}]");
-                        messageBuilder.AppendLine(Tab + Tab + "- Configuration: " + context.ConfigurationName);
-                        messageBuilder.AppendLine(Tab + Tab + "- Platform: " + context.PlatformName);
-                        messageBuilder.AppendLine(Tab + Tab + "- Build: " + context.Build);
-                        messageBuilder.AppendLine(Tab + Tab + "- Deploy: " + context.Deploy);
+                        List<string> properties = new List<string>();
+                        if (!context.Build)
+                            properties.Add("Ignored");
+                        if (context.Deploy)
+                            properties.Add("Deploy");
+
+                        string line = $"{context.ConfigurationName}|{context.PlatformName}";
+                        if (properties.Count > 0)
+                            line += $" ({string.Join(", ", properties)})";
+
+                        lines.Add((GetProjectDisplayName(projectPath), line));
+                    }
+
+                    if (lines.Count > 0)
+                    {
+                        int longestNameSize = lines.Select(x => x.Item1.Length).Max();
+
+                        foreach ((string name, string properties) in lines.OrderBy(x => x.Item1))
+                            messageBuilder.AppendLine(Tab + $"- [{name}] {new string(' ', longestNameSize - name.Length)}-> {properties}");
+                    }
+                    else
+                    {
+                        messageBuilder.AppendLine(Tab + "- *No project contexts*");
                     }
                 }
 
-                if (ShowInterestingProjectContexts)
+                if (ShowDivergentProjectContexts)
                 {
                     var lines = new List<(string, string)>();
                     foreach ((string projectPath, ISolutionProject project) in solution.Root.GetAllProjects())
@@ -127,10 +146,17 @@ namespace SubSolution.Converters
                         }
                     }
 
-                    int longestNameSize = lines.Select(x => x.Item1.Length).Max();
+                    if (lines.Count > 0)
+                    {
+                        int longestNameSize = lines.Select(x => x.Item1.Length).Max();
 
-                    foreach ((string name, string differences) in lines)
-                        messageBuilder.AppendLine(Tab + $"- [{name}] {new string(' ', longestNameSize - name.Length)}-> {differences}");
+                        foreach ((string name, string differences) in lines.OrderBy(x => x.Item1))
+                            messageBuilder.AppendLine(Tab + $"- [{name}] {new string(' ', longestNameSize - name.Length)}-> {differences}");
+                    }
+                    else
+                    {
+                        messageBuilder.AppendLine(Tab + "- *No divergent project contexts*");
+                    }
                 }
             }
         }

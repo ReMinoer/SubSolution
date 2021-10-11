@@ -15,12 +15,11 @@ namespace SubSolution.MsBuild
     public class MsBuildProjectReader : IProjectReader
     {
         private readonly ILogger? _logger;
-        private readonly LogLevel _logLevel;
+        public LogLevel LogLevel { get; set; } = LogLevel.Trace;
 
-        public MsBuildProjectReader(ILogger? logger = null, LogLevel? logLevel = null)
+        public MsBuildProjectReader(ILogger? logger = null)
         {
             _logger = logger;
-            _logLevel = logLevel ?? LogLevel.Trace;
         }
 
         public async Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
@@ -210,7 +209,7 @@ namespace SubSolution.MsBuild
 
             var messageBuilder = new StringBuilder();
 
-            messageBuilder.AppendLine($"Read \"{absoluteProjectPath}\"");
+            messageBuilder.AppendLine($"Read project \"{absoluteProjectPath}\"");
             messageBuilder.AppendLine("- Type: " + (solutionProject.Type.HasValue ? ProjectTypes.DisplayNames[solutionProject.Type.Value] : solutionProject.TypeGuid.ToString()));
             messageBuilder.AppendLine("- CanBuild: " + solutionProject.CanBuild);
             messageBuilder.AppendLine("- CanDeploy: " + solutionProject.CanDeploy);
@@ -218,7 +217,7 @@ namespace SubSolution.MsBuild
             messageBuilder.AppendLine("- Configurations: " + string.Join(", ", solutionProject.Configurations));
             messageBuilder.Append("- Platforms: " + string.Join(", ", solutionProject.Platforms));
 
-            _logger.Log(_logLevel, messageBuilder.ToString());
+            _logger.Log(LogLevel, messageBuilder.ToString());
         }
     }
 }

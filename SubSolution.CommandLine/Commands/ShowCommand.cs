@@ -8,14 +8,16 @@ using SubSolution.Raw;
 
 namespace SubSolution.CommandLine.Commands
 {
-    [Verb("display", HelpText = "Display the content of .sln or .subsln files.")]
-    public class DisplayCommand : CommandBase
+    [Verb("show", HelpText = "Show the content of .sln or .subsln files.")]
+    public class ShowCommand : ReadCommandBase
     {
-        [Value(0, MetaName = "files", Required = true, HelpText = "Paths of the solution files to display. Can be .sln or .subsln files.")]
+        [Value(0, MetaName = "files", Required = true, HelpText = "Paths of the solution files to show. Can be .sln or .subsln files.")]
         public IEnumerable<string>? FilePaths { get; set; }
 
         protected override async Task ExecuteCommandAsync()
         {
+            await base.ExecuteCommandAsync();
+
             if (FilePaths is null)
                 return;
 
@@ -24,7 +26,7 @@ namespace SubSolution.CommandLine.Commands
                 if (!CheckFileExist(filePath))
                     continue;
 
-                Log($"Displaying {filePath}...");
+                Log($"Show {filePath}...");
 
                 ISolution? solution = await ConvertAnySolution(filePath);
                 if (solution is null)

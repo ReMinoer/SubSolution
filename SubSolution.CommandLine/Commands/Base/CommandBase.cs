@@ -1,29 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
-using SubSolution.Builders;
-using SubSolution.Builders.GlobPatterns;
-using SubSolution.Converters;
-using SubSolution.FileSystems;
-using SubSolution.MsBuild;
-using SubSolution.Raw;
 
 namespace SubSolution.CommandLine.Commands.Base
 {
     public abstract class CommandBase : ICommand
     {
-        static private readonly ILogger Logger;
+        static protected readonly ConsoleLogger Logger;
         private ErrorCode _errorCode;
 
         static CommandBase()
         {
-            var loggerProvider = new NLogLoggerProvider();
-            Logger = loggerProvider.CreateLogger(nameof(SubSolution));
+            Logger = new ConsoleLogger(LogLevel.Information);
         }
 
         public async Task<ErrorCode> ExecuteAsync()
@@ -74,20 +64,11 @@ namespace SubSolution.CommandLine.Commands.Base
             return answer == 'y';
         }
 
-        static protected IEnumerable<string> GetMatchingFilePaths(string pathPattern)
-        {
-            if (StandardFileSystem.Instance.IsAbsolutePath(pathPattern))
-                return new[] { pathPattern };
-
-            string simplifiedPathPattern = GlobPatternUtils.CompleteSimplifiedPattern(pathPattern, "subsln");
-            return StandardGlobPatternFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
-        }
-
         static protected void OpenFile(string filePath)
         {
             var fileStartInfo = new ProcessStartInfo(filePath)
             {
-                UseShellExecute = true
+                UseShellExecute = true, 
             };
             Process.Start(fileStartInfo);
         }
@@ -100,156 +81,6 @@ namespace SubSolution.CommandLine.Commands.Base
             LogError($"File {filePath} not found.");
             UpdateErrorCode(ErrorCode.FileNotFound);
             return false;
-        }
-
-        static protected void LogSolution(ISolution solution)
-        {
-            var solutionLogger = new SolutionLogger();
-            string logMessage = solutionLogger.Convert(solution);
-
-            Console.WriteLine();
-            Console.WriteLine(logMessage);
-        }
-
-        protected async Task<SolutionBuilderContext?> GetBuildContext(string configurationFilePath)
-        {
-            if (!CheckFileExist(configurationFilePath))
-                return null;
-
-            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, new MsBuildProjectReader(Logger, LogLevel.Trace));
-            context.Logger = Logger;
-            context.LogLevel = LogLevel.Trace;
-
-            return context;
-        }
-
-        protected async Task<Solution?> BuildSolution(SolutionBuilderContext context)
-        {
-            try
-            {
-                SolutionBuilder solutionBuilder = new SolutionBuilder(context);
-                Solution solution = await solutionBuilder.BuildAsync(context.Configuration);
-
-                foreach (Issue issue in solutionBuilder.Issues)
-                    Log(issue.Message);
-
-                if (solutionBuilder.Issues.Any(x => x.Level == IssueLevel.Error))
-                {
-                    LogError($"Failed to build {context.ConfigurationFilePath}.");
-                    UpdateErrorCode(ErrorCode.FailBuildSolution);
-                    return null;
-                }
-
-                return solution;
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to build {context.ConfigurationFilePath}.", exception);
-                UpdateErrorCode(ErrorCode.FailBuildSolution);
-                return null;
-            }
-        }
-
-        protected RawSolution? ConvertSolution(ISolution solution)
-        {
-            try
-            {
-                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
-                return solutionConverter.Convert(solution);
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to interpret {solution.OutputPath}.", exception);
-                UpdateErrorCode(ErrorCode.FailInterpretSolution);
-                return null;
-            }
-        }
-
-        protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolution(ISolution solution)
-        {
-            RawSolution? rawSolution = await ReadSolution(solution.OutputPath);
-            if (rawSolution is null)
-                return (null, false);
-
-            bool changed;
-            try
-            {
-                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
-                solutionConverter.Update(rawSolution, solution);
-
-                changed = solutionConverter.Changes.Count > 0;
-
-                foreach (SolutionChange change in solutionConverter.Changes.OrderBy(x => x))
-                {
-                    Console.WriteLine(change.GetMessage(StandardFileSystem.Instance));
-                }
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to update {solution.OutputPath}.", exception);
-                UpdateErrorCode(ErrorCode.FailUpdateSolution);
-                return (null, false);
-            }
-
-            return (rawSolution, changed);
-        }
-
-        protected async Task<bool> WriteSolution(RawSolution rawSolution, string outputPath)
-        {
-            try
-            {
-                await using FileStream fileStream = File.Create(outputPath);
-                await rawSolution.WriteAsync(fileStream);
-                return true;
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to write {outputPath}.", exception);
-                UpdateErrorCode(ErrorCode.FailWriteSolution);
-                return false;
-            }
-        }
-
-        protected async Task<RawSolution?> ReadSolution(string filePath)
-        {
-            try
-            {
-                await using FileStream fileStream = File.OpenRead(filePath);
-                return await RawSolution.ReadAsync(fileStream);
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to read {filePath}.", exception);
-                UpdateErrorCode(ErrorCode.FailReadSolution);
-                return null;
-            }
-        }
-
-        protected async Task<ISolution?> ConvertRawSolution(RawSolution rawSolution, string filePath)
-        {
-            try
-            {
-                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, new MsBuildProjectReader(Logger, LogLevel.Trace));
-                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath);
-
-                foreach (Issue issue in issues)
-                    Log(issue.Message);
-
-                if (issues.Any(x => x.Level == IssueLevel.Error))
-                {
-                    LogError($"Failed to interpret {filePath}.");
-                    UpdateErrorCode(ErrorCode.FailInterpretSolution);
-                    return null;
-                }
-
-                return solution;
-            }
-            catch (Exception exception)
-            {
-                LogError($"Failed to interpret {filePath}.", exception);
-                UpdateErrorCode(ErrorCode.FailInterpretSolution);
-                return null;
-            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommandLine;
@@ -20,10 +21,10 @@ namespace SubSolution.CommandLine.Commands
         public bool Preview { get; set; }
         [Option('f', "force", HelpText = "Force to apply changes, without asking user.")]
         public bool Force { get; set; }
-        [Option('s', "show", HelpText = "Show representation of generation result.")]
-        public bool Show { get; set; }
         [Option('o', "open", HelpText = "Open generated file with its default application.")]
         public bool Open { get; set; }
+        [Option('s', "show", HelpText = "Show representation of generated solution.")]
+        public bool Show { get; set; }
 
         protected override async Task ExecuteCommandAsync(string configurationFilePath)
         {
@@ -88,6 +89,22 @@ namespace SubSolution.CommandLine.Commands
             {
                 Log($"Opening {solution.OutputPath}...");
                 OpenFile(solution.OutputPath);
+            }
+        }
+
+        protected async Task<bool> WriteSolution(RawSolution rawSolution, string outputPath)
+        {
+            try
+            {
+                await using FileStream fileStream = File.Create(outputPath);
+                await rawSolution.WriteAsync(fileStream);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                LogError($"Failed to write {outputPath}.", exception);
+                UpdateErrorCode(ErrorCode.FailWriteSolution);
+                return false;
             }
         }
     }

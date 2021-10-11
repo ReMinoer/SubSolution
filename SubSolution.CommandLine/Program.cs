@@ -14,7 +14,7 @@ namespace SubSolution.CommandLine
         static private async Task<int> Main(string[] args)
         {
             return (int)await Parser.Default
-                .ParseArguments<CreateCommand, GenerateCommand, ValidateCommand, DisplayCommand>(args)
+                .ParseArguments<CreateCommand, GenerateCommand, ValidateCommand, ShowCommand>(args)
                 .MapResult<ICommand, Task<ErrorCode>>(async x =>
                 {
                     try
