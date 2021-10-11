@@ -9,6 +9,5 @@ namespace SubSolution
         string SolutionName { get; }
         string OutputPath { get; }
         string OutputDirectory { get; }
-        void SetOutputDirectory(string outputDirectory);
     }
 }

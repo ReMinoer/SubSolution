@@ -7,7 +7,7 @@ using SubSolution.Utils;
 
 namespace SubSolution.Base
 {
-    public abstract class SolutionFolderBase<TSolution, TFolder> : ISolutionFolder
+    public abstract class SolutionFolderBase<TSolution, TFolder> : IFilterableSolutionFolder
         where TSolution : SolutionBase<TSolution, TFolder>
         where TFolder : SolutionFolderBase<TSolution, TFolder>
     {

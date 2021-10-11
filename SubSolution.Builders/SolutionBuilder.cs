@@ -448,7 +448,7 @@ namespace SubSolution.Builders
                     SkipConfigurationPlatforms = true
                 };
 
-                (ISolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, filePath);
+                (IMergeableSolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, filePath);
                 Issues.AddRange(issues);
 
                 return (solution, solutionName);
@@ -465,13 +465,13 @@ namespace SubSolution.Builders
                 subContext.IgnoreConfigurationsAndPlatforms = true;
 
                 SolutionBuilder solutionBuilder = new SolutionBuilder(subContext);
-                ISolution solution = await solutionBuilder.BuildAsync(subContext.Configuration);
+                IMergeableSolution solution = await solutionBuilder.BuildAsync(subContext.Configuration);
 
                 return (solution, subContext.SolutionName);
             });
         }
 
-        private async Task VisitAsyncBase(SolutionContentFiles solutionContentFiles, string defaultFileExtension, Func<string, Task<(ISolution, string)>> solutionLoader)
+        private async Task VisitAsyncBase(SolutionContentFiles solutionContentFiles, string defaultFileExtension, Func<string, Task<(IMergeableSolution, string)>> solutionLoader)
         {
             IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(solutionContentFiles.Path, defaultFileExtension);
             if (solutionContentFiles.ReverseOrder == true)
@@ -494,7 +494,7 @@ namespace SubSolution.Builders
                 if (!_ignoredSolutionPaths.Add(filePath) && solutionContentFiles.Overwrite != true)
                     continue;
 
-                (ISolution solution, string solutionName) = await solutionLoader(filePath);
+                (IMergeableSolution solution, string solutionName) = await solutionLoader(filePath);
                 solution.SetOutputDirectory(_solution.OutputDirectory);
 
                 if (solutionContentFiles.WhereProjects?.IgnoreAll == true)

@@ -3,7 +3,7 @@ using SubSolution.FileSystems;
 
 namespace SubSolution.Base
 {
-    public abstract class SolutionBase<TSolution, TFolder> : ISolution
+    public abstract class SolutionBase<TSolution, TFolder> : IMergeableSolution
         where TSolution : SolutionBase<TSolution, TFolder>
         where TFolder : SolutionFolderBase<TSolution, TFolder>
     {
@@ -16,6 +16,7 @@ namespace SubSolution.Base
 
         public abstract TFolder Root { get; }
         ISolutionFolder ISolution.Root => Root;
+        IFilterableSolutionFolder IFilterableSolution.Root => Root;
 
         protected abstract IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
         IReadOnlyList<ISolutionConfigurationPlatform> ISolution.ConfigurationPlatforms => ProtectedConfigurationPlatforms;
