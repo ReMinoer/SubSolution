@@ -108,12 +108,12 @@ namespace SubSolution.CommandLine.Commands.Base
             }
         }
 
-        protected async Task<ISolution?> ConvertRawSolution(RawSolution rawSolution, string filePath)
+        protected async Task<ISolution?> ConvertRawSolution(RawSolution rawSolution, string filePath, bool skipProjectLoading)
         {
             try
             {
                 RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, ProjectReader);
-                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath);
+                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath, skipProjectLoading);
 
                 foreach (Issue issue in issues)
                     Log(issue.Message);

@@ -47,7 +47,9 @@ namespace SubSolution.CommandLine.Commands
                     if (rawSolution is null)
                         return null;
 
-                    return await ConvertRawSolution(rawSolution, filePath);
+                    bool skipProjectLoading = !ShowDetailedSolution && !ShowDivergentProjects;
+
+                    return await ConvertRawSolution(rawSolution, filePath, skipProjectLoading);
                 }
                 case ".subsln":
                 {
