@@ -4,14 +4,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SubSolution.Builders;
 using SubSolution.Builders.Configuration;
+using SubSolution.Builders.GlobPatterns.Mock;
 using SubSolution.Converters;
-using SubSolution.FileSystems.Mock;
 using SubSolution.ProjectReaders.Mock;
 using SubSolution.Raw;
 using SubSolution.Utils;
@@ -53,12 +54,12 @@ namespace SubSolution.Tests
         }
 
         private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
-            Func<MockFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
+            Func<MockGlobPatternFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
             logger.LogDebug("Configuration XML:" + Environment.NewLine + configuration.Untyped);
 
-            MockFileSystem mockFileSystem = new MockFileSystem();
+            var mockFileSystem = new MockGlobPatternFileSystem(new Regex(@"\w:"));
 
             var mockProjectReader = new MockProjectReader(mockFileSystem, new SolutionProject(ProjectType.CSharpDotNetSdk)
             {
@@ -212,7 +213,7 @@ namespace SubSolution.Tests
             return (solution, buildIssues);
         }
 
-        private async Task ConfigureMockFileSystemAsync(MockFileSystem mockFileSystem, SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
+        private async Task ConfigureMockFileSystemAsync(MockGlobPatternFileSystem mockFileSystem, SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
         {
             var relativeFilePath = new List<string>();
 

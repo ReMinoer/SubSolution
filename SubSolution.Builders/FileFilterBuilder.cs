@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
 using SubSolution.Builders.Base;
 using SubSolution.Builders.Configuration;
-using SubSolution.FileSystems;
+using SubSolution.Builders.GlobPatterns;
 
 namespace SubSolution.Builders
 {
     public class FileFilterBuilder : FilterBuilderBase<string, FileFilters, IFileFiltersVisitor>, IFileFiltersVisitor
     {
-        public FileFilterBuilder(IFileSystem fileSystem, string workspaceDirectoryPath)
+        public FileFilterBuilder(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
             : base(fileSystem, workspaceDirectoryPath)
         {
         }

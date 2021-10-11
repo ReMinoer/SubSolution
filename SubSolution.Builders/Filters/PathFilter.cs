@@ -1,21 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SubSolution.FileSystems;
+using SubSolution.Builders.GlobPatterns;
 
 namespace SubSolution.Builders.Filters
 {
     public class PathFilter : IFilter<string>
     {
         public string GlobPattern { get; }
-        public IFileSystem FileSystem { get; }
+        public IGlobPatternFileSystem FileSystem { get; }
         public string WorkspaceDirectoryPath { get; }
 
         public string TextFormat => $"Path=\"{GlobPattern}\"";
 
         private IEnumerable<string> _matchingPaths = Enumerable.Empty<string>();
 
-        public PathFilter(string globPattern, IFileSystem fileSystem, string workspaceDirectoryPath)
+        public PathFilter(string globPattern, IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
         {
             GlobPattern = globPattern;
             FileSystem = fileSystem;

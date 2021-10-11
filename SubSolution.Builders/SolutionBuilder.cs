@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using SubSolution.Builders.Configuration;
 using SubSolution.Builders.Filters;
+using SubSolution.Builders.GlobPatterns;
 using SubSolution.Converters;
-using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 using SubSolution.Utils;
@@ -29,7 +29,7 @@ namespace SubSolution.Builders
         private Solution.Folder CurrentFolder => _currentFolderStack.Peek();
         private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? string.Join('/', _currentFolderPathStack.Reverse()) : LogTokenRoot;
 
-        private readonly IFileSystem _fileSystem;
+        private readonly IGlobPatternFileSystem _fileSystem;
         private readonly CacheProjectReader _projectReader;
         private readonly ProjectGraph _projectGraph;
 
@@ -57,7 +57,7 @@ namespace SubSolution.Builders
             _currentFolderStack.Push(_solution.Root);
             _currentFolderPathStack = new Stack<string>();
 
-            _fileSystem = context.FileSystem ?? StandardFileSystem.Instance;
+            _fileSystem = context.FileSystem ?? StandardGlobPatternFileSystem.Instance;
             _projectReader = new CacheProjectReader(_fileSystem, context.ProjectReader);
             _projectGraph = new ProjectGraph(_fileSystem, _projectReader);
 

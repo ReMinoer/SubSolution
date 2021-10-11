@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
-namespace SubSolution.FileSystems.Mock
+namespace SubSolution.Builders.GlobPatterns.Mock
 {
     [ExcludeFromCodeCoverage]
     internal class MockFileInfo : FileInfoBase

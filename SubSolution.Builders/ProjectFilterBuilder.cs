@@ -1,14 +1,14 @@
 ﻿using System.Threading.Tasks;
 using SubSolution.Builders.Base;
 using SubSolution.Builders.Configuration;
-using SubSolution.FileSystems;
+using SubSolution.Builders.GlobPatterns;
 using SubSolution.ProjectReaders;
 
 namespace SubSolution.Builders
 {
     public class ProjectFilterBuilder : FilterBuilderBase<(string, ISolutionProject), ProjectFilters, IProjectFiltersVisitor>, IProjectFiltersVisitor
     {
-        public ProjectFilterBuilder(IFileSystem fileSystem, string workspaceDirectoryPath)
+        public ProjectFilterBuilder(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
             : base(fileSystem, workspaceDirectoryPath)
         {
         }

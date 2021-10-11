@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using System.Text.RegularExpressions;
 using SubSolution.FileSystems.Base;
 using SubSolution.Utils;
 
@@ -12,17 +11,17 @@ namespace SubSolution.FileSystems.Mock
     public class MockFileSystem : FileSystemBase
     {
         // Do not use System.IO !
+        protected readonly Regex _rootRegex;
 
         public const char DirectorySeparator = '/';
         public const char AltDirectorySeparator = '\\';
         public static readonly char[] DirectorySeparators = { AltDirectorySeparator, DirectorySeparator };
 
-        private readonly Dictionary<string, DirectoryInfoBase> _rootDirectories = new Dictionary<string, DirectoryInfoBase>();
         private readonly Dictionary<string, byte[]> _fileContents = new Dictionary<string, byte[]>();
 
-        public void AddRoot(string rootName, IEnumerable<string> relativePaths)
+        public MockFileSystem(Regex rootRegex)
         {
-            _rootDirectories[rootName] = new MockDirectoryInfo(this, rootName, relativePaths);
+            _rootRegex = rootRegex;
         }
 
         public void AddFileContent(string filePath, byte[] content)
@@ -38,7 +37,7 @@ namespace SubSolution.FileSystems.Mock
             if (pathParts.Length == 0)
                 return false;
 
-            return _rootDirectories.ContainsKey(pathParts[0]);
+            return _rootRegex.IsMatch(pathParts[0]);
         }
 
         public override Stream OpenStream(string filePath)
@@ -107,17 +106,6 @@ namespace SubSolution.FileSystems.Mock
         private string TrimPath(string? path)
         {
             return path?.TrimEnd(DirectorySeparators) ?? string.Empty;
-        }
-
-        protected override DirectoryInfoBase? GetDirectoryInfo(string directoryPath)
-        {
-            string[] directoryNames = SplitPath(directoryPath);
-
-            string root = directoryNames[0];
-            if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase rootDirectoryInfo))
-                rootDirectoryInfo = new MockDirectoryInfo(this, root, Enumerable.Empty<string>());
-
-            return directoryNames[1..].Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName));
         }
 
         private char? GetLastSeparator(string? path)

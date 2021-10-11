@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using SubSolution.FileSystems.Base;
 
 namespace SubSolution.FileSystems
@@ -28,13 +27,5 @@ namespace SubSolution.FileSystems
         public override string[] SplitPath(string path) => path.Split(DirectorySeparators, StringSplitOptions.RemoveEmptyEntries);
         public override bool IsAbsolutePath(string path) => Path.IsPathRooted(path);
         public override Stream OpenStream(string filePath) => File.OpenRead(filePath);
-
-        protected override DirectoryInfoBase? GetDirectoryInfo(string directoryPath)
-        {
-            if (!Directory.Exists(directoryPath))
-                return null;
-
-            return new DirectoryInfoWrapper(new DirectoryInfo(directoryPath));
-        }
     }
 }

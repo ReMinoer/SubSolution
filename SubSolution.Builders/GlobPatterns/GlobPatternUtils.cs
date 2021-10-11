@@ -1,4 +1,4 @@
-﻿namespace SubSolution.Utils
+﻿namespace SubSolution.Builders.GlobPatterns
 {
     static public class GlobPatternUtils
     {

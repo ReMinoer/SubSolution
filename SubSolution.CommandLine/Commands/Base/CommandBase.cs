@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using SubSolution.Builders;
+using SubSolution.Builders.GlobPatterns;
 using SubSolution.Converters;
 using SubSolution.FileSystems;
 using SubSolution.MsBuild;
 using SubSolution.Raw;
-using SubSolution.Utils;
 
 namespace SubSolution.CommandLine.Commands.Base
 {
@@ -80,7 +80,7 @@ namespace SubSolution.CommandLine.Commands.Base
                 return new[] { pathPattern };
 
             string simplifiedPathPattern = GlobPatternUtils.CompleteSimplifiedPattern(pathPattern, "subsln");
-            return StandardFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
+            return StandardGlobPatternFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
         }
 
         static protected void OpenFile(string filePath)

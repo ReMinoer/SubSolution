@@ -2,19 +2,18 @@
 using System.Threading.Tasks;
 using SubSolution.Builders.Configuration;
 using SubSolution.Builders.Filters;
-using SubSolution.FileSystems;
-using SubSolution.Utils;
+using SubSolution.Builders.GlobPatterns;
 
 namespace SubSolution.Builders.Base
 {
     public abstract class FilterBuilderBase<TItem, TVisitable, TVisitor>
         where TVisitable : IAsyncVisitable<TVisitor>
     {
-        protected readonly IFileSystem _fileSystem;
-        protected readonly string _workspaceDirectoryPath;
-        public IFilter<TItem> BuiltFilter { get; protected set; } = new AllFilter<TItem>();
+        private readonly IGlobPatternFileSystem _fileSystem;
+        private readonly string _workspaceDirectoryPath;
+        public IFilter<TItem> BuiltFilter { get; private set; } = new AllFilter<TItem>();
 
-        protected FilterBuilderBase(IFileSystem fileSystem, string workspaceDirectoryPath)
+        protected FilterBuilderBase(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
         {
             _fileSystem = fileSystem;
             _workspaceDirectoryPath = workspaceDirectoryPath;

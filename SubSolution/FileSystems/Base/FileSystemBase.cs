@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace SubSolution.FileSystems.Base
 {
@@ -41,17 +38,5 @@ namespace SubSolution.FileSystems.Base
 
             return rootPathSplit[..^backtrackCount].Concat(relativeFilePathSplit[backtrackCount..]).Aggregate(Combine);
         }
-
-        public IEnumerable<string> GetFilesMatchingGlobPattern(string directoryPath, string globPattern)
-        {
-            var directoryInfo = GetDirectoryInfo(directoryPath);
-
-            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-            matcher.AddInclude(globPattern);
-
-            return matcher.Execute(directoryInfo).Files.Select(x => x.Path);
-        }
-
-        protected abstract DirectoryInfoBase? GetDirectoryInfo(string root);
     }
 }

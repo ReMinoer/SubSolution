@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using SubSolution.FileSystems.Mock;
 
-namespace SubSolution.FileSystems.Mock
+namespace SubSolution.Builders.GlobPatterns.Mock
 {
     [ExcludeFromCodeCoverage]
     internal class MockDirectoryInfo : DirectoryInfoBase
@@ -15,13 +16,13 @@ namespace SubSolution.FileSystems.Mock
         private readonly Dictionary<string, MockDirectoryInfo> _subDirectories;
         private readonly Dictionary<string, MockFileInfo> _files;
 
-        public MockFileSystem FileSystem { get; }
+        public MockGlobPatternFileSystem FileSystem { get; }
 
         public override sealed string FullName { get; }
         public override sealed string Name { get; }
         public override sealed DirectoryInfoBase? ParentDirectory => _parentDirectoryInfo;
 
-        public MockDirectoryInfo(MockFileSystem fileSystem, string rootName, IEnumerable<string> relativePaths)
+        public MockDirectoryInfo(MockGlobPatternFileSystem fileSystem, string rootName, IEnumerable<string> relativePaths)
         {
             if (string.IsNullOrEmpty(rootName))
                 throw new ArgumentException(nameof(rootName));
@@ -54,7 +55,7 @@ namespace SubSolution.FileSystems.Mock
             BuildChildren(filePaths);
         }
 
-        private MockDirectoryInfo(MockFileSystem fileSystem, MockDirectoryInfo? parentDirectoryInfo, string name,
+        private MockDirectoryInfo(MockGlobPatternFileSystem fileSystem, MockDirectoryInfo? parentDirectoryInfo, string name,
             Dictionary<string, MockDirectoryInfo>? subDirectories = null, Dictionary<string, MockFileInfo>? files = null)
         {
             FileSystem = fileSystem;
