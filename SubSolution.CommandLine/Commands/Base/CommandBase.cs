@@ -37,11 +37,41 @@ namespace SubSolution.CommandLine.Commands.Base
         static public void LogEmptyLine() => Console.WriteLine();
         static public void LogError(string errorMessage, Exception? exception = null)
         {
-            Console.Write("ERROR: ");
-            Console.WriteLine(errorMessage);
+            Console.ForegroundColor = ConsoleColor.Red;
+
+            Console.Error.Write("ERROR: ");
+            Console.Error.WriteLine(errorMessage);
 
             if (exception != null)
-                Console.WriteLine(exception);
+                Console.Error.WriteLine(exception);
+
+            Console.ResetColor();
+        }
+
+        static public void LogWarning(string errorMessage)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+
+            Console.Error.Write("WARNING: ");
+            Console.Error.WriteLine(errorMessage);
+
+            Console.ResetColor();
+        }
+
+        static public void LogIssue(Issue issue)
+        {
+            switch (issue.Level)
+            {
+                case IssueLevel.Error:
+                    LogError(issue.Message);
+                    break;
+                case IssueLevel.Warning:
+                    LogWarning(issue.Message);
+                    break;
+                default:
+                    Log(issue.Message);
+                    break;
+            }
         }
 
         static protected bool AskUserValidation(string question) => AskUserValidation(null, question);

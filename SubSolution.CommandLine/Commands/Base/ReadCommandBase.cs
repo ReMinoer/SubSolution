@@ -74,7 +74,7 @@ namespace SubSolution.CommandLine.Commands.Base
                 Solution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
                 foreach (Issue issue in solutionBuilder.Issues)
-                    Log(issue.Message);
+                    LogIssue(issue);
 
                 if (solutionBuilder.Issues.Any(x => x.Level == IssueLevel.Error))
                 {
@@ -116,7 +116,7 @@ namespace SubSolution.CommandLine.Commands.Base
                 (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath, skipProjectLoading);
 
                 foreach (Issue issue in issues)
-                    Log(issue.Message);
+                    LogIssue(issue);
 
                 if (issues.Any(x => x.Level == IssueLevel.Error))
                 {
