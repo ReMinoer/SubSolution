@@ -36,5 +36,21 @@ namespace SubSolution
                     Add(subFolder);
             }
         }
+
+        static public IReadOnlyCollection<string> GetAllFilePaths(this ISolutionFolder rootFolder)
+        {
+            var result = new List<string>();
+            Add(rootFolder);
+            return result.AsReadOnly();
+
+            void Add(ISolutionFolder solutionFolder)
+            {
+                foreach (string filePath in solutionFolder.FilePaths)
+                    result.Add(filePath);
+
+                foreach (ISolutionFolder subFolder in solutionFolder.SubFolders.Values)
+                    Add(subFolder);
+            }
+        }
     }
 }

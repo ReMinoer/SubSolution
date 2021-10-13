@@ -497,6 +497,33 @@ namespace SubSolution.Builders
                 (IMergeableSolution solution, string solutionName) = await solutionLoader(filePath);
                 solution.SetOutputDirectory(_solution.OutputDirectory);
 
+                if (solutionContentFiles.KeepOnly != null)
+                {
+                    SubSolutionConfiguration scopedConfiguration = new SubSolutionConfiguration
+                    {
+                        Root = new SolutionRoot()
+                    };
+
+                    foreach (SolutionFiles keptSolutionFiles in solutionContentFiles.KeepOnly.SolutionFiles)
+                        scopedConfiguration.Root.SolutionItems.Add(keptSolutionFiles);
+
+                    SolutionBuilderContext scopedContext = SolutionBuilderContext.FromConfiguration(
+                        scopedConfiguration, _projectReader, _solution.OutputDirectory, _workspaceDirectoryPath, _fileSystem);
+
+                    scopedContext.Logger = _logger;
+                    scopedContext.LogLevel = _logLevel;
+                    scopedContext.IgnoreConfigurationsAndPlatforms = true;
+
+                    SolutionBuilder scopedSolutionBuilder = new SolutionBuilder(scopedContext);
+                    IMergeableSolution scopedSolution = await scopedSolutionBuilder.BuildAsync(scopedContext.Configuration);
+
+                    IReadOnlyCollection<string> scopedProjectPaths = scopedSolution.Root.GetAllProjectPaths();
+                    solution.Root.FilterProjects((path, _) => scopedProjectPaths.Contains(path));
+
+                    IReadOnlyCollection<string> scopedFilePaths = scopedSolution.Root.GetAllFilePaths();
+                    solution.Root.FilterFiles(scopedFilePaths.Contains);
+                }
+
                 if (solutionContentFiles.WhereProjects?.IgnoreAll == true)
                 {
                     solution.Root.FilterProjects((_, __) => false);

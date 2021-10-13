@@ -392,6 +392,7 @@
         <xs:complexContent>
             <xs:extension base="SolutionProjectsSourceBase">
                 <xs:all>
+                    <xs:element name="KeepOnly" type="SolutionsScope" minOccurs="0" />
                     <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
                     <xs:element name="WhereProjects" type="IgnorableProjectFilterRoot" minOccurs="0" />
                     <xs:element name="WhereFiles" type="IgnorableFileFilterRoot" minOccurs="0" />
@@ -409,6 +410,15 @@
                 </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="SolutionsScope">
+        <xs:annotation>
+            <xs:documentation>Represent a solution scope.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="SolutionFiles" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="SolutionsSource">
