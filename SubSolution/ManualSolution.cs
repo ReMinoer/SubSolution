@@ -21,7 +21,7 @@ namespace SubSolution
             ProtectedConfigurationPlatforms = ConfigurationPlatforms.AsReadOnly();
         }
 
-        public ManualSolution(ISolution solution, IFileSystem? fileSystem = null)
+        public ManualSolution(IMovableSolution solution, IFileSystem? fileSystem = null)
             : this(solution.OutputDirectoryPath, fileSystem)
         {
             Root.AddFolderContent(solution.Root);

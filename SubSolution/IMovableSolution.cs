@@ -2,6 +2,7 @@
 {
     public interface IMovableSolution : ISolution
     {
-        void SetOutputDirectory(string outputDirectoryPath);
+        string OutputDirectoryPath { get; }
+        void ChangeOutputDirectory(string outputDirectoryPath);
     }
 }

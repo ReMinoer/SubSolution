@@ -496,7 +496,7 @@ namespace SubSolution.Builders
                     continue;
 
                 (IMergeableSolution solution, string solutionName) = await solutionLoader(filePath);
-                solution.SetOutputDirectory(_solution.OutputDirectoryPath);
+                solution.ChangeOutputDirectory(_solution.OutputDirectoryPath);
 
                 if (solutionContentFiles.KeepOnly != null)
                 {

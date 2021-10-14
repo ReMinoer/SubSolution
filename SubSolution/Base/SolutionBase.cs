@@ -27,7 +27,7 @@ namespace SubSolution.Base
             OutputDirectoryPath = outputDirectoryPath;
         }
 
-        public void SetOutputDirectory(string outputDirectoryPath)
+        public void ChangeOutputDirectory(string outputDirectoryPath)
         {
             _knownPaths.Clear();
 
