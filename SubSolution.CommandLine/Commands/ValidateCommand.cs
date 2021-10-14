@@ -21,7 +21,7 @@ namespace SubSolution.CommandLine.Commands
 
         protected override async Task ExecuteCommandAsync(string configurationFilePath)
         {
-            SolutionBuilderContext? context = await GetBuildContext(configurationFilePath);
+            SolutionBuilderContext? context = await GetBuildContextAsync(configurationFilePath);
             if (context is null)
                 return;
 
@@ -34,14 +34,14 @@ namespace SubSolution.CommandLine.Commands
                 return;
             }
 
-            Solution? expectedSolution = await BuildSolution(context);
+            Solution? expectedSolution = await BuildSolutionAsync(context);
             if (expectedSolution is null)
                 return;
 
             if (Show)
                 LogSolution(expectedSolution);
 
-            (RawSolution? rawSolution, bool changed) = await UpdateSolution(expectedSolution);
+            (RawSolution? rawSolution, bool changed) = await UpdateSolutionAsync(expectedSolution);
             if (rawSolution is null)
                 return;
 

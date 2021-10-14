@@ -293,7 +293,7 @@ namespace SubSolution.Builders
             {
                 string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
 
-                foreach (string absoluteDependencyPath in await _projectGraph.GetDependencies(absoluteTargetPath))
+                foreach (string absoluteDependencyPath in await _projectGraph.GetDependenciesAsync(absoluteTargetPath))
                 {
                     string dependencyPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependencyPath);
 
@@ -330,7 +330,7 @@ namespace SubSolution.Builders
                 return;
             }
 
-            await Task.WhenAll(scopePaths.Select(x => _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x)).Select(_projectGraph.GetDependencies));
+            await Task.WhenAll(scopePaths.Select(x => _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x)).Select(_projectGraph.GetDependenciesAsync));
 
             var matchingDependents = new Dictionary<string, ISolutionProject>(_fileSystem.PathComparer);
             foreach (string targetPath in targetPaths)
@@ -338,7 +338,7 @@ namespace SubSolution.Builders
                 string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
                 bool directOnly = dependents.KeepOnlyDirect == true;
 
-                foreach (string absoluteDependentPath in await _projectGraph.GetDependents(absoluteTargetPath, directOnly))
+                foreach (string absoluteDependentPath in await _projectGraph.GetDependentsAsync(absoluteTargetPath, directOnly))
                 {
                     string dependentPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependentPath);
                     if (!scopePaths.Contains(dependentPath))
@@ -377,7 +377,7 @@ namespace SubSolution.Builders
                     string dependentPath = remainingDependents[i];
                     string absoluteDependentPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, dependentPath);
 
-                    IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependencies(absoluteDependentPath);
+                    IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependenciesAsync(absoluteDependentPath);
                     IEnumerable<string> dependentDependencyPaths = absoluteDependentDependenciesPath.Select(x => _fileSystem.MakeRelativePath(_workspaceDirectoryPath, x));
 
                     if (!addedProjects.IsSupersetOf(dependentDependencyPaths))
@@ -436,7 +436,7 @@ namespace SubSolution.Builders
 
         public Task VisitAsync(Solutions solutions)
         {
-            return VisitAsyncBase(solutions, "sln", async filePath =>
+            return VisitSolutionsBaseAsync(solutions, "sln", async filePath =>
             {
                 string solutionName = _fileSystem.GetFileNameWithoutExtension(filePath);
 
@@ -457,7 +457,7 @@ namespace SubSolution.Builders
 
         public Task VisitAsync(SubSolutions subSolutions)
         {
-            return VisitAsyncBase(subSolutions, "subsln", async filePath =>
+            return VisitSolutionsBaseAsync(subSolutions, "subsln", async filePath =>
             {
                 SolutionBuilderContext subContext = await SolutionBuilderContext.FromConfigurationFileAsync(filePath, _projectReader, _fileSystem);
                 subContext.Logger = _logger;
@@ -471,7 +471,7 @@ namespace SubSolution.Builders
             });
         }
 
-        private async Task VisitAsyncBase(SolutionContentFiles solutionContentFiles, string defaultFileExtension, Func<string, Task<(IMergeableSolution, string)>> solutionLoader)
+        private async Task VisitSolutionsBaseAsync(SolutionContentFiles solutionContentFiles, string defaultFileExtension, Func<string, Task<(IMergeableSolution, string)>> solutionLoader)
         {
             IEnumerable<string> matchingFilePaths = GetMatchingFilePaths(solutionContentFiles.Path, defaultFileExtension);
             if (solutionContentFiles.ReverseOrder == true)

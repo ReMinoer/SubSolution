@@ -28,7 +28,7 @@ namespace SubSolution.CommandLine.Commands
 
                 Log($"Show {filePath}...");
 
-                ISolution? solution = await ConvertAnySolution(filePath);
+                ISolution? solution = await ConvertAnySolutionAsync(filePath);
                 if (solution is null)
                     continue;
 
@@ -36,28 +36,28 @@ namespace SubSolution.CommandLine.Commands
             }
         }
 
-        private async Task<ISolution?> ConvertAnySolution(string filePath)
+        private async Task<ISolution?> ConvertAnySolutionAsync(string filePath)
         {
             string fileExtension = Path.GetExtension(filePath);
             switch (fileExtension)
             {
                 case ".sln":
                 {
-                    RawSolution? rawSolution = await ReadSolution(filePath);
+                    RawSolution? rawSolution = await ReadSolutionAsync(filePath);
                     if (rawSolution is null)
                         return null;
 
                     bool skipProjectLoading = !ShowDetailedSolution && !ShowDivergentProjects;
 
-                    return await ConvertRawSolution(rawSolution, filePath, skipProjectLoading);
+                    return await ConvertRawSolutionAsync(rawSolution, filePath, skipProjectLoading);
                 }
                 case ".subsln":
                 {
-                    SolutionBuilderContext? context = await GetBuildContext(filePath);
+                    SolutionBuilderContext? context = await GetBuildContextAsync(filePath);
                     if (context is null)
                         return null;
 
-                    return await BuildSolution(context);
+                    return await BuildSolutionAsync(context);
                 }
                 default:
                 {

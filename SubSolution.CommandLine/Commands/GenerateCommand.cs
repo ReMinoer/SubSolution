@@ -28,13 +28,13 @@ namespace SubSolution.CommandLine.Commands
 
         protected override async Task ExecuteCommandAsync(string configurationFilePath)
         {
-            SolutionBuilderContext? context = await GetBuildContext(configurationFilePath);
+            SolutionBuilderContext? context = await GetBuildContextAsync(configurationFilePath);
             if (context is null)
                 return;
 
             Log($"Generating {configurationFilePath}...");
             
-            Solution? solution = await BuildSolution(context);
+            Solution? solution = await BuildSolutionAsync(context);
             if (solution is null)
                 return;
 
@@ -44,7 +44,7 @@ namespace SubSolution.CommandLine.Commands
             RawSolution rawSolution;
             if (File.Exists(solution.OutputPath))
             {
-                (RawSolution? updatedSolution, bool changed) = await UpdateSolution(solution);
+                (RawSolution? updatedSolution, bool changed) = await UpdateSolutionAsync(solution);
                 if (updatedSolution is null)
                     return;
 
@@ -80,7 +80,7 @@ namespace SubSolution.CommandLine.Commands
                 rawSolution = convertedSolution;
             }
 
-            if (!await WriteSolution(rawSolution, solution.OutputPath))
+            if (!await WriteSolutionAsync(rawSolution, solution.OutputPath))
                 return;
 
             Log($"Generated {solution.OutputPath}.");
@@ -92,7 +92,7 @@ namespace SubSolution.CommandLine.Commands
             }
         }
 
-        protected async Task<bool> WriteSolution(RawSolution rawSolution, string outputPath)
+        protected async Task<bool> WriteSolutionAsync(RawSolution rawSolution, string outputPath)
         {
             try
             {

@@ -61,9 +61,9 @@ namespace SubSolution.CommandLine.Commands.Base
             return StandardGlobPatternFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
         }
 
-        protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolution(ISolution solution)
+        protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolutionAsync(ISolution solution)
         {
-            RawSolution? rawSolution = await ReadSolution(solution.OutputPath);
+            RawSolution? rawSolution = await ReadSolutionAsync(solution.OutputPath);
             if (rawSolution is null)
                 return (null, false);
 

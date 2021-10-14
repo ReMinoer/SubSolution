@@ -31,12 +31,12 @@ namespace SubSolution.ProjectReaders
             _directDependents = new ConcurrentDictionary<string, ConcurrentDictionary<string, bool>>(fileSystem.PathComparer);
         }
 
-        public async Task<IReadOnlyCollection<string>> GetDependencies(string projectPath)
+        public async Task<IReadOnlyCollection<string>> GetDependenciesAsync(string projectPath)
         {
-            return await _getDependencyTasks.GetOrAdd(projectPath, LoadAllDependencies);
+            return await _getDependencyTasks.GetOrAdd(projectPath, LoadAllDependenciesAsync);
         }
 
-        private async Task<IReadOnlyCollection<string>> LoadAllDependencies(string projectPath)
+        private async Task<IReadOnlyCollection<string>> LoadAllDependenciesAsync(string projectPath)
         {
             ISolutionProject project = await _projectReader.ReadAsync(projectPath);
 
@@ -52,7 +52,7 @@ namespace SubSolution.ProjectReaders
                 directDependenciesPaths.TryAdd(dependencyPath, true);
 
                 // Add indirect dependencies
-                IReadOnlyCollection<string> dependencyDependenciesPaths = await GetDependencies(dependencyPath);
+                IReadOnlyCollection<string> dependencyDependenciesPaths = await GetDependenciesAsync(dependencyPath);
                 foreach (string dependencyDependencyPath in dependencyDependenciesPaths)
                     dependenciesPaths.TryAdd(dependencyDependencyPath, true);
             }));
@@ -79,7 +79,7 @@ namespace SubSolution.ProjectReaders
             return new ReadOnlyCollection<string>(dependenciesPaths.Keys);
         }
 
-        public async Task<IReadOnlyCollection<string>> GetDependents(string absoluteTargetPath, bool directOnly = false)
+        public async Task<IReadOnlyCollection<string>> GetDependentsAsync(string absoluteTargetPath, bool directOnly = false)
         {
             await Task.WhenAll(_getDependencyTasks.Values);
 

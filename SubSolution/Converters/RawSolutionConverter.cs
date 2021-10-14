@@ -33,7 +33,7 @@ namespace SubSolution.Converters
             FillProjectParentingGraphs(rawSolution, issues, childrenGraph, parentGraph);
 
             ManualSolution solution = new ManualSolution(solutionPath, _fileSystem);
-            await FillHierarchy(solution, projectsByGuid, childrenGraph, parentGraph, skipProjectLoading);
+            await FillHierarchyAsync(solution, projectsByGuid, childrenGraph, parentGraph, skipProjectLoading);
 
             if (!SkipConfigurationPlatforms)
                 FillConfigurationPlatforms(rawSolution, solution, projectPathsByGuid, issues);
@@ -73,7 +73,7 @@ namespace SubSolution.Converters
             }
         }
 
-        private async Task FillHierarchy(ManualSolution solution, Dictionary<Guid, IRawSolutionProject> projectsByGuid,
+        private async Task FillHierarchyAsync(ManualSolution solution, Dictionary<Guid, IRawSolutionProject> projectsByGuid,
             Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph, bool skipProjectLoading = false)
         {
             IRawSolutionProject? rootFilesFolderProject = projectsByGuid
@@ -87,10 +87,10 @@ namespace SubSolution.Converters
                 FillFolderFiles(solution.Root, rootFilesFolderProject);
 
             IEnumerable<Guid> rootProjectGuids = projectsByGuid.Where(x => x.Value != rootFilesFolderProject).Select(x => x.Key).Except(parentGraph.Keys);
-            await FillSubFolder(solution, solution.Root, rootProjectGuids, projectsByGuid, childrenGraph, skipProjectLoading);
+            await FillSubFolderAsync(solution, solution.Root, rootProjectGuids, projectsByGuid, childrenGraph, skipProjectLoading);
         }
 
-        private async Task FillSubFolder(ManualSolution solution, ManualSolution.Folder folder, IEnumerable<Guid> childrenGuids,
+        private async Task FillSubFolderAsync(ManualSolution solution, ManualSolution.Folder folder, IEnumerable<Guid> childrenGuids,
             Dictionary<Guid, IRawSolutionProject> projectsByGuid, Dictionary<Guid, List<Guid>> childrenGraph, bool skipProjectLoading = false)
         {
             foreach (Guid childGuid in childrenGuids)
@@ -104,7 +104,7 @@ namespace SubSolution.Converters
                     if (!childrenGraph.TryGetValue(childGuid, out List<Guid> subFolderChildrenGuid))
                         continue;
 
-                    await FillSubFolder(solution, subFolder, subFolderChildrenGuid, projectsByGuid, childrenGraph, skipProjectLoading);
+                    await FillSubFolderAsync(solution, subFolder, subFolderChildrenGuid, projectsByGuid, childrenGraph, skipProjectLoading);
                 }
                 else
                 {

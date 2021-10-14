@@ -16,9 +16,9 @@ namespace SubSolution.Builders
         protected override Task AcceptAsync(ProjectFilters visitable) => visitable.AcceptAsync(this);
         protected override string GetItemPath((string, ISolutionProject) item) => item.Item1;
 
-        public Task VisitAsync(ProjectNot projectNot) => BuildNot(projectNot.ProjectFilters);
-        public Task VisitAsync(ProjectMatchAll projectMatchAll) => BuildAll(projectMatchAll.ProjectFilters);
-        public Task VisitAsync(ProjectMatchAnyOf projectMatchAnyOf) => BuildAnyOf(projectMatchAnyOf.ProjectFilters);
-        public Task VisitAsync(ProjectPath projectPath) => BuildPath(projectPath.Match, ProjectFileExtensions.Wildcard);
+        public Task VisitAsync(ProjectNot projectNot) => BuildNotAsync(projectNot.ProjectFilters);
+        public Task VisitAsync(ProjectMatchAll projectMatchAll) => BuildAllAsync(projectMatchAll.ProjectFilters);
+        public Task VisitAsync(ProjectMatchAnyOf projectMatchAnyOf) => BuildAnyOfAsync(projectMatchAnyOf.ProjectFilters);
+        public Task VisitAsync(ProjectPath projectPath) => BuildPathAsync(projectPath.Match, ProjectFileExtensions.Wildcard);
     }
 }

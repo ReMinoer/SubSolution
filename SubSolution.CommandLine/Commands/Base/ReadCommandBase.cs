@@ -54,7 +54,7 @@ namespace SubSolution.CommandLine.Commands.Base
             Log(logMessage);
         }
 
-        protected async Task<SolutionBuilderContext?> GetBuildContext(string configurationFilePath)
+        protected async Task<SolutionBuilderContext?> GetBuildContextAsync(string configurationFilePath)
         {
             if (!CheckFileExist(configurationFilePath))
                 return null;
@@ -66,7 +66,7 @@ namespace SubSolution.CommandLine.Commands.Base
             return context;
         }
 
-        protected async Task<Solution?> BuildSolution(SolutionBuilderContext context)
+        protected async Task<Solution?> BuildSolutionAsync(SolutionBuilderContext context)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace SubSolution.CommandLine.Commands.Base
             }
         }
 
-        protected async Task<RawSolution?> ReadSolution(string filePath)
+        protected async Task<RawSolution?> ReadSolutionAsync(string filePath)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace SubSolution.CommandLine.Commands.Base
             }
         }
 
-        protected async Task<ISolution?> ConvertRawSolution(RawSolution rawSolution, string filePath, bool skipProjectLoading)
+        protected async Task<ISolution?> ConvertRawSolutionAsync(RawSolution rawSolution, string filePath, bool skipProjectLoading)
         {
             try
             {

@@ -22,13 +22,13 @@ namespace SubSolution.Builders.Base
         protected abstract Task AcceptAsync(TVisitable visitable);
         protected abstract string GetItemPath(TItem item);
 
-        protected async Task BuildNot(TVisitable visitable)
+        protected async Task BuildNotAsync(TVisitable visitable)
         {
             await AcceptAsync(visitable);
             BuiltFilter = new NotFilter<TItem>(BuiltFilter);
         }
 
-        protected async Task BuildAll(IEnumerable<TVisitable> visitables)
+        protected async Task BuildAllAsync(IEnumerable<TVisitable> visitables)
         {
             var filter = new AllFilter<TItem>();
             foreach (TVisitable visitable in visitables)
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Base
             BuiltFilter = filter;
         }
 
-        protected async Task BuildAnyOf(IEnumerable<TVisitable> visitables)
+        protected async Task BuildAnyOfAsync(IEnumerable<TVisitable> visitables)
         {
             var filter = new AnyOfFilter<TItem>();
             foreach (TVisitable visitable in visitables)
@@ -50,7 +50,7 @@ namespace SubSolution.Builders.Base
             BuiltFilter = filter;
         }
 
-        protected Task BuildPath(string globPattern, string defaultFileExtension)
+        protected Task BuildPathAsync(string globPattern, string defaultFileExtension)
         {
             globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
 
