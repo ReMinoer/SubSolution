@@ -61,9 +61,9 @@ namespace SubSolution.CommandLine.Commands.Base
             return StandardGlobPatternFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
         }
 
-        protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolutionAsync(ISolution solution)
+        protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolutionAsync(ISolution solution, string existingSolutionPath)
         {
-            RawSolution? rawSolution = await ReadSolutionAsync(solution.OutputPath);
+            RawSolution? rawSolution = await ReadSolutionAsync(existingSolutionPath);
             if (rawSolution is null)
                 return (null, false);
 
@@ -82,7 +82,7 @@ namespace SubSolution.CommandLine.Commands.Base
             }
             catch (Exception exception)
             {
-                LogError($"Failed to update {solution.OutputPath}.", exception);
+                LogError($"Failed to update {existingSolutionPath}.", exception);
                 UpdateErrorCode(ErrorCode.FailUpdateSolution);
                 return (null, false);
             }
@@ -90,7 +90,7 @@ namespace SubSolution.CommandLine.Commands.Base
             return (rawSolution, changed);
         }
 
-        protected RawSolution? ConvertSolution(ISolution solution)
+        protected RawSolution? ConvertSolution(ISolution solution, string configurationFilePath)
         {
             try
             {
@@ -99,7 +99,7 @@ namespace SubSolution.CommandLine.Commands.Base
             }
             catch (Exception exception)
             {
-                LogError($"Failed to interpret {solution.OutputPath}.", exception);
+                LogError($"Failed to interpret {configurationFilePath}.", exception);
                 UpdateErrorCode(ErrorCode.FailInterpretSolution);
                 return null;
             }

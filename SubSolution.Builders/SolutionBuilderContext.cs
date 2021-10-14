@@ -14,6 +14,7 @@ namespace SubSolution.Builders
         public SubSolutionConfiguration Configuration { get; }
         public string? ConfigurationFilePath { get; }
         public string SolutionPath { get; }
+        public string SolutionDirectoryPath { get; }
         public string SolutionName { get; }
         public string WorkspaceDirectoryPath { get; }
         public IProjectReader ProjectReader { get; }
@@ -25,10 +26,13 @@ namespace SubSolution.Builders
 
         public SolutionBuilderContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IGlobPatternFileSystem? fileSystem)
         {
+            IGlobPatternFileSystem activeFileSystem = fileSystem ?? StandardGlobPatternFileSystem.Instance;
+
             Configuration = configuration;
             ConfigurationFilePath = configurationFilePath;
             SolutionPath = solutionPath;
-            SolutionName = (fileSystem ?? StandardGlobPatternFileSystem.Instance).GetFileNameWithoutExtension(solutionPath);
+            SolutionDirectoryPath = activeFileSystem.GetParentDirectoryPath(solutionPath)!;
+            SolutionName = activeFileSystem.GetFileNameWithoutExtension(solutionPath);
             WorkspaceDirectoryPath = workspaceDirectoryPath;
             ProjectReader = projectReader;
             FileSystem = fileSystem;

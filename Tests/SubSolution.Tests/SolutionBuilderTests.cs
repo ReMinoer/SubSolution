@@ -25,6 +25,8 @@ namespace SubSolution.Tests
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
+        private const string TestConfigurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
+
         private async Task<ISolution> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
             (ISolution solution, Issue[] issues) = await ProcessConfigurationMockFileWithIssuesAsync(configuration, haveSubSolutions);
@@ -34,10 +36,8 @@ namespace SubSolution.Tests
 
         private Task<(ISolution, Issue[])> ProcessConfigurationMockFileWithIssuesAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
         {
-            const string configurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
-
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, projectReader, fileSystem));
+                => SolutionBuilderContext.FromConfigurationFileAsync(TestConfigurationFilePath, projectReader, fileSystem));
         }
 
         private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
@@ -53,7 +53,13 @@ namespace SubSolution.Tests
                 => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
-        private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+        private Task<SolutionBuilderContext> GetConfigurationMockFileContextAsync(SubSolutionConfiguration configuration)
+        {
+            return PrepareContextAsync(configuration, haveSubSolutions: false, (fileSystem, projectReader)
+                => SolutionBuilderContext.FromConfigurationFileAsync(TestConfigurationFilePath, projectReader, fileSystem));
+        }
+
+        private async Task<SolutionBuilderContext> PrepareContextAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
             Func<MockGlobPatternFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
@@ -61,31 +67,33 @@ namespace SubSolution.Tests
 
             var mockFileSystem = new MockGlobPatternFileSystem(new Regex(@"\w:"));
 
-            var mockProjectReader = new MockProjectReader(mockFileSystem, new SolutionProject(ProjectType.CSharpDotNetSdk)
-            {
-                Configurations = { "Debug, Release" },
-                Platforms = { "Any CPU" },
-                CanBuild = true
-            })
+            var mockProjectReader = new MockProjectReader(
+                mockFileSystem, new SolutionProject(ProjectType.CSharpDotNetSdk)
+                {
+                    Configurations = { "Debug, Release" },
+                    Platforms = { "Any CPU" },
+                    CanBuild = true
+                }
+            )
             {
                 Projects =
                 {
                     [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication\MyApplication.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release"},
-                        Platforms = {"Any CPU"},
+                        Configurations = { "Debug", "Release" },
+                        Platforms = { "Any CPU" },
                         CanBuild = true
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Core\MyApplication.Core.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release"},
-                        Platforms = {"Any CPU"},
+                        Configurations = { "Debug", "Release" },
+                        Platforms = { "Any CPU" },
                         CanBuild = true
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\src\MyApplication.Configuration\MyApplication.Configuration.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"debug", "release"},
-                        Platforms = {"any cpu"},
+                        Configurations = { "debug", "release" },
+                        Platforms = { "any cpu" },
                         CanBuild = true,
                         ProjectDependencies =
                         {
@@ -94,8 +102,8 @@ namespace SubSolution.Tests
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release", "Final"},
-                        Platforms = {"x86", "x64"},
+                        Configurations = { "Debug", "Release", "Final" },
+                        Platforms = { "x86", "x64" },
                         CanBuild = true,
                         ProjectDependencies =
                         {
@@ -105,8 +113,8 @@ namespace SubSolution.Tests
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\src\MyFramework\MyFramework.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release"},
-                        Platforms = {"Any CPU"},
+                        Configurations = { "Debug", "Release" },
+                        Platforms = { "Any CPU" },
                         CanBuild = true,
                         ProjectDependencies =
                         {
@@ -115,8 +123,8 @@ namespace SubSolution.Tests
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\tests\MyFramework.Tests\MyFramework.Tests.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release"},
-                        Platforms = {"Any CPU"},
+                        Configurations = { "Debug", "Release" },
+                        Platforms = { "Any CPU" },
                         CanBuild = true,
                         ProjectDependencies =
                         {
@@ -125,8 +133,8 @@ namespace SubSolution.Tests
                     },
                     [@"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\external\MySubModule\src\MySubModule\MySubModule.csproj"] = new SolutionProject(ProjectType.CSharpDotNetSdk)
                     {
-                        Configurations = {"Debug", "Release"},
-                        Platforms = {"Any CPU"},
+                        Configurations = { "Debug", "Release" },
+                        Platforms = { "Any CPU" },
                         CanBuild = true
                     }
                 }
@@ -138,12 +146,20 @@ namespace SubSolution.Tests
             context.Logger = logger;
             context.LogLevel = LogLevel.Debug;
 
+            return context;
+        }
+
+        private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+            Func<MockGlobPatternFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
+        {
+            SolutionBuilderContext context = await PrepareContextAsync(configuration, haveSubSolutions, createContext);
+
             var solutionBuilder = new SolutionBuilder(context);
             ISolution solution = await solutionBuilder.BuildAsync(context.Configuration);
 
             Issue[] buildIssues = solutionBuilder.Issues.ToArray();
 
-            var solutionLogger = new SolutionLogger(fileSystem: mockFileSystem)
+            var solutionLogger = new SolutionLogger(fileSystem: context.FileSystem)
             {
                 ShowHeaders = true,
                 ShowHierarchy = true,
@@ -153,15 +169,15 @@ namespace SubSolution.Tests
             };
 
             string logMessage = solutionLogger.Convert(solution);
-            logger.LogDebug(logMessage);
+            context.Logger.LogDebug(logMessage);
 
             // Full pipe checks
-            var rawSolutionConverter = new SolutionConverter(mockFileSystem)
+            var rawSolutionConverter = new SolutionConverter(context.FileSystem!)
             {
                 Logger = NullLogger.Instance,
                 LogLevel = LogLevel.Trace
             };
-            var solutionConverter = new RawSolutionConverter(mockFileSystem, mockProjectReader);
+            var solutionConverter = new RawSolutionConverter(context.FileSystem!, context.ProjectReader);
             
             ISolution checkSolution = solution;
             RawSolution rawSolution;
@@ -172,7 +188,7 @@ namespace SubSolution.Tests
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(firstPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
             issues.Should().BeEmpty();
 
             rawSolution = rawSolutionConverter.Convert(checkSolution);
@@ -180,10 +196,10 @@ namespace SubSolution.Tests
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(secondPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionPath);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
             issues.Should().BeEmpty();
 
-            SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(MyApplicationConfiguration, mockProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, mockFileSystem);
+            SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(MyApplicationConfiguration, context.ProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, context.FileSystem);
             var referenceSolutionBuilder = new SolutionBuilder(referenceContext);
             ISolution referenceSolution = await referenceSolutionBuilder.BuildAsync(referenceContext.Configuration);
             RawSolution referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
@@ -195,7 +211,7 @@ namespace SubSolution.Tests
             await referenceRawSolution.WriteAsync(thirdPassStream);
             thirdPassStream.Position = 0;
             referenceRawSolution = await RawSolution.ReadAsync(thirdPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionPath);
+            (checkSolution, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
             issues.Should().BeEmpty();
 
             referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
@@ -207,7 +223,7 @@ namespace SubSolution.Tests
             await referenceRawSolution.WriteAsync(forthPassStream);
             forthPassStream.Position = 0;
             await RawSolution.ReadAsync(forthPassStream);
-            (_, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionPath);
+            (_, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
             issues.Should().BeEmpty();
 
             return (solution, buildIssues);

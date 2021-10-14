@@ -155,9 +155,9 @@ namespace SubSolution.Base
             return folderPath.Aggregate(_owner, (currentFolder, folderName) => currentFolder.GetOrAddSubFolder(folderName));
         }
 
-        public void ChangeItemsRootDirectory(string outputDirectory)
+        public void ChangeItemsRootDirectory(string outputDirectoryPath)
         {
-            ChangeItemsRootDirectory(outputDirectory, _solution.OutputDirectory);
+            ChangeItemsRootDirectory(outputDirectoryPath, _solution.OutputDirectoryPath);
         }
 
         private void ChangeItemsRootDirectory(string outputDirectory, string previousOutputDirectory)

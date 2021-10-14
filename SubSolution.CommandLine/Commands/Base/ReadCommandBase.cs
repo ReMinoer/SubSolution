@@ -112,8 +112,10 @@ namespace SubSolution.CommandLine.Commands.Base
         {
             try
             {
+                string solutionDirectoryPath = StandardFileSystem.Instance.GetParentDirectoryPath(filePath)!;
+
                 RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, ProjectReader);
-                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, filePath, skipProjectLoading);
+                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, solutionDirectoryPath, skipProjectLoading);
 
                 foreach (Issue issue in issues)
                     LogIssue(issue);

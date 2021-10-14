@@ -1,7 +1,7 @@
 ﻿namespace SubSolution
 {
-    public interface IMovableSolution
+    public interface IMovableSolution : ISolution
     {
-        void SetOutputDirectory(string outputDirectory);
+        void SetOutputDirectory(string outputDirectoryPath);
     }
 }

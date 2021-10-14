@@ -21,7 +21,7 @@ namespace SubSolution.Converters
             _projectReader = projectReader;
         }
 
-        public async Task<(ManualSolution, List<Issue>)> ConvertAsync(IRawSolution rawSolution, string solutionPath, bool skipProjectLoading = false)
+        public async Task<(ManualSolution, List<Issue>)> ConvertAsync(IRawSolution rawSolution, string solutionDirectoryPath, bool skipProjectLoading = false)
         {
             List<Issue> issues = new List<Issue>();
 
@@ -32,7 +32,7 @@ namespace SubSolution.Converters
             var parentGraph = new Dictionary<Guid, Guid>();
             FillProjectParentingGraphs(rawSolution, issues, childrenGraph, parentGraph);
 
-            ManualSolution solution = new ManualSolution(solutionPath, _fileSystem);
+            ManualSolution solution = new ManualSolution(solutionDirectoryPath, _fileSystem);
             await FillHierarchyAsync(solution, projectsByGuid, childrenGraph, parentGraph, skipProjectLoading);
 
             if (!SkipConfigurationPlatforms)
@@ -109,7 +109,7 @@ namespace SubSolution.Converters
                 else
                 {
                     string relativeProjectPath = childProject.Path;
-                    string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectory, relativeProjectPath);
+                    string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectoryPath, relativeProjectPath);
 
                     ISolutionProject solutionProject = skipProjectLoading ? new SolutionProject(childProject.TypeGuid) : await _projectReader.ReadAsync(absoluteProjectPath);
                     folder.AddProject(relativeProjectPath, solutionProject);

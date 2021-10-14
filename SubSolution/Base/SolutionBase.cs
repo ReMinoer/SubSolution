@@ -9,10 +9,8 @@ namespace SubSolution.Base
     {
         protected readonly IFileSystem _fileSystem;
         protected readonly Dictionary<string, TFolder> _knownPaths;
-
-        public string SolutionName { get; set; }
-        public string OutputDirectory { get; private set; }
-        public string OutputPath => _fileSystem.Combine(OutputDirectory, SolutionName + ".sln");
+        
+        public string OutputDirectoryPath { get; private set; }
 
         public abstract TFolder Root { get; }
         ISolutionFolder ISolution.Root => Root;
@@ -21,21 +19,20 @@ namespace SubSolution.Base
         protected abstract IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
         IReadOnlyList<ISolutionConfigurationPlatform> ISolution.ConfigurationPlatforms => ProtectedConfigurationPlatforms;
 
-        public SolutionBase(string outputPath, IFileSystem? fileSystem)
+        public SolutionBase(string outputDirectoryPath, IFileSystem? fileSystem)
         {
             _fileSystem = fileSystem ?? StandardFileSystem.Instance;
             _knownPaths = new Dictionary<string, TFolder>(_fileSystem.PathComparer);
-
-            SolutionName = _fileSystem.GetFileNameWithoutExtension(outputPath);
-            OutputDirectory = _fileSystem.GetParentDirectoryPath(outputPath)!;
+            
+            OutputDirectoryPath = outputDirectoryPath;
         }
 
-        public void SetOutputDirectory(string outputDirectory)
+        public void SetOutputDirectory(string outputDirectoryPath)
         {
             _knownPaths.Clear();
 
-            Root.ChangeItemsRootDirectory(outputDirectory);
-            OutputDirectory = outputDirectory;
+            Root.ChangeItemsRootDirectory(outputDirectoryPath);
+            OutputDirectoryPath = outputDirectoryPath;
         }
     }
 }

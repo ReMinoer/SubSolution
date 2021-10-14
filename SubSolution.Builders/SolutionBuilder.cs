@@ -52,7 +52,7 @@ namespace SubSolution.Builders
         {
             _workspaceDirectoryPath = context.WorkspaceDirectoryPath;
 
-            _solution = new Solution(context.SolutionPath, context.FileSystem);
+            _solution = new Solution(context.SolutionDirectoryPath, context.FileSystem);
             _currentFolderStack = new Stack<Solution.Folder>();
             _currentFolderStack.Push(_solution.Root);
             _currentFolderPathStack = new Stack<string>();
@@ -85,7 +85,7 @@ namespace SubSolution.Builders
 
             Log("Start building solution");
             Log($"Configuration file: {_ignoredSolutionPaths.FirstOrDefault() ?? LogTokenNone}");
-            Log($"Solution output file: {_solution.OutputPath}");
+            Log($"Solution output directory: {_solution.OutputDirectoryPath}");
             Log($"Initial workspace directory: {_workspaceDirectoryPath}");
 
             if (_ignoreConfigurationsAndPlatforms)
@@ -262,7 +262,7 @@ namespace SubSolution.Builders
             string[] matchingFilePaths = GetMatchingProjectPaths(projects.Path).ToArray();
             
             Task<ISolutionProject>[] readProjectTasks = matchingFilePaths
-                .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectory, x)))
+                .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectoryPath, x)))
                 .ToArray();
 
             await Task.WhenAll(readProjectTasks);
@@ -438,8 +438,6 @@ namespace SubSolution.Builders
         {
             return VisitSolutionsBaseAsync(solutions, "sln", async filePath =>
             {
-                string solutionName = _fileSystem.GetFileNameWithoutExtension(filePath);
-
                 await using Stream fileStream = _fileSystem.OpenStream(filePath);
                 RawSolution rawSolution = await RawSolution.ReadAsync(fileStream);
 
@@ -448,7 +446,10 @@ namespace SubSolution.Builders
                     SkipConfigurationPlatforms = true
                 };
 
-                (IMergeableSolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, filePath);
+                string solutionName = _fileSystem.GetFileNameWithoutExtension(filePath);
+                string solutionDirectoryPath = _fileSystem.GetParentDirectoryPath(filePath)!;
+
+                (IMergeableSolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, solutionDirectoryPath);
                 Issues.AddRange(issues);
 
                 return (solution, solutionName);
@@ -495,7 +496,7 @@ namespace SubSolution.Builders
                     continue;
 
                 (IMergeableSolution solution, string solutionName) = await solutionLoader(filePath);
-                solution.SetOutputDirectory(_solution.OutputDirectory);
+                solution.SetOutputDirectory(_solution.OutputDirectoryPath);
 
                 if (solutionContentFiles.KeepOnly != null)
                 {
@@ -508,7 +509,7 @@ namespace SubSolution.Builders
                         scopedConfiguration.Root.SolutionItems.Add(keptSolutionFiles);
 
                     SolutionBuilderContext scopedContext = SolutionBuilderContext.FromConfiguration(
-                        scopedConfiguration, _projectReader, _solution.OutputDirectory, _workspaceDirectoryPath, _fileSystem);
+                        scopedConfiguration, _projectReader, _solution.OutputDirectoryPath, _workspaceDirectoryPath, _fileSystem);
 
                     scopedContext.Logger = _logger;
                     scopedContext.LogLevel = _logLevel;

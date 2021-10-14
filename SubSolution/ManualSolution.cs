@@ -12,8 +12,8 @@ namespace SubSolution
         public List<ConfigurationPlatform> ConfigurationPlatforms { get; }
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
-        public ManualSolution(string outputPath, IFileSystem? fileSystem = null)
-            : base(outputPath, fileSystem)
+        public ManualSolution(string outputDirectoryPath, IFileSystem? fileSystem = null)
+            : base(outputDirectoryPath, fileSystem)
         {
             Root = new Folder(this, _fileSystem, _knownPaths);
 
@@ -21,8 +21,8 @@ namespace SubSolution
             ProtectedConfigurationPlatforms = ConfigurationPlatforms.AsReadOnly();
         }
 
-        public ManualSolution(ISolution solution, string outputPath, IFileSystem? fileSystem = null)
-            : this(outputPath, fileSystem)
+        public ManualSolution(ISolution solution, IFileSystem? fileSystem = null)
+            : this(solution.OutputDirectoryPath, fileSystem)
         {
             Root.AddFolderContent(solution.Root);
 

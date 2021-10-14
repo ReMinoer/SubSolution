@@ -13,8 +13,8 @@ namespace SubSolution
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
-        public Solution(string outputPath, IFileSystem? fileSystem = null)
-            : base(outputPath, fileSystem)
+        public Solution(string outputDirectoryPath, IFileSystem? fileSystem = null)
+            : base(outputDirectoryPath, fileSystem)
         {
             Root = new Folder(this, _fileSystem, _knownPaths);
 

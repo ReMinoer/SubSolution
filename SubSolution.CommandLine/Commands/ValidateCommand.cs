@@ -41,18 +41,18 @@ namespace SubSolution.CommandLine.Commands
             if (Show)
                 LogSolution(expectedSolution);
 
-            (RawSolution? rawSolution, bool changed) = await UpdateSolutionAsync(expectedSolution);
+            (RawSolution? rawSolution, bool changed) = await UpdateSolutionAsync(expectedSolution, context.SolutionPath);
             if (rawSolution is null)
                 return;
 
             if (changed)
             {
-                LogError($"Solution {expectedSolution.OutputPath} is not up-to-date.");
+                LogError($"Solution {context.SolutionPath} is not up-to-date.");
                 UpdateErrorCode(ErrorCode.NotValidated);
                 return;
             }
 
-            Log($"Solution {expectedSolution.OutputPath} is up-to-date.");
+            Log($"Solution {context.SolutionPath} is up-to-date.");
         }
     }
 }

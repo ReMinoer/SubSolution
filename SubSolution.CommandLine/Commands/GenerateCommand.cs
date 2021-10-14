@@ -42,18 +42,18 @@ namespace SubSolution.CommandLine.Commands
                 LogSolution(solution);
             
             RawSolution rawSolution;
-            if (File.Exists(solution.OutputPath))
+            if (File.Exists(context.SolutionPath))
             {
-                (RawSolution? updatedSolution, bool changed) = await UpdateSolutionAsync(solution);
+                (RawSolution? updatedSolution, bool changed) = await UpdateSolutionAsync(solution, context.SolutionPath);
                 if (updatedSolution is null)
                     return;
 
                 if (!changed)
-                    Log($"No changes in {solution.OutputPath}.");
+                    Log($"No changes in {context.SolutionPath}.");
 
                 if (Preview)
                 {
-                    Log($"End of {solution.OutputPath} preview.");
+                    Log($"End of {context.SolutionPath} preview.");
                     return;
                 }
 
@@ -70,7 +70,7 @@ namespace SubSolution.CommandLine.Commands
             }
             else
             {
-                RawSolution? convertedSolution = ConvertSolution(solution);
+                RawSolution? convertedSolution = ConvertSolution(solution, configurationFilePath);
                 if (convertedSolution is null)
                     return;
 
@@ -80,15 +80,15 @@ namespace SubSolution.CommandLine.Commands
                 rawSolution = convertedSolution;
             }
 
-            if (!await WriteSolutionAsync(rawSolution, solution.OutputPath))
+            if (!await WriteSolutionAsync(rawSolution, context.SolutionPath))
                 return;
 
-            Log($"Generated {solution.OutputPath}.");
+            Log($"Generated {context.SolutionPath}.");
 
             if (Open)
             {
-                Log($"Opening {solution.OutputPath}...");
-                OpenFile(solution.OutputPath);
+                Log($"Opening {context.SolutionPath}...");
+                OpenFile(context.SolutionPath);
             }
         }
 

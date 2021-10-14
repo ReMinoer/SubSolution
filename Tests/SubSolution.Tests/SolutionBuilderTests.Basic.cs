@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
+using SubSolution.Builders;
 using SubSolution.Builders.Configuration;
 using static FluentAssertions.FluentActions;
 
@@ -28,30 +29,33 @@ namespace SubSolution.Tests
                 SolutionName = "MyCustomSolutionName"
             };
 
-            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
-            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
-            solution.SolutionName.Should().Be("MyCustomSolutionName");
+            SolutionBuilderContext context = await GetConfigurationMockFileContextAsync(configuration);
+            
+            context.SolutionPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
+            context.SolutionDirectoryPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            context.SolutionName.Should().Be("MyCustomSolutionName");
 
             configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName.sln"
             };
 
-            solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
-            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
-            solution.SolutionName.Should().Be("MyCustomSolutionName");
+            context = await GetConfigurationMockFileContextAsync(configuration);
+
+            context.SolutionPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.sln");
+            context.SolutionDirectoryPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            context.SolutionName.Should().Be("MyCustomSolutionName");
 
             configuration = new SubSolutionConfiguration
             {
                 SolutionName = "MyCustomSolutionName.txt"
             };
 
-            solution = await ProcessConfigurationMockFileAsync(configuration);
-            solution.OutputPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.txt.sln");
-            solution.OutputDirectory.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
-            solution.SolutionName.Should().Be("MyCustomSolutionName.txt");
+            context = await GetConfigurationMockFileContextAsync(configuration);
+
+            context.SolutionPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace\MyCustomSolutionName.txt.sln");
+            context.SolutionDirectoryPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
+            context.SolutionName.Should().Be("MyCustomSolutionName.txt");
         }
 
         [Test]
@@ -63,15 +67,11 @@ namespace SubSolution.Tests
                 OutputDirectory = @"C:\MySolutions\MyCustomSolutions"
             };
 
-            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+            SolutionBuilderContext context = await GetConfigurationMockFileContextAsync(configuration);
 
-            solution.OutputPath.Should().Be(@"C:\MySolutions\MyCustomSolutions\MyCustomSolutionName.sln");
-            solution.OutputDirectory.Should().Be(@"C:\MySolutions\MyCustomSolutions");
-            solution.SolutionName.Should().Be("MyCustomSolutionName");
-
-            solution.Root.FilePaths.Should().BeEmpty();
-            solution.Root.Projects.Should().BeEmpty();
-            solution.Root.SubFolders.Should().BeEmpty();
+            context.SolutionPath.Should().Be(@"C:\MySolutions\MyCustomSolutions\MyCustomSolutionName.sln");
+            context.SolutionDirectoryPath.Should().Be(@"C:\MySolutions\MyCustomSolutions");
+            context.SolutionName.Should().Be("MyCustomSolutionName");
         }
 
         [Test]
