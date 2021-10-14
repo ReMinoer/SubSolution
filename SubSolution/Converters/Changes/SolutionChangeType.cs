@@ -1,4 +1,4 @@
-﻿namespace SubSolution.Converters
+﻿namespace SubSolution.Converters.Changes
 {
     public enum SolutionChangeType
     {

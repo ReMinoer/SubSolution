@@ -1,7 +1,7 @@
 ﻿using System;
 using SubSolution.FileSystems;
 
-namespace SubSolution.Converters
+namespace SubSolution.Converters.Changes
 {
     public class SolutionChange : IEquatable<SolutionChange>, IComparable<SolutionChange>
     {

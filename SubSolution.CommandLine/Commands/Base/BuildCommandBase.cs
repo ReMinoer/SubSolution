@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SubSolution.Builders.GlobPatterns;
 using SubSolution.Converters;
+using SubSolution.Converters.Changes;
 using SubSolution.FileSystems;
 using SubSolution.Raw;
 
