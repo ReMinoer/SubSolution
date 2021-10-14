@@ -15,33 +15,37 @@ namespace SubSolution.Converters
 
         public bool SkipConfigurationPlatforms { get; set; }
 
+        public List<Issue> Issues { get; }
+
         public RawSolutionConverter(IFileSystem fileSystem, IProjectReader projectReader)
         {
+            Issues = new List<Issue>();
+
             _fileSystem = fileSystem;
             _projectReader = projectReader;
         }
 
-        public async Task<(ManualSolution, List<Issue>)> ConvertAsync(IRawSolution rawSolution, string solutionDirectoryPath, bool skipProjectLoading = false)
+        public async Task<ManualSolution> ConvertAsync(IRawSolution rawSolution, string solutionDirectoryPath, bool skipProjectLoading = false)
         {
-            List<Issue> issues = new List<Issue>();
+            Issues.Clear();
 
             Dictionary<Guid, IRawSolutionProject> projectsByGuid = rawSolution.Projects.ToDictionary(x => x.ProjectGuid, x => x);
             Dictionary<Guid, string> projectPathsByGuid = rawSolution.Projects.ToDictionary(x => x.ProjectGuid, x => x.Path);
 
             var childrenGraph = new Dictionary<Guid, List<Guid>>();
             var parentGraph = new Dictionary<Guid, Guid>();
-            FillProjectParentingGraphs(rawSolution, issues, childrenGraph, parentGraph);
+            FillProjectParentingGraphs(rawSolution, childrenGraph, parentGraph);
 
             ManualSolution solution = new ManualSolution(solutionDirectoryPath, _fileSystem);
             await FillHierarchyAsync(solution, projectsByGuid, childrenGraph, parentGraph, skipProjectLoading);
 
             if (!SkipConfigurationPlatforms)
-                FillConfigurationPlatforms(rawSolution, solution, projectPathsByGuid, issues);
+                FillConfigurationPlatforms(rawSolution, solution, projectPathsByGuid);
 
-            return (solution, issues);
+            return solution;
         }
 
-        private void FillProjectParentingGraphs(IRawSolution rawSolution, List<Issue> issues, Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph)
+        private void FillProjectParentingGraphs(IRawSolution rawSolution, Dictionary<Guid, List<Guid>> childrenGraph, Dictionary<Guid, Guid> parentGraph)
         {
             IRawSolutionSection? nestedProjectSection = GetGlobalSection(rawSolution, RawKeyword.NestedProjects);
             if (nestedProjectSection == null)
@@ -51,13 +55,13 @@ namespace SubSolution.Converters
             {
                 if (!RawGuid.TryParse(childGuidText, out Guid childGuid))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {childGuidText} in {RawKeyword.NestedProjects} section."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {childGuidText} in {RawKeyword.NestedProjects} section."));
                     continue;
                 }
 
                 if (!RawGuid.TryParse(parentGuidText, out Guid parentGuid))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {parentGuidText} in {RawKeyword.NestedProjects} section."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID {parentGuidText} in {RawKeyword.NestedProjects} section."));
                     continue;
                 }
 
@@ -127,7 +131,7 @@ namespace SubSolution.Converters
                 folder.AddFile(filePath);
         }
 
-        private void FillConfigurationPlatforms(IRawSolution rawSolution, ManualSolution solution, Dictionary<Guid, string> projectPathsByGuid, List<Issue> issues)
+        private void FillConfigurationPlatforms(IRawSolution rawSolution, ManualSolution solution, Dictionary<Guid, string> projectPathsByGuid)
         {
             IRawSolutionSection? solutionConfigurationPlatformsSection = GetGlobalSection(rawSolution, RawKeyword.SolutionConfigurationPlatforms);
             if (solutionConfigurationPlatformsSection is null)
@@ -159,7 +163,7 @@ namespace SubSolution.Converters
 
                 if (!RawGuid.TryParse(splitKey[0], out Guid projectGuid))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
                     continue;
                 }
                 
@@ -171,7 +175,7 @@ namespace SubSolution.Converters
 
                 if (!projectPathsByGuid.TryGetValue(projectGuid, out string projectPath))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to get project associated to GUID {projectGuid} found in {RawKeyword.ActiveCfg} key."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to get project associated to GUID {projectGuid} found in {RawKeyword.ActiveCfg} key."));
                     continue;
                 }
 
@@ -187,7 +191,7 @@ namespace SubSolution.Converters
 
                 if (!RawGuid.TryParse(splitKey[0], out Guid projectGuid))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to parse GUID in {key} key."));
                     continue;
                 }
 
@@ -196,7 +200,7 @@ namespace SubSolution.Converters
 
                 if (!projectContextsByGuidAndSolutionConfigurationPlatforms.TryGetValue((projectGuid, solutionConfigurationPlatformFullName), out SolutionProjectContext projectContext))
                 {
-                    issues.Add(new Issue(IssueLevel.Error, $"Failed to found {RawKeyword.ActiveCfg} associated to key {key}."));
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to found {RawKeyword.ActiveCfg} associated to key {key}."));
                     continue;
                 }
 
@@ -209,7 +213,7 @@ namespace SubSolution.Converters
                         projectContext.Deploy = true;
                         break;
                     default:
-                        issues.Add(new Issue(IssueLevel.Error, $"Unknwon type {type} in key {key}."));
+                        Issues.Add(new Issue(IssueLevel.Error, $"Unknwon type {type} in key {key}."));
                         break;
                 }
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -115,12 +114,12 @@ namespace SubSolution.CommandLine.Commands.Base
                 string solutionDirectoryPath = StandardFileSystem.Instance.GetParentDirectoryPath(filePath)!;
 
                 RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, ProjectReader);
-                (ISolution solution, List<Issue> issues) = await converter.ConvertAsync(rawSolution, solutionDirectoryPath, skipProjectLoading);
+                ISolution solution = await converter.ConvertAsync(rawSolution, solutionDirectoryPath, skipProjectLoading);
 
-                foreach (Issue issue in issues)
+                foreach (Issue issue in converter.Issues)
                     LogIssue(issue);
 
-                if (issues.Any(x => x.Level == IssueLevel.Error))
+                if (converter.Issues.Any(x => x.Level == IssueLevel.Error))
                 {
                     LogError($"Failed to interpret {filePath}.");
                     UpdateErrorCode(ErrorCode.FailInterpretSolution);

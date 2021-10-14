@@ -449,8 +449,8 @@ namespace SubSolution.Builders
                 string solutionName = _fileSystem.GetFileNameWithoutExtension(filePath);
                 string solutionDirectoryPath = _fileSystem.GetParentDirectoryPath(filePath)!;
 
-                (IMergeableSolution solution, List<Issue> issues) = await solutionConverter.ConvertAsync(rawSolution, solutionDirectoryPath);
-                Issues.AddRange(issues);
+                IMergeableSolution solution = await solutionConverter.ConvertAsync(rawSolution, solutionDirectoryPath);
+                Issues.AddRange(solutionConverter.Issues);
 
                 return (solution, solutionName);
             });

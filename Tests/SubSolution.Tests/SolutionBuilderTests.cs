@@ -181,23 +181,22 @@ namespace SubSolution.Tests
             
             ISolution checkSolution = solution;
             RawSolution rawSolution;
-            List<Issue> issues;
 
             rawSolution = rawSolutionConverter.Convert(checkSolution);
             await using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(firstPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
-            issues.Should().BeEmpty();
+            checkSolution = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
+            solutionConverter.Issues.Should().BeEmpty();
 
             rawSolution = rawSolutionConverter.Convert(checkSolution);
             await using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(secondPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
-            issues.Should().BeEmpty();
+            checkSolution = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
+            solutionConverter.Issues.Should().BeEmpty();
 
             SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(MyApplicationConfiguration, context.ProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, context.FileSystem);
             var referenceSolutionBuilder = new SolutionBuilder(referenceContext);
@@ -211,8 +210,8 @@ namespace SubSolution.Tests
             await referenceRawSolution.WriteAsync(thirdPassStream);
             thirdPassStream.Position = 0;
             referenceRawSolution = await RawSolution.ReadAsync(thirdPassStream);
-            (checkSolution, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
-            issues.Should().BeEmpty();
+            checkSolution = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
+            solutionConverter.Issues.Should().BeEmpty();
 
             referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
 
@@ -223,8 +222,8 @@ namespace SubSolution.Tests
             await referenceRawSolution.WriteAsync(forthPassStream);
             forthPassStream.Position = 0;
             await RawSolution.ReadAsync(forthPassStream);
-            (_, issues) = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
-            issues.Should().BeEmpty();
+            _ = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
+            solutionConverter.Issues.Should().BeEmpty();
 
             return (solution, buildIssues);
         }
