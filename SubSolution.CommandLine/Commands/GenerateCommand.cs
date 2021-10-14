@@ -13,17 +13,19 @@ namespace SubSolution.CommandLine.Commands
     public class GenerateCommand : BuildCommandBase
     {
         [Value(0, MetaName = "files", HelpText = "Paths of SubSolution configuration files to generate. " +
-            "Also accept relative file path pattern using wildcards \"*\", \"**\" and \"?\". " +
+            "Also accept relative file path using glob patterns (\"*\", \"**\" and \"?\"). " +
             "If not provided, all .subsln files in working directory and its sub-directories will be generated.")]
         public override IEnumerable<string>? FilePaths { get; set; }
 
-        [Option('p', "preview", HelpText = "Preview the command result without creating files.")]
+        [Option('p', "preview", HelpText = "Preview the command result without creating/updating files.")]
         public bool Preview { get; set; }
         [Option('f', "force", HelpText = "Force to apply changes, without asking user.")]
         public bool Force { get; set; }
-        [Option('o', "open", HelpText = "Open generated file with its default application.")]
+        [Option('n', "new", HelpText = "Create new solutions from scratch instead of updating existing ones.")]
+        public bool New { get; set; }
+        [Option('o', "open", HelpText = "Open generated files with their default application.")]
         public bool Open { get; set; }
-        [Option('s', "show", HelpText = "Show representation of generated solution.")]
+        [Option('s', "show", HelpText = "Show representation of generated solutions.")]
         public bool Show { get; set; }
 
         protected override async Task ExecuteCommandAsync(string configurationFilePath)
@@ -40,9 +42,11 @@ namespace SubSolution.CommandLine.Commands
 
             if (Show)
                 LogSolution(solution);
-            
+
+            bool fileExists = File.Exists(context.SolutionPath);
+
             RawSolution rawSolution;
-            if (File.Exists(context.SolutionPath))
+            if (fileExists && !New)
             {
                 (RawSolution? updatedSolution, bool changed) = await UpdateSolutionAsync(solution, context.SolutionPath);
                 if (updatedSolution is null)
@@ -62,7 +66,7 @@ namespace SubSolution.CommandLine.Commands
 
                 if (!Force && !AskUserValidation("Apply the changes ?"))
                 {
-                    Log($"Abort generation of {configurationFilePath}.");
+                    Log($"Abort update of {configurationFilePath}.");
                     return;
                 }
 
@@ -76,6 +80,12 @@ namespace SubSolution.CommandLine.Commands
 
                 if (Preview)
                     return;
+
+                if (!Force && fileExists && !AskUserValidation($"File {context.SolutionPath} already exist.", "Do you want to overwrite it ?"))
+                {
+                    Log($"Abort generation of {configurationFilePath}.");
+                    return;
+                }
 
                 rawSolution = convertedSolution;
             }
