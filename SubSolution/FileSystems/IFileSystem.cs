@@ -6,6 +6,7 @@ namespace SubSolution.FileSystems
     public interface IFileSystem
     {
         IEqualityComparer<string> PathComparer { get; }
+        bool IsCaseSensitive { get; }
         string GetName(string path);
         string GetFileNameWithoutExtension(string fileName);
         string? GetParentDirectoryPath(string path);

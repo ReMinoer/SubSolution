@@ -7,8 +7,8 @@ namespace SubSolution.Builders
 {
     public class FileFilterBuilder : FilterBuilderBase<string, FileFilters, IFileFiltersVisitor>, IFileFiltersVisitor
     {
-        public FileFilterBuilder(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
-            : base(fileSystem, workspaceDirectoryPath)
+        public FileFilterBuilder(IGlobPatternFileSystem fileSystem)
+            : base(fileSystem)
         {
         }
 

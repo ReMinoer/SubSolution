@@ -10,13 +10,11 @@ namespace SubSolution.Builders.Base
         where TVisitable : IAsyncVisitable<TVisitor>
     {
         private readonly IGlobPatternFileSystem _fileSystem;
-        private readonly string _workspaceDirectoryPath;
         public IFilter<TItem> BuiltFilter { get; private set; } = new AllFilter<TItem>();
 
-        protected FilterBuilderBase(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
+        protected FilterBuilderBase(IGlobPatternFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _workspaceDirectoryPath = workspaceDirectoryPath;
         }
 
         protected abstract Task AcceptAsync(TVisitable visitable);
@@ -54,7 +52,7 @@ namespace SubSolution.Builders.Base
         {
             globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
 
-            BuiltFilter = new PathFilter(globPattern, _fileSystem, _workspaceDirectoryPath).Cast<TItem, string>(GetItemPath);
+            BuiltFilter = new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath);
             return Task.CompletedTask;
         }
     }

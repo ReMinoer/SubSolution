@@ -677,7 +677,7 @@ namespace SubSolution.Builders
                 return null;
 
             var filter = new AllFilter<(string, ISolutionProject)>();
-            var filterBuilder = new ProjectFilterBuilder(_fileSystem, _workspaceDirectoryPath);
+            var filterBuilder = new ProjectFilterBuilder(_fileSystem);
 
             foreach (ProjectFilters filterNode in filterRoot.ProjectFilters)
             {
@@ -695,7 +695,7 @@ namespace SubSolution.Builders
                 return null;
 
             var filter = new AllFilter<string>();
-            var filterBuilder = new FileFilterBuilder(_fileSystem, _workspaceDirectoryPath);
+            var filterBuilder = new FileFilterBuilder(_fileSystem);
 
             foreach (FileFilters filterNode in filterRoot.FileFilters)
             {

@@ -7,6 +7,8 @@ namespace SubSolution.FileSystems.Base
     public abstract class FileSystemBase : IFileSystem
     {
         public abstract IEqualityComparer<string> PathComparer { get; }
+        public abstract bool IsCaseSensitive { get; }
+
         public abstract string GetName(string path);
         public abstract string GetFileNameWithoutExtension(string fileName);
         public abstract string? GetParentDirectoryPath(string path);

@@ -8,8 +8,8 @@ namespace SubSolution.Builders
 {
     public class ProjectFilterBuilder : FilterBuilderBase<(string, ISolutionProject), ProjectFilters, IProjectFiltersVisitor>, IProjectFiltersVisitor
     {
-        public ProjectFilterBuilder(IGlobPatternFileSystem fileSystem, string workspaceDirectoryPath)
-            : base(fileSystem, workspaceDirectoryPath)
+        public ProjectFilterBuilder(IGlobPatternFileSystem fileSystem)
+            : base(fileSystem)
         {
         }
 

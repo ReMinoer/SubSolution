@@ -13,7 +13,8 @@ namespace SubSolution.FileSystems
         static public StandardFileSystem Instance => _instance ??= new StandardFileSystem();
 
         static private readonly char[] DirectorySeparators = {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
-        public override IEqualityComparer<string> PathComparer => Utils.PathComparer.Default;
+        public override IEqualityComparer<string> PathComparer => FileSystems.PathComparer.Default;
+        public override bool IsCaseSensitive => FileSystems.PathComparer.IsEnvironmentCaseSensitive();
 
         private StandardFileSystem()
         {

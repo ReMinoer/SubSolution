@@ -29,6 +29,7 @@ namespace SubSolution.Builders.GlobPatterns
         private StandardFileSystem FileSystem => StandardFileSystem.Instance;
 
         public IEqualityComparer<string> PathComparer => FileSystem.PathComparer;
+        public bool IsCaseSensitive => FileSystem.IsCaseSensitive;
         public string GetName(string path) => FileSystem.GetName(path);
         public string GetFileNameWithoutExtension(string fileName) => FileSystem.GetFileNameWithoutExtension(fileName);
         public string? GetParentDirectoryPath(string path) => FileSystem.GetParentDirectoryPath(path);

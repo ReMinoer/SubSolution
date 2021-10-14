@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.RegularExpressions;
 using SubSolution.FileSystems.Base;
-using SubSolution.Utils;
 
 namespace SubSolution.FileSystems.Mock
 {
@@ -30,6 +29,7 @@ namespace SubSolution.FileSystems.Mock
         }
 
         public override IEqualityComparer<string> PathComparer { get; } = new PathComparer(PathCaseComparison.RespectCase);
+        public override bool IsCaseSensitive => true;
 
         public override bool IsAbsolutePath(string path)
         {

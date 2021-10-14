@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SubSolution.Utils
+namespace SubSolution.FileSystems
 {
     // Copied from https://github.com/ReMinoer/Simulacra/blob/master/Simulacra.IO/Utils/PathComparer.cs
 
@@ -90,7 +90,7 @@ namespace SubSolution.Utils
             }
         }
 
-        static private bool IsEnvironmentCaseSensitive()
+        static public bool IsEnvironmentCaseSensitive()
         {
             switch (Environment.OSVersion.Platform)
             {
