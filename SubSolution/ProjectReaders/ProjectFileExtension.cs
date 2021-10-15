@@ -10,7 +10,6 @@
         Njsproj,
         Pyproj,
         Sqlproj,
-        Shproj,
         Wapproj
     }
 }

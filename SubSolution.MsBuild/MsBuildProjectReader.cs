@@ -63,8 +63,6 @@ namespace SubSolution.MsBuild
                     return ProjectType.Python;
                 case ProjectFileExtension.Sqlproj:
                     return ProjectType.Sql;
-                case ProjectFileExtension.Shproj:
-                    return ProjectType.Shared;
                 case ProjectFileExtension.Wapproj:
                     return ProjectType.Wap;
                 default:
