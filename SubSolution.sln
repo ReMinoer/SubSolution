@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31313.79
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.CommandLine", "SubSolution.CommandLine\SubSolution.CommandLine.csproj", "{9B35C7E3-F33A-481F-BDB4-203AE6AFDD98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.CommandLine", "Sources\SubSolution.CommandLine\SubSolution.CommandLine.csproj", "{9B35C7E3-F33A-481F-BDB4-203AE6AFDD98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution", "SubSolution\SubSolution.csproj", "{8CECBB52-0776-440A-9B19-5F114228941E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution", "Sources\SubSolution\SubSolution.csproj", "{8CECBB52-0776-440A-9B19-5F114228941E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Builders", "SubSolution.Builders\SubSolution.Builders.csproj", "{6656BE24-EDD5-45D2-9E62-2181ACAD39F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Builders", "Sources\SubSolution.Builders\SubSolution.Builders.csproj", "{6656BE24-EDD5-45D2-9E62-2181ACAD39F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DCA4B9AE-20BF-40E4-A150-25CC261FABB4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Tests", "Tests\SubSolution.Tests\SubSolution.Tests.csproj", "{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.MsBuild", "SubSolution.MsBuild\SubSolution.MsBuild.csproj", "{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.MsBuild", "Sources\SubSolution.MsBuild\SubSolution.MsBuild.csproj", "{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

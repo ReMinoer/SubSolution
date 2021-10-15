@@ -4,6 +4,6 @@
         <Folder Name="Tests">
             <Projects Path="Tests/*/" />
         </Folder>
-        <Projects />
+        <Projects Path="Sources/*/" />
     </Root>
 </SubSolutionConfiguration>
