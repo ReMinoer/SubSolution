@@ -63,7 +63,7 @@ namespace SubSolution.CommandLine.Commands.Base
             switch (issue.Level)
             {
                 case IssueLevel.Error:
-                    LogError(issue.Message);
+                    LogError(issue.Message, issue.Exception);
                     break;
                 case IssueLevel.Warning:
                     LogWarning(issue.Message);

@@ -115,7 +115,25 @@ namespace SubSolution.Converters
                     string relativeProjectPath = childProject.Path;
                     string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectoryPath, relativeProjectPath);
 
-                    ISolutionProject solutionProject = skipProjectLoading ? new SolutionProject(childProject.TypeGuid) : await _projectReader.ReadAsync(absoluteProjectPath);
+                    ISolutionProject solutionProject;
+
+                    if (skipProjectLoading)
+                    {
+                        solutionProject = new SolutionProject(childProject.TypeGuid);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            solutionProject = await _projectReader.ReadAsync(absoluteProjectPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Issues.Add(new Issue(IssueLevel.Error, $"Failed to read project \"{absoluteProjectPath}\".", ex));
+                            continue;
+                        }
+                    }
+                    
                     folder.AddProject(relativeProjectPath, solutionProject);
                 }
             }

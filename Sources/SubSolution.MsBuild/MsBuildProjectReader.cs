@@ -24,6 +24,22 @@ namespace SubSolution.MsBuild
 
         public async Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
+            try
+            {
+                return await ReadProjectAsync(absoluteProjectPath);
+            }
+            catch (ProjectReadException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ProjectReadException(absoluteProjectPath, ex.Message, ex);
+            }
+        }
+
+        private async Task<ISolutionProject> ReadProjectAsync(string absoluteProjectPath)
+        {
             Project project = await Task.Run(() => new Project(absoluteProjectPath, null, null, new ProjectCollection(), ProjectLoadSettings.IgnoreMissingImports));
 
             var solutionProject = new SolutionProject(GetType(project))
@@ -44,7 +60,7 @@ namespace SubSolution.MsBuild
         {
             string extensionString = Path.GetExtension(project.FullPath).TrimStart('.');
             if (!ProjectFileExtensions.ByExtensions.TryGetValue(extensionString, out ProjectFileExtension extension))
-                throw new NotSupportedException($"Project extension \"{extensionString}\" is not supported.");
+                throw new ProjectReadException(project.FullPath, $"Project extension \"{extensionString}\" is not supported.");
 
             switch (extension)
             {

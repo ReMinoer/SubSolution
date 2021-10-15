@@ -265,7 +265,16 @@ namespace SubSolution.Builders
                 .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectoryPath, x)))
                 .ToArray();
 
-            await Task.WhenAll(readProjectTasks);
+            try
+            {
+                await Task.WhenAll(readProjectTasks);
+            }
+            catch (Exception ex)
+            {
+                string faultedFilePath = matchingFilePaths[Array.FindIndex(readProjectTasks, x => x.IsFaulted)];
+                Issues.Add(new Issue(IssueLevel.Error, $"Failed to read project \"{faultedFilePath}\".", ex));
+                return;
+            }
 
             Dictionary<string, ISolutionProject> matchingProjectByPath = matchingFilePaths
                 .Zip(readProjectTasks.Select(x => x.Result), (k, v) => (k, v))
@@ -292,13 +301,31 @@ namespace SubSolution.Builders
             foreach (string targetPath in targetPaths)
             {
                 string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
-
-                foreach (string absoluteDependencyPath in await _projectGraph.GetDependenciesAsync(absoluteTargetPath))
+                try
                 {
-                    string dependencyPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependencyPath);
+                    foreach (string absoluteDependencyPath in await _projectGraph.GetDependenciesAsync(absoluteTargetPath))
+                    {
+                        string dependencyPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependencyPath);
+                        if (matchingDependencies.ContainsKey(dependencyPath))
+                            continue;
 
-                    if (!matchingDependencies.ContainsKey(dependencyPath))
-                        matchingDependencies.TryAdd(dependencyPath, await _projectReader.ReadAsync(absoluteDependencyPath));
+                        ISolutionProject dependencyProject;
+                        try
+                        {
+                            dependencyProject = await _projectReader.ReadAsync(absoluteDependencyPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Issues.Add(new Issue(IssueLevel.Error, $"Failed to read dependency project \"{absoluteDependencyPath}\".", ex));
+                            continue;
+                        }
+
+                        matchingDependencies.Add(dependencyPath, dependencyProject);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to get dependencies of project \"{absoluteTargetPath}\".", ex));
                 }
             }
             
@@ -330,22 +357,50 @@ namespace SubSolution.Builders
                 return;
             }
 
-            await Task.WhenAll(scopePaths.Select(x => _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x)).Select(_projectGraph.GetDependenciesAsync));
+            try
+            {
+                await Task.WhenAll(scopePaths
+                    .Select(x => _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x))
+                    .Select(_projectGraph.GetDependenciesAsync));
+            }
+            catch (Exception ex)
+            {
+                Issues.Add(new Issue(IssueLevel.Error, "Failed to get scope dependencies.", ex));
+                return;
+            }
 
             var matchingDependents = new Dictionary<string, ISolutionProject>(_fileSystem.PathComparer);
             foreach (string targetPath in targetPaths)
             {
                 string absoluteTargetPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, targetPath);
                 bool directOnly = dependents.KeepOnlyDirect == true;
-
-                foreach (string absoluteDependentPath in await _projectGraph.GetDependentsAsync(absoluteTargetPath, directOnly))
+                try
                 {
-                    string dependentPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependentPath);
-                    if (!scopePaths.Contains(dependentPath))
-                        continue;
+                    foreach (string absoluteDependentPath in await _projectGraph.GetDependentsAsync(absoluteTargetPath, directOnly))
+                    {
+                        string dependentPath = _fileSystem.MakeRelativePath(_workspaceDirectoryPath, absoluteDependentPath);
+                        if (!scopePaths.Contains(dependentPath))
+                            continue;
+                        if (matchingDependents.ContainsKey(dependentPath))
+                            continue;
 
-                    if (!matchingDependents.ContainsKey(dependentPath))
-                        matchingDependents.Add(dependentPath, await _projectReader.ReadAsync(absoluteDependentPath));
+                        ISolutionProject dependentProject;
+                        try
+                        {
+                            dependentProject = await _projectReader.ReadAsync(absoluteDependentPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Issues.Add(new Issue(IssueLevel.Error, $"Failed to read dependent project \"{absoluteDependentPath}\".", ex));
+                            continue;
+                        }
+
+                        matchingDependents.Add(dependentPath, dependentProject);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Issues.Add(new Issue(IssueLevel.Error, $"Failed to get dependents of project \"{absoluteTargetPath}\".", ex));
                 }
             }
 
@@ -377,7 +432,17 @@ namespace SubSolution.Builders
                     string dependentPath = remainingDependents[i];
                     string absoluteDependentPath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, dependentPath);
 
-                    IReadOnlyCollection<string> absoluteDependentDependenciesPath = await _projectGraph.GetDependenciesAsync(absoluteDependentPath);
+                    IReadOnlyCollection<string> absoluteDependentDependenciesPath;
+                    try
+                    {
+                        absoluteDependentDependenciesPath = await _projectGraph.GetDependenciesAsync(absoluteDependentPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Issues.Add(new Issue(IssueLevel.Error, $"Failed to get direct dependencies of project \"{absoluteDependentPath}\".", ex));
+                        return;
+                    }
+
                     IEnumerable<string> dependentDependencyPaths = absoluteDependentDependenciesPath.Select(x => _fileSystem.MakeRelativePath(_workspaceDirectoryPath, x));
 
                     if (!addedProjects.IsSupersetOf(dependentDependencyPaths))
