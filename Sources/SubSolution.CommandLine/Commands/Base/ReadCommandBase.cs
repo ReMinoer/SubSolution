@@ -55,6 +55,8 @@ namespace SubSolution.CommandLine.Commands.Base
 
         protected async Task<SolutionBuilderContext?> GetBuildContextAsync(string configurationFilePath)
         {
+            configurationFilePath = StandardFileSystem.Instance.MakeAbsolutePath(Environment.CurrentDirectory, configurationFilePath);
+
             if (!CheckFileExist(configurationFilePath))
                 return null;
 

@@ -30,6 +30,9 @@ namespace SubSolution.FileSystems.Base
 
         public string MakeAbsolutePath(string rootPath, string relativeFilePath)
         {
+            if (relativeFilePath.Length == 0)
+                return rootPath;
+
             if (IsAbsolutePath(relativeFilePath))
                 return relativeFilePath;
 
