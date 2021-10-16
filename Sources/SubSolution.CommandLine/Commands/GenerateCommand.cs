@@ -62,7 +62,10 @@ namespace SubSolution.CommandLine.Commands
                 }
 
                 if (!changed)
+                {
+                    OpenIfAskedByUser(context.SolutionPath);
                     return;
+                }
 
                 if (!Force && !AskUserValidation("Apply the changes ?"))
                 {
@@ -95,14 +98,10 @@ namespace SubSolution.CommandLine.Commands
 
             Log($"Generated {context.SolutionPath}.");
 
-            if (Open)
-            {
-                Log($"Opening {context.SolutionPath}...");
-                OpenFile(context.SolutionPath);
-            }
+            OpenIfAskedByUser(context.SolutionPath);
         }
 
-        protected async Task<bool> WriteSolutionAsync(RawSolution rawSolution, string outputPath)
+        private async Task<bool> WriteSolutionAsync(RawSolution rawSolution, string outputPath)
         {
             try
             {
@@ -115,6 +114,15 @@ namespace SubSolution.CommandLine.Commands
                 LogError($"Failed to write {outputPath}.", exception);
                 UpdateErrorCode(ErrorCode.FailWriteSolution);
                 return false;
+            }
+        }
+
+        private void OpenIfAskedByUser(string solutionPath)
+        {
+            if (Open)
+            {
+                Log($"Opening {solutionPath}...");
+                OpenFile(solutionPath);
             }
         }
     }
