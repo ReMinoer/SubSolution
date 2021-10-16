@@ -253,9 +253,9 @@ namespace SubSolution.Builders
             foreach (string relativeFilePath in matchingFilePaths)
                 AddFoldersAndFileToSolution(relativeFilePath, AddFile, files.CreateFolders == true, files.Overwrite == true);
 
-            static void AddFile(Solution.Folder folder, string filePath, bool overwrite)
+            static void AddFile(Solution.Folder folder, string workspaceRelativePath, string outputRelativePath, bool overwrite)
             {
-                folder.AddFile(filePath, overwrite);
+                folder.AddFile(outputRelativePath, overwrite);
             }
         }
         
@@ -486,12 +486,12 @@ namespace SubSolution.Builders
             foreach (string relativeFilePath in matchingProjectByPath.Keys)
                 AddFoldersAndFileToSolution(relativeFilePath, AddProject, projects.CreateFolders == true, projects.Overwrite == true);
 
-            void AddProject(Solution.Folder folder, string projectPath, bool overwrite)
+            void AddProject(Solution.Folder folder, string workspaceRelativePath, string outputRelativePath, bool overwrite)
             {
-                ISolutionProject project = matchingProjectByPath[projectPath];
-                if (folder.AddProject(projectPath, project, overwrite) && !_ignoreConfigurationsAndPlatforms)
+                ISolutionProject project = matchingProjectByPath[workspaceRelativePath];
+                if (folder.AddProject(outputRelativePath, project, overwrite) && !_ignoreConfigurationsAndPlatforms)
                 {
-                    _allAddedProjects.Add(projectPath);
+                    _allAddedProjects.Add(outputRelativePath);
 
                     foreach (string projectConfiguration in project.Configurations)
                         _projectConfigurations.Add(projectConfiguration);
@@ -699,26 +699,26 @@ namespace SubSolution.Builders
             return matchingProjects;
         }
 
-        private void AddFoldersAndFileToSolution(string relativeFilePath, Action<Solution.Folder, string, bool> addEntry, bool createFolders, bool overwrite)
+        private void AddFoldersAndFileToSolution(string workspaceRelativeFilePath, Action<Solution.Folder, string, string, bool> addEntry, bool createFolders, bool overwrite)
         {
-            //string absoluteFilePath = _fileSystem.Combine(_workspaceDirectoryPath, workspaceRelativeFilePath);
-            //string relativeFilePath = _fileSystem.MakeRelativePath(_solution.OutputDirectory, absoluteFilePath);
+            string absoluteFilePath = _fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, workspaceRelativeFilePath);
+            string outputRelativeFilePath = _fileSystem.MakeRelativePathIfPossible(_solution.OutputDirectoryPath, absoluteFilePath);
 
             if (createFolders)
             {
-                string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(relativeFilePath) ?? string.Empty;
+                string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(outputRelativeFilePath) ?? string.Empty;
                 string[] solutionFolderPath = _fileSystem.SplitPath(relativeDirectoryPath);
 
                 using (MoveCurrentFolder(solutionFolderPath))
                 {
-                    Log($"Add: {relativeFilePath}");
-                    addEntry(CurrentFolder, relativeFilePath, overwrite);
+                    Log($"Add: {workspaceRelativeFilePath}");
+                    addEntry(CurrentFolder, workspaceRelativeFilePath, outputRelativeFilePath, overwrite);
                 }
             }
             else
             {
-                Log($"Add: {relativeFilePath}");
-                addEntry(CurrentFolder, relativeFilePath, overwrite);
+                Log($"Add: {workspaceRelativeFilePath}");
+                addEntry(CurrentFolder, workspaceRelativeFilePath, outputRelativeFilePath, overwrite);
             }
         }
 
