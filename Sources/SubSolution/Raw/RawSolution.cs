@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -207,7 +206,26 @@ namespace SubSolution.Raw
                 return new Block(name) { Parameter = parameter };
 
             currentIndex = equalIndex + 1;
-            newBlock.Arguments = line[currentIndex..].Split(',').Select(x => x.Trim()).Select(TrimValue).ToArray();
+
+            List<string> arguments = new List<string>();
+            while (true)
+            {
+                int quoteIndex = line.IndexOf('"', currentIndex);
+                if (quoteIndex == -1)
+                {
+                    string argumentNotQuoted = line[currentIndex..].Trim();
+                    if (!string.IsNullOrWhiteSpace(argumentNotQuoted))
+                        arguments.Add(argumentNotQuoted);
+                    break;
+                }
+
+                int nextQuoteIndex = line.IndexOf('"', quoteIndex + 1);
+                arguments.Add(line[(quoteIndex + 1)..nextQuoteIndex]);
+
+                currentIndex = nextQuoteIndex + 1;
+            }
+
+            newBlock.Arguments = arguments.ToArray();
 
             return newBlock;
         }
