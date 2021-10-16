@@ -596,6 +596,7 @@
             <xs:documentation>Path glob pattern.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
+            <xs:pattern value="[^:&quot;&lt;&gt;|]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -604,6 +605,7 @@
             <xs:documentation>Directory path.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
+            <xs:pattern value="[^*?&quot;&lt;&gt;|]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -612,6 +614,7 @@
             <xs:documentation>File name.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
+            <xs:pattern value="[^/\\:*?&quot;&lt;&gt;|]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -620,6 +623,7 @@
             <xs:documentation>Project name.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
+            <xs:pattern value="[^/?:&amp;\\*&quot;&lt;&gt;|#%]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -628,7 +632,7 @@
             <xs:documentation>Solution folder name.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="[0-9a-zA-Z]+" />
+            <xs:pattern value="[^/?:&amp;\\*&quot;&lt;&gt;|#%]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -637,7 +641,7 @@
             <xs:documentation>Configuration or platform name.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="[0-9a-zA-Z ]+" />
+            <xs:pattern value="[\w- ]+" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -646,7 +650,7 @@
             <xs:documentation>Project set ID.</xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:pattern value="[0-9a-zA-Z]+" />
+            <xs:pattern value="[\w-]+" />
         </xs:restriction>
     </xs:simpleType>  
 
