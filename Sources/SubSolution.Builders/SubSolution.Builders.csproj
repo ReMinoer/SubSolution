@@ -25,7 +25,8 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PrepareForBuild">
-    <Exec Command="linqtoxsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(ProjectDir)Configuration&quot;" />
+    <Exec Command="dotnet tool restore" />
+    <Exec Command="dotnet tool run LinqToXsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(ProjectDir)Configuration&quot;" />
   </Target>
 
 </Project>
