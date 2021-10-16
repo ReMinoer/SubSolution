@@ -13,6 +13,9 @@ namespace SubSolution
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
+        private readonly Dictionary<string, string[]> _configurationMatches;
+        private readonly Dictionary<string, string[]> _platformMatches;
+
         public Solution(string outputDirectoryPath, IFileSystem? fileSystem = null)
             : base(outputDirectoryPath, fileSystem)
         {
@@ -20,17 +23,68 @@ namespace SubSolution
 
             _configurationPlatforms = new List<ConfigurationPlatform>();
             ProtectedConfigurationPlatforms = _configurationPlatforms.AsReadOnly();
+
+            _configurationMatches = new Dictionary<string, string[]>();
+            _platformMatches = new Dictionary<string, string[]>();
         }
 
-        public void AddConfigurationPlatform(ConfigurationPlatform configurationPlatform)
+        public void AddConfiguration(string configurationName, string[]? matchingProjectConfigurations = null)
         {
-            // TODO: Check configurationPlatform have no unexpected projects contexts
+            matchingProjectConfigurations ??= new[] { configurationName };
 
-            Root.FillConfigurationPlatformWithProjectContexts(configurationPlatform);
+            _configurationMatches.Add(configurationName, matchingProjectConfigurations);
+
+            foreach ((string platformName, string[] matchingProjectPlatforms) in _platformMatches)
+            {
+                AddConfigurationPlatform(configurationName, platformName, matchingProjectConfigurations, matchingProjectPlatforms);
+            }
+        }
+
+        public void AddPlatform(string platformName, string[]? matchingProjectPlatforms = null)
+        {
+            matchingProjectPlatforms ??= new[] { platformName };
+
+            _platformMatches.Add(platformName, matchingProjectPlatforms);
+
+            foreach ((string configurationName, string[] matchingProjectConfigurations) in _configurationMatches)
+            {
+                AddConfigurationPlatform(configurationName, platformName, matchingProjectConfigurations, matchingProjectPlatforms);
+            }
+        }
+
+        private void AddConfigurationPlatform(string configurationName, string platformName, string[] matchingProjectConfigurations, string[] matchingProjectPlatforms)
+        {
+            var configurationPlatform = new ConfigurationPlatform(_fileSystem, configurationName, platformName);
+            configurationPlatform.MatchingProjectConfigurationNames.AddRange(matchingProjectConfigurations);
+            configurationPlatform.MatchingProjectPlatformNames.AddRange(matchingProjectPlatforms);
+
+            FillConfigurationPlatformWithProjectContexts(configurationPlatform, Root);
             _configurationPlatforms.Add(configurationPlatform);
         }
 
-        public class ConfigurationPlatform : ISolutionConfigurationPlatform
+        private void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform, Folder folder)
+        {
+            foreach ((string projectPath, ISolutionProject project) in folder.Projects)
+                if (!configurationPlatform.ProjectContexts.ContainsKey(projectPath))
+                    configurationPlatform.AddProjectContext(projectPath, project);
+
+            foreach (Folder subFolder in folder.SubFolders.Values)
+                FillConfigurationPlatformWithProjectContexts(configurationPlatform, subFolder);
+        }
+
+        public void RemoveConfiguration(string configurationName)
+        {
+            _configurationMatches.Remove(configurationName);
+            _configurationPlatforms.RemoveAll(x => x.ConfigurationName == configurationName);
+        }
+
+        public void RemovePlatform(string platformName)
+        {
+            _platformMatches.Remove(platformName);
+            _configurationPlatforms.RemoveAll(x => x.PlatformName == platformName);
+        }
+
+        private class ConfigurationPlatform : ISolutionConfigurationPlatform
         {
             public string ConfigurationName { get; }
             public string PlatformName { get; }
@@ -115,16 +169,6 @@ namespace SubSolution
             {
                 foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
                     configurationPlatform.RenameProjectContext(previousProjectPath, newProjectPath);
-            }
-
-            public void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform)
-            {
-                foreach ((string projectPath, ISolutionProject project) in Projects)
-                    if (!configurationPlatform.ProjectContexts.ContainsKey(projectPath))
-                        configurationPlatform.AddProjectContext(projectPath, project);
-
-                foreach (Folder subFolder in SubFolders.Values)
-                    subFolder.FillConfigurationPlatformWithProjectContexts(configurationPlatform);
             }
         }
     }

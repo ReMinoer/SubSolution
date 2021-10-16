@@ -116,21 +116,22 @@ namespace SubSolution.Builders
         private void VisitConfigurationsAndPlatforms(SolutionConfigurationList configurations, SolutionPlatformList platforms)
         {
             foreach (SolutionConfiguration configuration in configurations.Configuration)
-                foreach (SolutionPlatform platform in platforms.Platform)
-                {
-                    var configurationPlatform = new Solution.ConfigurationPlatform(_fileSystem, configuration.Name, platform.Name);
-                    if (configuration.ProjectConfiguration.Count == 0)
-                        configurationPlatform.MatchingProjectConfigurationNames.Add(configuration.Name);
-                    else
-                        configurationPlatform.MatchingProjectConfigurationNames.AddRange(configuration.ProjectConfiguration.Select(x => x.Match));
+            {
+                string[]? matchingProjectConfigurations = configuration.ProjectConfiguration.Count > 0
+                    ? configuration.ProjectConfiguration.Select(x => x.Match).ToArray()
+                    : null;
 
-                    if (platform.ProjectPlatform.Count == 0)
-                        configurationPlatform.MatchingProjectPlatformNames.Add(platform.Name);
-                    else
-                        configurationPlatform.MatchingProjectPlatformNames.AddRange(platform.ProjectPlatform.Select(x => x.Match));
+                _solution.AddConfiguration(configuration.Name, matchingProjectConfigurations);
+            }
 
-                    _solution.AddConfigurationPlatform(configurationPlatform);
-                }
+            foreach (SolutionPlatform platform in platforms.Platform)
+            {
+                string[]? matchingProjectPlatforms = platform.ProjectPlatform.Count > 0
+                    ? platform.ProjectPlatform.Select(x => x.Match).ToArray()
+                    : null;
+
+                _solution.AddPlatform(platform.Name, matchingProjectPlatforms);
+            }
         }
 
         private void FillMissingConfigurationsPlatformsFromProjects(SolutionConfigurationList? configurations, SolutionPlatformList? platforms)
