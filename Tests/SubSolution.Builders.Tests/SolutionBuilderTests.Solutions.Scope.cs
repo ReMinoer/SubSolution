@@ -4,7 +4,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using SubSolution.Builders.Configuration;
 
-namespace SubSolution.Tests
+namespace SubSolution.Builders.Tests
 {
     public partial class SolutionBuilderTests
     {

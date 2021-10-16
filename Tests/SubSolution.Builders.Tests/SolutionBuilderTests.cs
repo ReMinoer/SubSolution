@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using SubSolution.Builders;
 using SubSolution.Builders.Configuration;
 using SubSolution.Builders.GlobPatterns.Mock;
 using SubSolution.Converters;
@@ -17,7 +16,7 @@ using SubSolution.ProjectReaders.Mock;
 using SubSolution.Raw;
 using SubSolution.Utils;
 
-namespace SubSolution.Tests
+namespace SubSolution.Builders.Tests
 {
     public partial class SolutionBuilderTests
     {

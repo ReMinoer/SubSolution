@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Builders", "Sou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DCA4B9AE-20BF-40E4-A150-25CC261FABB4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Tests", "Tests\SubSolution.Tests\SubSolution.Tests.csproj", "{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.Builders.Tests", "Tests\SubSolution.Builders.Tests\SubSolution.Builders.Tests.csproj", "{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.MsBuild", "Sources\SubSolution.MsBuild\SubSolution.MsBuild.csproj", "{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}"
 EndProject

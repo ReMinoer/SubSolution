@@ -2,11 +2,10 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
-using SubSolution.Builders;
 using SubSolution.Builders.Configuration;
 using static FluentAssertions.FluentActions;
 
-namespace SubSolution.Tests
+namespace SubSolution.Builders.Tests
 {
     public partial class SolutionBuilderTests
     {
