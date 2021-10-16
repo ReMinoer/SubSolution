@@ -508,45 +508,52 @@ namespace SubSolution.Converters
                     continue;
 
                 // If project and project context still exist...
-                if (projectPathByGuids.TryGetValue(projectGuid, out string projectPath)
-                    && solutionConfigurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
+                if (projectPathByGuids.TryGetValue(projectGuid, out string projectPath))
                 {
-                    // If project context configuration-platform don't match anymore, replace value.
-                    string[] splitNames = projectConfigurationPlatformFullName.Split('|');
-                    string projectConfigurationName = splitNames[0];
-                    string projectPlatformName = splitNames[1];
-
-                    bool reconfigured = false;
-                    if (projectConfigurationName != projectContext.ConfigurationName && projectPlatformName != projectContext.PlatformName)
+                    if (solutionConfigurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
                     {
-                        projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationName + '|' + projectContext.PlatformName);
-                        reconfigured = true;
+                        // If project context configuration-platform don't match anymore, replace value.
+                        string[] splitNames = projectConfigurationPlatformFullName.Split('|');
+                        string projectConfigurationName = splitNames[0];
+                        string projectPlatformName = splitNames[1];
+
+                        bool reconfigured = false;
+                        if (projectConfigurationName != projectContext.ConfigurationName && projectPlatformName != projectContext.PlatformName)
+                        {
+                            projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationName + '|' + projectContext.PlatformName);
+                            reconfigured = true;
+                        }
+
+                        string type = string.Join('.', splitKey.Skip(2));
+
+                        // If the key still match its properties, nothing to clean.
+                        switch (type)
+                        {
+                            case RawKeyword.ActiveCfg:
+                                if (reconfigured)
+                                    Log(SolutionChangeType.Edit, SolutionObjectType.ProjectContext, projectPath, solutionConfigurationPlatformFullName);
+                                continue;
+                            case RawKeyword.Build0:
+                                if (projectContext.Build)
+                                    continue;
+                                break;
+                            case RawKeyword.Deploy0:
+                                if (projectContext.Deploy)
+                                    continue;
+                                break;
+                            default:
+                                continue;
+                        }
                     }
 
-                    string type = string.Join('.', splitKey.Skip(2));
-
-                    // If the key still match its properties, nothing to clean.
-                    switch (type)
-                    {
-                        case RawKeyword.ActiveCfg:
-                            if (reconfigured)
-                                Log(SolutionChangeType.Edit, SolutionObjectType.ProjectContext, projectPath, solutionConfigurationPlatformFullName);
-                            continue;
-                        case RawKeyword.Build0:
-                            if (projectContext.Build)
-                                continue;
-                            break;
-                        case RawKeyword.Deploy0:
-                            if (projectContext.Deploy)
-                                continue;
-                            break;
-                        default:
-                            continue;
-                    }
+                    // Else remove it.
+                    Log(SolutionChangeType.Remove, SolutionObjectType.ProjectContext, projectPath, solutionConfigurationPlatformFullName);
+                }
+                else
+                {
+                    Log(SolutionChangeType.Remove, SolutionObjectType.ProjectContext, projectGuid.ToString(), solutionConfigurationPlatformFullName);
                 }
 
-                // Else remove it.
-                Log(SolutionChangeType.Remove, SolutionObjectType.ProjectContext, projectPath, solutionConfigurationPlatformFullName);
                 removedConfigKeys.Add(configKey);
             }
 
