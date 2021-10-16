@@ -70,6 +70,17 @@ namespace SubSolution
                 _projectContexts.Add(projectPath, solutionProjectContext);
             }
 
+            public void RemoveProjectContext(string projectPath)
+            {
+                _projectContexts.Remove(projectPath);
+            }
+
+            public void RenameProjectContext(string previousProjectPath, string newProjectPath)
+            {
+                _projectContexts.Remove(previousProjectPath, out SolutionProjectContext projectContext);
+                _projectContexts.Add(newProjectPath, projectContext);
+            }
+
             static private string? MatchNames(IReadOnlyList<string> names, IReadOnlyList<string> matches)
             {
                 foreach (string match in matches)
@@ -88,15 +99,22 @@ namespace SubSolution
             {
             }
 
-            public override bool AddProject(string projectPath, ISolutionProject project, bool overwrite = false)
+            protected override void AutoAddProjectContexts(string projectPath, ISolutionProject project)
             {
-                if (!base.AddProject(projectPath, project, overwrite))
-                    return false;
-
                 foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
                     configurationPlatform.AddProjectContext(projectPath, project);
+            }
 
-                return true;
+            protected override void AutoRemoveProjectContexts(string projectPath)
+            {
+                foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
+                    configurationPlatform.RemoveProjectContext(projectPath);
+            }
+
+            protected override void AutoRenameProjectContexts(string previousProjectPath, string newProjectPath)
+            {
+                foreach (ConfigurationPlatform configurationPlatform in _solution._configurationPlatforms)
+                    configurationPlatform.RenameProjectContext(previousProjectPath, newProjectPath);
             }
 
             public void FillConfigurationPlatformWithProjectContexts(ConfigurationPlatform configurationPlatform)

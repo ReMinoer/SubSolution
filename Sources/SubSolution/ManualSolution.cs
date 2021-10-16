@@ -60,6 +60,10 @@ namespace SubSolution
         {
             public Folder(ManualSolution solution, IFileSystem fileSystem, Dictionary<string, Folder> knownPaths)
                 : base(solution, fileSystem, knownPaths, () => new Folder(solution, fileSystem, knownPaths)) {}
+
+            protected override void AutoAddProjectContexts(string projectPath, ISolutionProject project) { }
+            protected override void AutoRemoveProjectContexts(string projectPath) { }
+            protected override void AutoRenameProjectContexts(string previousProjectPath, string newProjectPath) { }
         }
     }
 }

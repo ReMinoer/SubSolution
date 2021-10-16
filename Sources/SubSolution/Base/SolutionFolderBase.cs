@@ -51,8 +51,16 @@ namespace SubSolution.Base
 
         public bool AddFile(string filePath, bool overwrite = false)
             => AddEntry(filePath, x => x._filePaths.Add(filePath), x => x._filePaths.Remove(filePath), overwrite);
-        public virtual bool AddProject(string projectPath, ISolutionProject project, bool overwrite = false)
-            => AddEntry(projectPath, x => x._projects.Add(projectPath, project), x => x._projects.Remove(projectPath), overwrite);
+        public bool AddProject(string projectPath, ISolutionProject project, bool overwrite = false)
+        {
+            if (AddEntry(projectPath, x => x._projects.Add(projectPath, project), x => x._projects.Remove(projectPath), overwrite))
+            {
+                AutoAddProjectContexts(projectPath, project);
+                return true;
+            }
+
+            return false;
+        }
 
         private bool AddEntry(string filePath, Action<TFolder> addPath, Action<TFolder> removePath, bool overwrite)
         {
@@ -82,7 +90,15 @@ namespace SubSolution.Base
         public bool RemoveFile(string filePath)
             => RemoveEntry(filePath, () => _filePaths.Remove(filePath));
         public bool RemoveProject(string projectPath)
-            => RemoveEntry(projectPath, () => _projects.Remove(projectPath));
+        {
+            if (RemoveEntry(projectPath, () => _projects.Remove(projectPath)))
+            {
+                AutoRemoveProjectContexts(projectPath);
+                return true;
+            }
+
+            return false;
+        }
 
         private bool RemoveEntry(string filePath, Func<bool> removeFilePath)
         {
@@ -98,6 +114,9 @@ namespace SubSolution.Base
             if (!_subFolders.TryGetValue(subFolderName, out TFolder subFolder))
                 return false;
 
+            foreach (string projectPath in subFolder.GetAllProjectPaths())
+                AutoRemoveProjectContexts(projectPath);
+
             subFolder.Clear();
             _subFolders.Remove(subFolderName);
             return true;
@@ -105,6 +124,9 @@ namespace SubSolution.Base
 
         public void Clear()
         {
+            foreach (string projectPath in this.GetAllProjectPaths())
+                AutoRemoveProjectContexts(projectPath);
+
             foreach (TFolder subFolder in _subFolders.Values)
                 subFolder.Clear();
 
@@ -186,10 +208,12 @@ namespace SubSolution.Base
 
             foreach ((string previousProjectPath, ISolutionProject project) in previousProjectPaths)
             {
-                string newFilePath = _fileSystem.MoveRelativePathRoot(previousProjectPath, previousOutputDirectory, outputDirectory);
+                string newProjectPath = _fileSystem.MoveRelativePathRoot(previousProjectPath, previousOutputDirectory, outputDirectory);
 
-                _projects.Add(newFilePath, project);
-                _knownPaths.Add(newFilePath, _owner);
+                _projects.Add(newProjectPath, project);
+                _knownPaths.Add(newProjectPath, _owner);
+
+                AutoRenameProjectContexts(previousProjectPath, newProjectPath);
             }
         }
 
@@ -222,5 +246,9 @@ namespace SubSolution.Base
             foreach (string emptySubFolderName in emptySubFolderNames)
                 _subFolders.Remove(emptySubFolderName);
         }
+
+        protected abstract void AutoAddProjectContexts(string projectPath, ISolutionProject project);
+        protected abstract void AutoRemoveProjectContexts(string projectPath);
+        protected abstract void AutoRenameProjectContexts(string previousProjectPath, string newProjectPath);
     }
 }
