@@ -37,6 +37,58 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public async Task ProcessFilesMatchingPathAbsolute()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Files
+                        {
+                            Path = @"C:\Directory\SubDirectory\MyWorkspace\tools\submit.bat"
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.FilePaths.Should().HaveCount(1);
+            solution.Root.FilePaths.Should().Contain("tools/submit.bat");
+        }
+
+        [Test]
+        public async Task ProcessFilesMatchingPathAbsoluteFromOtherRoot()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Files
+                        {
+                            Path = @"D:\Directory\ExternalFile.txt"
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.Projects.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.FilePaths.Should().HaveCount(1);
+            solution.Root.FilePaths.Should().Contain(@"D:\Directory\ExternalFile.txt");
+        }
+
+        [Test]
         public async Task ProcessFilesMatchingMultiplePaths()
         {
             var configuration = new SubSolutionConfiguration

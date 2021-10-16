@@ -61,6 +61,58 @@ namespace SubSolution.Tests
         }
 
         [Test]
+        public async Task ProcessProjectsMatchingPathAbsolute()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Projects
+                        {
+                            Path = @"C:\Directory\SubDirectory\MyWorkspace\src\Executables\MyApplication.Console\MyApplication.Console.csproj"
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(1);
+            solution.Root.Projects.Keys.Should().Contain("src/Executables/MyApplication.Console/MyApplication.Console.csproj");
+        }
+
+        [Test]
+        public async Task ProcessProjectsMatchingPathAbsoluteFromOtherRoot()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new Projects
+                        {
+                            Path = @"D:\Directory\ExternalProject.csproj"
+                        }
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            solution.Root.FilePaths.Should().BeEmpty();
+            solution.Root.SubFolders.Should().BeEmpty();
+
+            solution.Root.Projects.Should().HaveCount(1);
+            solution.Root.Projects.Keys.Should().Contain(@"D:\Directory\ExternalProject.csproj");
+        }
+
+        [Test]
         public async Task ProcessProjectsMatchingMultiplePath()
         {
             var configuration = new SubSolutionConfiguration

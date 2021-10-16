@@ -22,6 +22,8 @@ namespace SubSolution.Tests
     public partial class SolutionBuilderTests
     {
         private const string RootName = @"C:";
+        private const string AlternativeRootName = @"D:";
+
         private const string WorkspaceDirectoryRelativePath = @"Directory\SubDirectory\MyWorkspace\";
         static private readonly string WorkspaceDirectoryPath = $@"{RootName}\{WorkspaceDirectoryRelativePath}";
 
@@ -302,7 +304,22 @@ namespace SubSolution.Tests
             await AddSolutionToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.sln", configurationContent);
 
             mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
-            
+
+            relativeFilePath.Clear();
+            relativeFilePath.Add(@"Directory\ExternalProject.csproj");
+            relativeFilePath.Add(@"Directory\ExternalFile.txt");
+
+            mockFileSystem.AddRoot(AlternativeRootName, relativeFilePath);
+
+            const string externalSolutionConfigurationPath = @"D:\Directory\ExternalSolution";
+            relativeFilePath.Add(@"Directory\ExternalSolution.sln");
+            relativeFilePath.Add(@"Directory\ExternalSolution.subsln");
+
+            await AddConfigurationToFileSystemAsync(externalSolutionConfigurationPath + ".subsln", ExternalSolutionConfiguration);
+            await AddSolutionToFileSystemAsync(externalSolutionConfigurationPath + ".sln", ExternalSolutionConfiguration);
+
+            mockFileSystem.AddRoot(AlternativeRootName, relativeFilePath);
+
             async Task AddConfigurationToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
             {
                 await using var memoryStream = new MemoryStream();
@@ -462,6 +479,27 @@ namespace SubSolution.Tests
                 rootFolder.Projects.Should().HaveCount(1);
                 rootFolder.SubFolders.Should().BeEmpty();
             }
+        }
+
+        static private readonly SubSolutionConfiguration ExternalSolutionConfiguration = new SubSolutionConfiguration
+        {
+            Root = new SolutionRoot
+            {
+                SolutionItems = new List<SolutionItems>
+                {
+                    new Files { Path = "*.txt" },
+                    new Projects()
+                }
+            }
+        };
+
+        private void CheckFolderContainsExternalSolution(ISolutionFolder rootFolder)
+        {
+            rootFolder.FilePaths.Should().HaveCount(1);
+            rootFolder.FilePaths.Should().Contain(@"D:\Directory\ExternalFile.txt");
+            rootFolder.Projects.Should().HaveCount(1);
+            rootFolder.Projects.Keys.Should().Contain(@"D:\Directory\ExternalProject.csproj");
+            rootFolder.SubFolders.Should().BeEmpty();
         }
 
         static private void CheckConfigurationPlatforms(ISolution solution, string configurationName, string platformName,

@@ -23,20 +23,33 @@ namespace SubSolution.Builders.GlobPatterns.Mock
             _rootDirectories[rootName] = new MockDirectoryInfo(this, rootName, relativePaths);
         }
 
+        public bool FileExists(string absoluteFilePath)
+        {
+            string parentDirectoryPath = GetParentDirectoryPath(absoluteFilePath)!;
+            DirectoryInfoBase directoryInfo = GetDirectoryInfo(parentDirectoryPath);
+
+            return directoryInfo.EnumerateFileSystemInfos().Any(x => PathComparer.Equals(x.FullName, absoluteFilePath));
+        }
+
         public IEnumerable<string> GetFilesMatchingGlobPattern(string directoryPath, string globPattern)
         {
-            string[] directoryNames = SplitPath(directoryPath);
-
-            string root = directoryNames[0];
-            if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase rootDirectoryInfo))
-                rootDirectoryInfo = new MockDirectoryInfo(this, root, Enumerable.Empty<string>());
-
-            DirectoryInfoBase directoryInfo = directoryNames[1..].Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName));
+            DirectoryInfoBase directoryInfo = GetDirectoryInfo(directoryPath);
 
             var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
             matcher.AddInclude(globPattern);
 
             return matcher.Execute(directoryInfo).Files.Select(x => x.Path);
+        }
+
+        private DirectoryInfoBase GetDirectoryInfo(string absoluteDirectoryPath)
+        {
+            string[] directoryNames = SplitPath(absoluteDirectoryPath);
+
+            string root = directoryNames[0];
+            if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase rootDirectoryInfo))
+                rootDirectoryInfo = new MockDirectoryInfo(this, root, Enumerable.Empty<string>());
+
+            return directoryNames[1..].Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName));
         }
     }
 }

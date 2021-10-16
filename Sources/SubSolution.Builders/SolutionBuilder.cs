@@ -9,6 +9,7 @@ using SubSolution.Builders.Configuration;
 using SubSolution.Builders.Filters;
 using SubSolution.Builders.GlobPatterns;
 using SubSolution.Converters;
+using SubSolution.FileSystems;
 using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 using SubSolution.Utils;
@@ -262,7 +263,7 @@ namespace SubSolution.Builders
             string[] matchingFilePaths = GetMatchingProjectPaths(projects.Path).ToArray();
             
             Task<ISolutionProject>[] readProjectTasks = matchingFilePaths
-                .Select(x => _projectReader.ReadAsync(_fileSystem.Combine(_solution.OutputDirectoryPath, x)))
+                .Select(x => _projectReader.ReadAsync(_fileSystem.MakeAbsolutePath(_solution.OutputDirectoryPath, x)))
                 .ToArray();
 
             try
@@ -661,6 +662,14 @@ namespace SubSolution.Builders
 
         private IEnumerable<string> GetMatchingFilePaths(string? globPattern, string defaultFileExtension)
         {
+            if (globPattern != null && _fileSystem.IsAbsolutePath(globPattern))
+            {
+                if (_fileSystem.FileExists(globPattern))
+                    return new[] { _fileSystem.MakeRelativePathIfPossible(_workspaceDirectoryPath, globPattern) };
+                
+                return Enumerable.Empty<string>();
+            }
+
             globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
 
             Log($"Search for files matching pattern: {globPattern}");
@@ -669,6 +678,14 @@ namespace SubSolution.Builders
 
         private IEnumerable<string> GetMatchingProjectPaths(string? globPattern)
         {
+            if (globPattern != null && _fileSystem.IsAbsolutePath(globPattern))
+            {
+                if (_fileSystem.FileExists(globPattern))
+                    return new[] { _fileSystem.MakeRelativePathIfPossible(_workspaceDirectoryPath, globPattern) };
+
+                return Enumerable.Empty<string>();
+            }
+
             string fullGlobPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, ProjectFileExtensions.Wildcard);
 
             Log($"Search for files matching pattern: {fullGlobPattern}");

@@ -55,11 +55,13 @@ namespace SubSolution.CommandLine.Commands.Base
 
         static protected IEnumerable<string> GetMatchingFilePaths(string pathPattern)
         {
-            if (StandardFileSystem.Instance.IsAbsolutePath(pathPattern))
-                return new[] { pathPattern };
+            var fileSystem = StandardGlobPatternFileSystem.Instance;
+
+            if (fileSystem.IsAbsolutePath(pathPattern))
+                return fileSystem.FileExists(pathPattern) ? new[] { pathPattern } : Enumerable.Empty<string>();
 
             string simplifiedPathPattern = GlobPatternUtils.CompleteSimplifiedPattern(pathPattern, "subsln");
-            return StandardGlobPatternFileSystem.Instance.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
+            return fileSystem.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
         }
 
         protected async Task<(RawSolution? rawSolution, bool changed)> UpdateSolutionAsync(ISolution solution, string existingSolutionPath)

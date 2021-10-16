@@ -79,7 +79,9 @@ namespace SubSolution.FileSystems.Mock
 
         public override string Combine(string? firstPath, string? secondPath)
         {
-            char separator = GetLastSeparator(firstPath) ?? GetLastSeparator(secondPath) ?? DirectorySeparator;
+            char separator = GetLastSeparator(firstPath) ?? GetLastSeparator(secondPath)
+                ?? (firstPath != null && _rootRegex.IsMatch(firstPath) ? AltDirectorySeparator : DirectorySeparator);
+
             firstPath = TrimPath(firstPath);
             secondPath = TrimPath(secondPath);
 

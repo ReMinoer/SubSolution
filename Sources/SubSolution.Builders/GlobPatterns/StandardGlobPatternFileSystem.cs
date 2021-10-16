@@ -13,6 +13,8 @@ namespace SubSolution.Builders.GlobPatterns
         static private StandardGlobPatternFileSystem? _instance;
         static public StandardGlobPatternFileSystem Instance => _instance ??= new StandardGlobPatternFileSystem();
 
+        public bool FileExists(string absoluteFilePath) => File.Exists(absoluteFilePath);
+
         public IEnumerable<string> GetFilesMatchingGlobPattern(string directoryPath, string globPattern)
         {
             if (!Directory.Exists(directoryPath))

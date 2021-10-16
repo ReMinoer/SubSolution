@@ -50,6 +50,48 @@ namespace SubSolution.Tests
             CheckFolderContainsMyFramework(solution.Root, only: true);
         }
 
+        [Test] public Task ProcessSolutionsMatchingPathAbsolute() => ProcessSolutionsMatchingPathAbsoluteBase<Solutions>("sln");
+        [Test] public Task ProcessSubSolutionsMatchingPathAbsolute() => ProcessSolutionsMatchingPathAbsoluteBase<SubSolutions>("subsln");
+        private async Task ProcessSolutionsMatchingPathAbsoluteBase<T>(string extension)
+            where T : SolutionContentFiles, new()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new T { Path = @"C:\Directory\SubDirectory\MyWorkspace\external\MyFramework\MyFramework." +  extension}
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration, haveSubSolutions: true);
+
+            CheckFolderContainsMyFramework(solution.Root, only: true);
+        }
+
+        [Test] public Task ProcessSolutionsMatchingPathAbsoluteFromOtherRoot() => ProcessSolutionsMatchingPathAbsoluteFromOtherRootBase<Solutions>("sln");
+        [Test] public Task ProcessSubSolutionsMatchingPathAbsoluteFromOtherRoot() => ProcessSolutionsMatchingPathAbsoluteFromOtherRootBase<SubSolutions>("subsln");
+        private async Task ProcessSolutionsMatchingPathAbsoluteFromOtherRootBase<T>(string extension)
+            where T : SolutionContentFiles, new()
+        {
+            var configuration = new SubSolutionConfiguration
+            {
+                Root = new SolutionRoot
+                {
+                    SolutionItems = new List<SolutionItems>
+                    {
+                        new T { Path = @"D:\Directory\ExternalSolution." +  extension}
+                    }
+                }
+            };
+
+            ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
+
+            CheckFolderContainsExternalSolution(solution.Root);
+        }
+
         [Test] public Task ProcessSolutionsMatchingMultiplePaths() => ProcessSolutionsMatchingMultiplePathsBase<Solutions>();
         [Test] public Task ProcessSubSolutionsMatchingMultiplePaths() => ProcessSolutionsMatchingMultiplePathsBase<SubSolutions>();
         private async Task ProcessSolutionsMatchingMultiplePathsBase<T>()
