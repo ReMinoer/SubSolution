@@ -40,7 +40,7 @@
             </xs:attribute>
             <xs:attribute name="WorkspaceDirectory" type="DirectoryPath">
                 <xs:annotation>
-                    <xs:documentation>Workspace directory used as root for configuration paths.</xs:documentation>
+                    <xs:documentation>Workspace directory path used as root for glob pattern paths.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -53,7 +53,7 @@
         <xs:sequence>
             <xs:element name="Configuration" type="SolutionConfiguration" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
-                    <xs:documentation>Solution configuration.</xs:documentation>
+                    <xs:documentation>Solution configuration list.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -83,7 +83,7 @@
         </xs:annotation>
         <xs:attribute name="Match" type="ConfigurationPlatformName" use="required">
             <xs:annotation>
-                <xs:documentation>Project configuration name part to match.</xs:documentation>
+                <xs:documentation>Part of a project configuration name to match.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -95,7 +95,7 @@
         <xs:sequence>
             <xs:element name="Platform" type="SolutionPlatform" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
-                    <xs:documentation>Solution platform.</xs:documentation>
+                    <xs:documentation>Solution platform list.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -125,7 +125,7 @@
         </xs:annotation>
         <xs:attribute name="Match" type="ConfigurationPlatformName" use="required">
             <xs:annotation>
-                <xs:documentation>Project platform name part to match.</xs:documentation>
+                <xs:documentation>Part of a project platform name to match.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -213,12 +213,16 @@
 
     <xs:complexType name="SolutionFolderBase">
         <xs:annotation>
-            <xs:documentation>Base representation a solution root.</xs:documentation>
+            <xs:documentation>Base representation a solution folder base.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionItemsSourceBase">
                 <xs:sequence>
-                    <xs:element ref="SolutionItems" minOccurs="0" maxOccurs="unbounded" />
+                    <xs:element ref="SolutionItems" minOccurs="0" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>List of solution item sources.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
                 <xs:attribute name="CollapseFoldersWithUniqueSubFolder" type="xs:boolean">
                     <xs:annotation>
@@ -266,7 +270,7 @@
             <xs:extension base="SolutionItemsSourceBase">
                 <xs:attribute name="Overwrite" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to process files already contained in solution.</xs:documentation>
+                        <xs:documentation>True to replace items already added to solution by previous sources.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="CreateFolders" type="xs:boolean">
@@ -280,7 +284,7 @@
 
     <xs:attribute name="Path" type="PathGlobPattern">
         <xs:annotation>
-            <xs:documentation>Path used to filter files. Use a glob pattern to match multiple files.</xs:documentation>
+            <xs:documentation>Path used to filter files. Use a relative glob pattern to match multiple files. Supported patterns: "**", "*", "?" and "..".</xs:documentation>
         </xs:annotation>
     </xs:attribute>
 
@@ -291,7 +295,11 @@
         <xs:complexContent>
             <xs:extension base="SolutionFilesSourceBase">
                 <xs:all>
-                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
+                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Advanced filters used on the set of files.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:all>
                 <xs:attribute ref="Path" />
             </xs:extension>
@@ -306,7 +314,7 @@
             <xs:extension base="SolutionFilesSourceBase">
                 <xs:attribute name="Id" type="ProjectSetId">
                     <xs:annotation>
-                        <xs:documentation>ID used to store the project set result.</xs:documentation>
+                        <xs:documentation>ID used to store this project set.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -320,7 +328,11 @@
         <xs:complexContent>
             <xs:extension base="SolutionProjectsSourceBase">
                 <xs:all>
-                    <xs:element name="Where" type="ProjectFilterRoot" minOccurs="0" />
+                    <xs:element name="Where" type="ProjectFilterRoot" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Advanced filters used on the set of projects.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:all>
             </xs:extension>
         </xs:complexContent>
@@ -381,26 +393,42 @@
 
     <xs:attribute name="Target" type="ProjectSetId">
         <xs:annotation>
-            <xs:documentation>Project set ID used as target. If not provided, target will be already added projects.</xs:documentation>
+            <xs:documentation>Project set ID used as target. If not provided, target will be all already added projects.</xs:documentation>
         </xs:annotation>
     </xs:attribute>
 
     <xs:complexType name="SolutionsContentSourceBase" abstract="true">
         <xs:annotation>
-            <xs:documentation>Represent a file defining a solution content.</xs:documentation>
+            <xs:documentation>Base representation of a set of solution content files.</xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="SolutionProjectsSourceBase">
                 <xs:all>
-                    <xs:element name="KeepOnly" type="SolutionsScope" minOccurs="0" />
-                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0" />
-                    <xs:element name="WhereProjects" type="IgnorableProjectFilterRoot" minOccurs="0" />
-                    <xs:element name="WhereFiles" type="IgnorableFileFilterRoot" minOccurs="0" />
+                    <xs:element name="KeepOnly" type="SolutionsScope" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Items conserved from the solutions. Solution hierarchy will be conserved on those items.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Where" type="FileFilterRoot" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Advanced filters used on the set of solutions.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="WhereProjects" type="IgnorableProjectFilterRoot" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Advanced filters used on the solutions sets of files.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="WhereFiles" type="IgnorableFileFilterRoot" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>Advanced filters used on the solutions sets of projects.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:all>
                 <xs:attribute ref="Path" />
                 <xs:attribute name="CreateRootFolder" type="xs:boolean">
                     <xs:annotation>
-                        <xs:documentation>True to create a dedicated folder for each solution. Folder name will be its SolutionName.</xs:documentation>
+                        <xs:documentation>True to create a dedicated folder for each solution. Folder name will be its solution name.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="ReverseOrder" type="xs:boolean">
@@ -417,7 +445,11 @@
             <xs:documentation>Represent a solution scope.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element ref="SolutionFiles" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element ref="SolutionFiles" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>List of solution item sources to conserve from the solution scope.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -444,7 +476,11 @@
             <xs:documentation>Project filter root.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element ref="ProjectFilters" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element ref="ProjectFilters" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Filters applied to the set of projects.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -453,7 +489,11 @@
             <xs:documentation>File filter root.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element ref="FileFilters" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Filters applied to the set of projects.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -499,7 +539,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="ProjectFilters" />
+                <xs:element ref="ProjectFilters">
+                    <xs:annotation>
+                        <xs:documentation>Reversed filter.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -510,7 +554,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded" />
+                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>All filters to match.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -521,19 +569,23 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded" />
+                <xs:element ref="ProjectFilters" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Filters from which one must match.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
 
     <xs:element name="ProjectPath" substitutionGroup="ProjectFilters">
         <xs:annotation>
-            <xs:documentation>Filter matching file path pattern.</xs:documentation>
+            <xs:documentation>Filter matching project path glob pattern.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:attribute name="Match" type="PathGlobPattern" use="required">
                 <xs:annotation>
-                    <xs:documentation>Project path pattern.</xs:documentation>
+                    <xs:documentation>Project path glob pattern to match. Supported patterns: "**", "*", "?" and "..".</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -551,7 +603,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="FileFilters" />
+                <xs:element ref="FileFilters">
+                    <xs:annotation>
+                        <xs:documentation>Reversed filter.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -562,7 +618,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded" />
+                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>All filters to match.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -573,19 +633,23 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded" />
+                <xs:element ref="FileFilters" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Filters from which one must match.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
 
     <xs:element name="FilePath" substitutionGroup="FileFilters">
         <xs:annotation>
-            <xs:documentation>Filter matching file path pattern.</xs:documentation>
+            <xs:documentation>Filter matching file path glob pattern.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:attribute name="Match" type="PathGlobPattern" use="required">
                 <xs:annotation>
-                    <xs:documentation>File path pattern.</xs:documentation>
+                    <xs:documentation>File path glob pattern to match. Supported patterns: "**", "*", "?" and "..".</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
