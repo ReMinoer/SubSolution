@@ -68,7 +68,7 @@ Use `subsln help` or `subsln [command] --help` for more details on commands.
 
 # Configuration files: `.subsln`
 
-SubSolution introduce a XML file format using extension `.subsln` to describe the content of Visual Studio solutions with a more user-friendly syntax than .sln format. You can generate solutions from it or update existing ones.
+SubSolution introduce a XML file format using extension `.subsln` to describe the content of Visual Studio solutions with a more user-friendly syntax than .sln format. You can generate a solution from it or update an existing one.
 
 ```xml
 <SubSolutionConfiguration>
@@ -107,7 +107,7 @@ SubSolution introduce a XML file format using extension `.subsln` to describe th
 - It can also be used as a punctual tool, to __apply a one-time update__.
 - It allows to __quickly iterate__ on your solution structure until it matches your needs, without even running Visual Studio.
 - It can __build an entirely customized hierarchy__, or at contrary __mirror your file system structure__.
-- It can __find and fill your solution with dependencies__ of your central project.
+- It can __find and fill your solution with dependencies__ of your central projects.
 - It can describe solutions __in a modular way__ by including the content of a solution into another.
 - It can __apply changes to multiple solutions__ sharing the same projects.
 - It can __divide a big solution in smaller ones__ to reduce impact on Visual Studio performances.
