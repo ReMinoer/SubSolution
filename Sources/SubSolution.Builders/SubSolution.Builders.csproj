@@ -32,10 +32,8 @@
           <Compile Include="$(GeneratedFilePath)" />
           <FileWrites Include="$(GeneratedFilePath)" />
       </ItemGroup>
-      <Message Text="$(GeneratedFilePath)" Importance="high" />
-      <Message Text="$(ProjectDir)$(GeneratedFilePath)" Importance="high" />
-      <Exec Command="dotnet tool restore" />
-      <Exec Command="dotnet tool run LinqToXsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(ProjectDir)$(GeneratedFilePath)&quot;" />
+      <Exec ConsoleToMsBuild="true" Command="dotnet tool restore" />
+      <Exec ConsoleToMsBuild="true" Command="dotnet tool run LinqToXsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(ProjectDir)$(GeneratedFilePath)&quot;" />
   </Target>
 
 </Project>
