@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AssemblyName>subsln</AssemblyName>
+    <PackAsTool>true</PackAsTool>
     <Description>Command line tool used to manipulate .subsln files and released as .NET SDK tool.
 
 Check our project page to see how install it.
@@ -13,7 +14,6 @@ If you need the .NET libraries, use the others SubSolution NuGet packages.</Desc
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
   </ItemGroup>
 
   <ItemGroup>
