@@ -28,12 +28,12 @@
     <PropertyGroup>
       <GeneratedFilePath>$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs</GeneratedFilePath>
     </PropertyGroup>
-    <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet tool run LinqToXsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(GeneratedFilePath)&quot;" />
-    <ItemGroup>
-      <Compile Include="$(GeneratedFilePath)" />
-      <FileWrites Include="$(GeneratedFilePath)" />
-    </ItemGroup>
+      <ItemGroup>
+          <Compile Include="$(GeneratedFilePath)" />
+          <FileWrites Include="$(GeneratedFilePath)" />
+      </ItemGroup>
+      <Exec Command="dotnet tool restore" />
+      <Exec Command="dotnet tool run LinqToXsd gen &quot;$(ProjectDir)SubSolutionConfiguration.xsd&quot; -c &quot;$(ProjectDir)SubSolutionConfiguration.xsd.config&quot; -o &quot;$(ProjectDir)$(GeneratedFilePath)&quot;" />
   </Target>
 
 </Project>
