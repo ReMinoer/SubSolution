@@ -2,7 +2,8 @@
 
 [![Change](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml/badge.svg)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
 [![Release](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml/badge.svg)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
-[![Nuget](https://img.shields.io/nuget/v/subsln?label=%20&color=004880&logo=nuget)](https://www.nuget.org/packages/subsln)
+[![Nuget](https://img.shields.io/nuget/v/SubSolution?label=SubSolution&color=004880&logo=nuget)](https://www.nuget.org/packages/SubSolution)
+[![Nuget](https://img.shields.io/nuget/v/subsln?label=subsln&color=004880&logo=windowsterminal)](https://www.nuget.org/packages/subsln)
 
 SubSolution is a tool giving you control on your Visual Studio solutions.
 
@@ -92,9 +93,9 @@ Or install it as a tool with the [.NET SDK](https://dotnet.microsoft.com/downloa
 
 If you have specific needs or need a high level of control, you can use those .NET libraries as Nuget packages:
 
-- [SubSolution](): core package to edit solutions using minimum dependencies.
-- [SubSolution.Builders](): solution building features used by .subsln format.
-- [SubSolution.MsBuild](): project reader implementation based on MSBuild.
+- [SubSolution](https://www.nuget.org/packages/SubSolution): core package to edit solutions using minimum dependencies.
+- [SubSolution.Builders](https://www.nuget.org/packages/SubSolution.Builders): solution building features used by .subsln format.
+- [SubSolution.MsBuild](https://www.nuget.org/packages/SubSolution.MsBuild): project reader implementation based on MSBuild.
 
 The API is structured around 3 representations of solutions:
 
