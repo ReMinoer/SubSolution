@@ -89,10 +89,11 @@ namespace SubSolution.Builders.Tests
         }
 
         [Test]
-        public void ThrowOnProcessWithoutAnyWorkspaceDirectory()
+        public async Task ThrowOnProcessWithoutAnyWorkspaceDirectory()
         {
             var configuration = new SubSolutionConfiguration();
-            Invoking(async () => await ProcessConfigurationAsync(configuration, Environment.CurrentDirectory, workspaceDirectoryPath: null)).Should().Throw<ArgumentNullException>();
+            await Invoking(async () => await ProcessConfigurationAsync(configuration, Environment.CurrentDirectory, workspaceDirectoryPath: null))
+                .Should().ThrowAsync<ArgumentNullException>();
         }
     }
 }

@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <Description>
-        Library used to build solutions from SubSolution configurations (.subsln files).
-    </Description>
+    <Description>Library used to build solutions from SubSolution configurations (.subsln files).</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,12 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <Description>
-        Library containing SubSolution core features used to manipulate Visual Studio solutions.
-        - If you need the command line tool, check our project page to see how install it.
-        - If you need the default project reader, check SubSolution.MsBuild package.
-        - If you need to quickly build solutions or to manipulate .subsln files, check SubSolution.Builders package.
-    </Description>
+    <Description>Library containing SubSolution core features used to manipulate Visual Studio solutions.
+
+- If you need the command line tool, check our project page to see how install it.
+- If you need the default project reader, check SubSolution.MsBuild package.
+- If you need to quickly build solutions or to manipulate .subsln files, check SubSolution.Builders package.</Description>
   </PropertyGroup>
 
   <ItemGroup>

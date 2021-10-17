@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <Description>
-        Library using MsBuild as dependency to implement SubSolution default project reader.
-    </Description>
+    <Description>Library using MsBuild as dependency to implement SubSolution default project reader.</Description>
   </PropertyGroup>
 
   <ItemGroup>
