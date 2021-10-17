@@ -5,7 +5,7 @@
 
 SubSolution is a tool giving you control on your Visual Studio solutions.
 
-It came in two forms:
+It comes in two forms:
 
 - __SubSolution .NET libraries__ to manipulate read/edit/write solutions as you want.
 - __"subsln" command line tool__ to generate/update .sln files from .subsln files.
