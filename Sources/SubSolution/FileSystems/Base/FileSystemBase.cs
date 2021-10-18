@@ -25,7 +25,7 @@ namespace SubSolution.FileSystems.Base
             int commonPartsCount = rootPathSplit.Zip(filePathSplit, (x, y) => x == y).TakeWhile(x => x).Count();
             int backMoveCount = rootPathSplit.Length - commonPartsCount;
 
-            return Enumerable.Repeat("..", backMoveCount).Concat(filePathSplit[commonPartsCount..]).Aggregate(Combine);
+            return Enumerable.Repeat("..", backMoveCount).Concat(filePathSplit.Skip(commonPartsCount)).Aggregate(Combine);
         }
 
         public string MakeAbsolutePath(string rootPath, string relativeFilePath)
@@ -41,7 +41,7 @@ namespace SubSolution.FileSystems.Base
 
             int backtrackCount = relativeFilePathSplit.TakeWhile(x => x == "..").Count();
 
-            return rootPathSplit[..^backtrackCount].Concat(relativeFilePathSplit[backtrackCount..]).Aggregate(Combine);
+            return rootPathSplit.Take(rootPathSplit.Length - backtrackCount).Concat(relativeFilePathSplit.Skip(backtrackCount)).Aggregate(Combine);
         }
     }
 }

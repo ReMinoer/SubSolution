@@ -28,7 +28,7 @@ namespace SubSolution.Builders
         private readonly Stack<string> _currentFolderPathStack;
 
         private Solution.Folder CurrentFolder => _currentFolderStack.Peek();
-        private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? string.Join('/', _currentFolderPathStack.Reverse()) : LogTokenRoot;
+        private string CurrentFolderPath => _currentFolderPathStack.Count > 0 ? _currentFolderPathStack.Reverse().Join('/') : LogTokenRoot;
 
         private readonly IGlobPatternFileSystem _fileSystem;
         private readonly CacheProjectReader _projectReader;
@@ -477,7 +477,7 @@ namespace SubSolution.Builders
 
         private void AddProjects(ProjectsBase projects, Dictionary<string, ISolutionProject> matchingProjectByPath)
         {
-            if (!string.IsNullOrEmpty(projects.Id))
+            if (projects.Id != null)
                 _solutionSetsById.Add(projects.Id, matchingProjectByPath.Keys.ToHashSet(_fileSystem.PathComparer));
 
             if (_virtualizing)
@@ -505,7 +505,9 @@ namespace SubSolution.Builders
         {
             return VisitSolutionsBaseAsync(solutions, "sln", async filePath =>
             {
-                await using Stream fileStream = _fileSystem.OpenStream(filePath);
+                await using IAsyncDisposable _ = _fileSystem.OpenStream(filePath)
+                    .AsAsyncDisposable(out Stream fileStream);
+
                 RawSolution rawSolution = await RawSolution.ReadAsync(fileStream);
 
                 RawSolutionConverter solutionConverter = new RawSolutionConverter(_fileSystem, _projectReader)
@@ -657,7 +659,7 @@ namespace SubSolution.Builders
                     _allAddedProjects.Add(solutionProject);
             }
 
-            if (!string.IsNullOrEmpty(solutionContentFiles.Id))
+            if (solutionContentFiles.Id != null)
                 _solutionSetsById.Add(solutionContentFiles.Id, allSolutionsProjects);
         }
 

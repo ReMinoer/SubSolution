@@ -22,17 +22,17 @@ namespace SubSolution
 
             foreach (string name in Enum.GetNames(enumType))
             {
-                var type = Enum.Parse<ProjectType>(name);
+                var value = (ProjectType)Enum.Parse(typeof(ProjectType), name);
                 MemberInfo memberInfo = enumType.GetMember(name)[0];
 
                 string displayName = memberInfo.GetCustomAttribute<ProjectTypeNameAttribute>().DisplayName;
                 Guid guid = memberInfo.GetCustomAttribute<ProjectTypeGuidAttribute>().Guid;
 
-                DisplayNames.Add(type, displayName);
-                Guids.Add(type, guid);
-                ByGuids.Add(guid, type);
+                DisplayNames.Add(value, displayName);
+                Guids.Add(value, guid);
+                ByGuids.Add(guid, value);
 
-                if (type == ProjectType.Folder)
+                if (value == ProjectType.Folder)
                     FolderGuid = guid;
             }
         }

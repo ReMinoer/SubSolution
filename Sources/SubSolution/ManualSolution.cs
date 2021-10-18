@@ -41,6 +41,7 @@ namespace SubSolution
         {
             public string ConfigurationName { get; }
             public string PlatformName { get; }
+            public string FullName => ConfigurationName + '|' + PlatformName;
             public Dictionary<string, SolutionProjectContext> ProjectContexts { get; }
 
             private readonly IReadOnlyDictionary<string, SolutionProjectContext> _readOnlyProjectContexts;

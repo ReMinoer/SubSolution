@@ -214,7 +214,7 @@ namespace SubSolution.Converters
                 }
 
                 string solutionConfigurationPlatformFullName = splitKey[1];
-                string type = string.Join('.', splitKey.Skip(2));
+                string type = splitKey.Skip(2).Join('.');
 
                 if (!projectContextsByGuidAndSolutionConfigurationPlatforms.TryGetValue((projectGuid, solutionConfigurationPlatformFullName), out SolutionProjectContext projectContext))
                 {

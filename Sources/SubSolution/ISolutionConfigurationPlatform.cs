@@ -6,7 +6,7 @@ namespace SubSolution
     {
         string ConfigurationName { get; }
         string PlatformName { get; }
-        string FullName => ConfigurationName + '|' + PlatformName;
+        string FullName { get; }
         IReadOnlyDictionary<string, SolutionProjectContext> ProjectContexts { get; }
     }
 }

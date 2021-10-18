@@ -88,6 +88,7 @@ namespace SubSolution
         {
             public string ConfigurationName { get; }
             public string PlatformName { get; }
+            public string FullName => ConfigurationName + '|' + PlatformName;
             public List<string> MatchingProjectConfigurationNames { get; }
             public List<string> MatchingProjectPlatformNames { get; }
 

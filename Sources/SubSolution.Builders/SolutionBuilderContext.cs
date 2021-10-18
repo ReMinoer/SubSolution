@@ -42,7 +42,9 @@ namespace SubSolution.Builders
         {
             IFileSystem activeFileSystem = fileSystem ?? StandardGlobPatternFileSystem.Instance;
 
-            await using Stream stream = activeFileSystem.OpenStream(configurationFilePath);
+            await using IAsyncDisposable _ = activeFileSystem.OpenStream(configurationFilePath)
+                .AsAsyncDisposable(out Stream stream);
+
             using TextReader textReader = new StreamReader(stream);
 
             SubSolutionConfiguration configuration = await Task.Run(() => SubSolutionConfiguration.Load(textReader));

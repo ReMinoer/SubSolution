@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>Library used to build solutions from SubSolution configurations (.subsln files).</Description>
   </PropertyGroup>
@@ -23,8 +24,7 @@
   </ItemGroup>
     
   <!-- Inspired from:  https://gist.github.com/KirillOsenkov/f20cb84d37a89b01db63f8aafe03f19b -->
-  <Target Name="GenerateCSharpFromXsd" BeforeTargets="BeforeCompile;CoreCompile"
-          Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs">
+  <Target Name="GenerateCSharpFromXsd" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs">
     <PropertyGroup>
       <GeneratedFilePath>$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs</GeneratedFilePath>
     </PropertyGroup>
@@ -32,10 +32,8 @@
           <Compile Include="$(GeneratedFilePath)" />
           <FileWrites Include="$(GeneratedFilePath)" />
       </ItemGroup>
-      <Exec Command="dotnet tool restore"
-            WorkingDirectory="$(ProjectDir)" />
-      <Exec Command="dotnet tool run LinqToXsd gen &quot;SubSolutionConfiguration.xsd&quot; -c &quot;SubSolutionConfiguration.xsd.config&quot; -o &quot;$(GeneratedFilePath)&quot;"
-            WorkingDirectory="$(ProjectDir)" />
+      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
+      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool run LinqToXsd gen &quot;SubSolutionConfiguration.xsd&quot; -c &quot;SubSolutionConfiguration.xsd.config&quot; -o &quot;$(GeneratedFilePath)&quot;" />
   </Target>
 
 </Project>

@@ -111,7 +111,7 @@ namespace SubSolution.Converters.Changes
             return Equals((SolutionChange)obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(ChangeType, ObjectType, ObjectName, TargetType, TargetName);
+        public override int GetHashCode() => (ChangeType, ObjectType, ObjectName, TargetType, TargetName).GetHashCode();
 
         public int CompareTo(SolutionChange? other)
         {

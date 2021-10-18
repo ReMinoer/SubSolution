@@ -49,7 +49,7 @@ namespace SubSolution.Builders.GlobPatterns.Mock
             if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase rootDirectoryInfo))
                 rootDirectoryInfo = new MockDirectoryInfo(this, root, Enumerable.Empty<string>());
 
-            return directoryNames[1..].Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName));
+            return directoryNames.Skip(1).Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName));
         }
     }
 }

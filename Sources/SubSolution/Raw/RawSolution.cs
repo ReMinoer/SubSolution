@@ -44,7 +44,8 @@ namespace SubSolution.Raw
 
         public async Task WriteAsync(Stream stream)
         {
-            await using StreamWriter writer = new StreamWriter(stream, new UTF8Encoding(true), -1, leaveOpen: true);
+            await using IAsyncDisposable _ = new StreamWriter(stream, new UTF8Encoding(true), -1, leaveOpen: true)
+                .AsAsyncDisposable(out StreamWriter writer);
 
             await writer.WriteLineAsync();
             await writer.WriteLineAsync(SlnFormatVersionHeaderPrefix + SlnFormatVersion.Major + '.' + SlnFormatVersion.Minor.ToString("00"));

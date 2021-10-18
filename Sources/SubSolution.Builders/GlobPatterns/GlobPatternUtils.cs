@@ -7,7 +7,7 @@ namespace SubSolution.Builders.GlobPatterns
     {
         static public string CompleteSimplifiedPattern(string? globPattern, string defaultFileExtension)
         {
-            if (string.IsNullOrEmpty(globPattern))
+            if (globPattern is null || globPattern == string.Empty)
                 globPattern = "**/*." + defaultFileExtension;
             else if (globPattern.EndsWith("/") || globPattern.EndsWith("\\"))
                 globPattern += "*." + defaultFileExtension;

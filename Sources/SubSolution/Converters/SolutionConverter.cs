@@ -524,7 +524,7 @@ namespace SubSolution.Converters
                             reconfigured = true;
                         }
 
-                        string type = string.Join('.', splitKey.Skip(2));
+                        string type = splitKey.Skip(2).Join('.');
 
                         // If the key still match its properties, nothing to clean.
                         switch (type)
