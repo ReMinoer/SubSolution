@@ -44,7 +44,7 @@ namespace SubSolution.Raw
 
         public async Task WriteAsync(Stream stream)
         {
-            await using IAsyncDisposable _ = new StreamWriter(stream, new UTF8Encoding(true), -1, leaveOpen: true)
+            await using IAsyncDisposable _ = new StreamWriter(stream, new UTF8Encoding(true), 1024, leaveOpen: true)
                 .AsAsyncDisposable(out StreamWriter writer);
 
             await writer.WriteLineAsync();
@@ -95,7 +95,7 @@ namespace SubSolution.Raw
         {
             RawSolution solution = new RawSolution();
 
-            using StreamReader reader = new StreamReader(stream, new UTF8Encoding(true), true, -1, leaveOpen: true);
+            using StreamReader reader = new StreamReader(stream, new UTF8Encoding(true), true, 1024, leaveOpen: true);
 
             solution.SlnFormatVersion = await ReadNextLineVersionAsync(reader, SlnFormatVersionHeaderPrefix);
             solution.MajorVisualStudioVersion = await ReadNextLineIntegerAsync(reader, MajorVisualStudioVersionHeaderPrefix);

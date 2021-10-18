@@ -184,7 +184,7 @@ namespace SubSolution.Builders.Tests
             RawSolution rawSolution;
 
             rawSolution = rawSolutionConverter.Convert(checkSolution);
-            await using var firstPassStream = new MemoryStream();
+            using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(firstPassStream);
@@ -192,7 +192,7 @@ namespace SubSolution.Builders.Tests
             solutionConverter.Issues.Should().BeEmpty();
 
             rawSolution = rawSolutionConverter.Convert(checkSolution);
-            await using var secondPassStream = new MemoryStream();
+            using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
             rawSolution = await RawSolution.ReadAsync(secondPassStream);
@@ -207,7 +207,7 @@ namespace SubSolution.Builders.Tests
             rawSolutionConverter.Update(referenceRawSolution, checkSolution);
             CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
 
-            await using var thirdPassStream = new MemoryStream();
+            using var thirdPassStream = new MemoryStream();
             await referenceRawSolution.WriteAsync(thirdPassStream);
             thirdPassStream.Position = 0;
             referenceRawSolution = await RawSolution.ReadAsync(thirdPassStream);
@@ -219,7 +219,7 @@ namespace SubSolution.Builders.Tests
             rawSolutionConverter.Update(referenceRawSolution, checkSolution);
             CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
             
-            await using var forthPassStream = new MemoryStream();
+            using var forthPassStream = new MemoryStream();
             await referenceRawSolution.WriteAsync(forthPassStream);
             forthPassStream.Position = 0;
             await RawSolution.ReadAsync(forthPassStream);
@@ -281,7 +281,7 @@ namespace SubSolution.Builders.Tests
                 relativeFilePath.Add(@"external\MyFramework\external\MySubModule\MySubModule.sln");
                 relativeFilePath.Add(@"external\MyFramework\external\MySubModule\MySubModule.subsln");
 
-                await AddConfigurationToFileSystemAsync(mySubModuleConfigurationPath + ".subsln", MySubModuleConfiguration);
+                AddConfigurationToFileSystem(mySubModuleConfigurationPath + ".subsln", MySubModuleConfiguration);
                 await AddSolutionToFileSystemAsync(mySubModuleConfigurationPath + ".sln", MySubModuleConfiguration);
 
                 mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
@@ -290,7 +290,7 @@ namespace SubSolution.Builders.Tests
                 relativeFilePath.Add(@"external\MyFramework\MyFramework.sln");
                 relativeFilePath.Add(@"external\MyFramework\MyFramework.subsln");
 
-                await AddConfigurationToFileSystemAsync(myFrameworkConfigurationPath + ".subsln", MyFrameworkConfiguration);
+                AddConfigurationToFileSystem(myFrameworkConfigurationPath + ".subsln", MyFrameworkConfiguration);
                 await AddSolutionToFileSystemAsync(myFrameworkConfigurationPath + ".sln", MyFrameworkConfiguration);
 
                 mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
@@ -299,7 +299,7 @@ namespace SubSolution.Builders.Tests
             relativeFilePath.Add("MyApplication.sln");
             relativeFilePath.Add("MyApplication.subsln");
 
-            await AddConfigurationToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
+            AddConfigurationToFileSystem(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln", configurationContent);
             await AddSolutionToFileSystemAsync(@"C:\Directory\SubDirectory\MyWorkspace\MyApplication.sln", configurationContent);
 
             mockFileSystem.AddRoot(RootName, relativeFilePath.Select(x => WorkspaceDirectoryRelativePath + x));
@@ -314,16 +314,16 @@ namespace SubSolution.Builders.Tests
             relativeFilePath.Add(@"Directory\ExternalSolution.sln");
             relativeFilePath.Add(@"Directory\ExternalSolution.subsln");
 
-            await AddConfigurationToFileSystemAsync(externalSolutionConfigurationPath + ".subsln", ExternalSolutionConfiguration);
+            AddConfigurationToFileSystem(externalSolutionConfigurationPath + ".subsln", ExternalSolutionConfiguration);
             await AddSolutionToFileSystemAsync(externalSolutionConfigurationPath + ".sln", ExternalSolutionConfiguration);
 
             mockFileSystem.AddRoot(AlternativeRootName, relativeFilePath);
 
-            async Task AddConfigurationToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
+            void AddConfigurationToFileSystem(string filePath, SubSolutionConfiguration configuration)
             {
-                await using var memoryStream = new MemoryStream();
+                using var memoryStream = new MemoryStream();
 
-                await using (TextWriter configurationWriter = new StreamWriter(memoryStream))
+                using (TextWriter configurationWriter = new StreamWriter(memoryStream))
                     configuration.Save(configurationWriter);
 
                 byte[] content = memoryStream.ToArray();
@@ -341,7 +341,7 @@ namespace SubSolution.Builders.Tests
                 var rawSolutionConverter = new SolutionConverter(mockFileSystem);
                 RawSolution rawSolution = rawSolutionConverter.Convert(solution);
 
-                await using var memoryStream = new MemoryStream();
+                using var memoryStream = new MemoryStream();
                 await rawSolution.WriteAsync(memoryStream);
 
                 byte[] content = memoryStream.ToArray();

@@ -469,7 +469,7 @@ namespace SubSolution.Builders
             {
                 Log("Filter projects: " + filter.TextFormat);
 
-                IEnumerable<string> ignoredProjectPaths = matchingProjectByPath.Where(x => !filter.Match((x.Key, x.Value))).Select(x => x.Key);
+                string[] ignoredProjectPaths = matchingProjectByPath.Where(x => !filter.Match((x.Key, x.Value))).Select(x => x.Key).ToArray();
                 foreach (string ignoredProjectPath in ignoredProjectPaths)
                     matchingProjectByPath.Remove(ignoredProjectPath);
             }
@@ -751,7 +751,7 @@ namespace SubSolution.Builders
             foreach (Solution.Folder subFolder in folder.SubFolders.Values)
                 RemoveEmptySubFolders(subFolder);
 
-            IEnumerable<string> emptySubFolderNames = folder.SubFolders.Where(x => x.Value.IsEmpty).Select(x => x.Key);
+            string[] emptySubFolderNames = folder.SubFolders.Where(x => x.Value.IsEmpty).Select(x => x.Key).ToArray();
             foreach (string emptySubFolderName in emptySubFolderNames)
                 folder.RemoveSubFolder(emptySubFolderName);
         }
