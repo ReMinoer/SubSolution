@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
 using SubSolution.ProjectReaders;
 
@@ -16,6 +17,11 @@ namespace SubSolution.MsBuild
     {
         private readonly ILogger? _logger;
         public LogLevel LogLevel { get; set; } = LogLevel.Trace;
+
+        static MsBuildProjectReader()
+        {
+            MSBuildLocator.RegisterDefaults();
+        }
 
         public MsBuildProjectReader(ILogger? logger = null)
         {
@@ -194,6 +200,10 @@ namespace SubSolution.MsBuild
             if (hasConfigurations)
             {
                 solutionProject.Configurations.AddRange(conditionedConfigurations!);
+            }
+            else
+            {
+                throw new ProjectReadException(project.FullPath, "No configuration found.");
             }
 
             if (hasPlatforms)
