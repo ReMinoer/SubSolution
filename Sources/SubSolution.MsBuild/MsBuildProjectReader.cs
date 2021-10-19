@@ -127,7 +127,13 @@ namespace SubSolution.MsBuild
 
         static private bool HasDotNetSdk(Project project)
         {
-            return project.Xml.Sdk.Split(';').Any(x => x.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
+            return GetSdks(project).Any(x => x.StartsWith("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
+        }
+
+        static private IEnumerable<string> GetSdks(Project project)
+        {
+            return project.Xml.Sdk.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Concat(project.Imports.SelectMany(x => x.ImportingElement.Sdk.Split(';')));
         }
 
         static private void ReadConfigurationsAndPlatformsSdkProperties(Project project, SolutionProject solutionProject)
