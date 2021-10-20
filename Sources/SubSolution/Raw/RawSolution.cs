@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,7 +13,8 @@ namespace SubSolution.Raw
         // https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/solution-dot-sln-file
 
         private const string SlnFormatVersionHeaderPrefix = "Microsoft Visual Studio Solution File, Format Version ";
-        private const string MajorVisualStudioVersionHeaderPrefix = "# Visual Studio Version ";
+        private const string MajorVisualStudioVersionHeaderPrefixOld = "# Visual Studio ";
+        private const string MajorVisualStudioVersionHeaderPrefixNew = "# Visual Studio Version ";
         private const string VisualStudioVersionHeaderPrefix = "VisualStudioVersion = ";
         private const string MinimumVisualStudioVersionHeaderPrefix = "MinimumVisualStudioVersion = ";
 
@@ -49,7 +51,12 @@ namespace SubSolution.Raw
 
             await writer.WriteLineAsync();
             await writer.WriteLineAsync(SlnFormatVersionHeaderPrefix + SlnFormatVersion.Major + '.' + SlnFormatVersion.Minor.ToString("00"));
-            await writer.WriteLineAsync(MajorVisualStudioVersionHeaderPrefix + MajorVisualStudioVersion);
+
+            if (MajorVisualStudioVersion >= 16)
+                await writer.WriteLineAsync(MajorVisualStudioVersionHeaderPrefixNew + MajorVisualStudioVersion);
+            else
+                await writer.WriteLineAsync(MajorVisualStudioVersionHeaderPrefixOld + MajorVisualStudioVersion);
+
             await writer.WriteLineAsync(VisualStudioVersionHeaderPrefix + VisualStudioVersion);
             await writer.WriteLineAsync(MinimumVisualStudioVersionHeaderPrefix + MinimumVisualStudioVersion);
 
@@ -98,7 +105,7 @@ namespace SubSolution.Raw
             using StreamReader reader = new StreamReader(stream, new UTF8Encoding(true), true, 1024, leaveOpen: true);
 
             solution.SlnFormatVersion = await ReadNextLineVersionAsync(reader, SlnFormatVersionHeaderPrefix);
-            solution.MajorVisualStudioVersion = await ReadNextLineIntegerAsync(reader, MajorVisualStudioVersionHeaderPrefix);
+            solution.MajorVisualStudioVersion = await ReadNextLineIntegerAsync(reader, MajorVisualStudioVersionHeaderPrefixOld);
             solution.VisualStudioVersion = await ReadNextLineVersionAsync(reader, VisualStudioVersionHeaderPrefix);
             solution.MinimumVisualStudioVersion = await ReadNextLineVersionAsync(reader, MinimumVisualStudioVersionHeaderPrefix);
 
@@ -233,9 +240,12 @@ namespace SubSolution.Raw
 
         static private async Task<int> ReadNextLineIntegerAsync(StreamReader reader, string prefix)
         {
+            string value = await ReadNextLineValueAsync(reader, prefix);
+            value = value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
+
             try
             {
-                return int.Parse(await ReadNextLineValueAsync(reader, prefix));
+                return int.Parse(value);
             }
             catch (Exception ex)
             {
@@ -245,9 +255,12 @@ namespace SubSolution.Raw
 
         static private async Task<Version> ReadNextLineVersionAsync(StreamReader reader, string prefix)
         {
+            string value = await ReadNextLineValueAsync(reader, prefix);
+            value = value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
+
             try
             {
-                return Version.Parse(await ReadNextLineValueAsync(reader, prefix));
+                return Version.Parse(value);
             }
             catch (Exception ex)
             {
