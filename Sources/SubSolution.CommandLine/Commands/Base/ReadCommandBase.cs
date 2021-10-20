@@ -28,7 +28,7 @@ namespace SubSolution.CommandLine.Commands.Base
         public bool ShowDetailedSolution { get; set; }
         [Option('D', "divergent", HelpText = "Show divergent projects contexts in solution output (divergent configuration-platforms, disabled build, disabled deploy).")]
         public bool ShowDivergentProjects { get; set; }
-        [Option('p', "paths", HelpText = "Show project paths in solution output.")]
+        [Option('P', "paths", HelpText = "Show project paths in solution output.")]
         public bool ShowProjectPaths { get; set; }
 
         [Option('v', "verbose", HelpText = "Enable verbose log (solution build, project reading, ...)")]
