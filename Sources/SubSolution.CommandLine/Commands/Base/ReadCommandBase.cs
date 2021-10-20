@@ -8,6 +8,7 @@ using SubSolution.Builders;
 using SubSolution.Converters;
 using SubSolution.FileSystems;
 using SubSolution.MsBuild;
+using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 
 namespace SubSolution.CommandLine.Commands.Base
@@ -15,10 +16,12 @@ namespace SubSolution.CommandLine.Commands.Base
     public abstract class ReadCommandBase : CommandBase
     {
         static private readonly MsBuildProjectReader ProjectReader;
+        static private readonly CacheProjectReader CacheProjectReader;
 
         static ReadCommandBase()
         {
             ProjectReader = new MsBuildProjectReader(Logger);
+            CacheProjectReader = new CacheProjectReader(StandardFileSystem.Instance, ProjectReader);
         }
 
         [Option('d', "detailed", HelpText = "Show more details in solution output.")]
@@ -60,7 +63,7 @@ namespace SubSolution.CommandLine.Commands.Base
             if (!CheckFileExist(configurationFilePath))
                 return null;
 
-            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, ProjectReader);
+            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, CacheProjectReader);
             context.Logger = Logger;
             context.LogLevel = Verbose ? LogLevel.Information : LogLevel.None;
 
@@ -115,7 +118,7 @@ namespace SubSolution.CommandLine.Commands.Base
             {
                 string solutionDirectoryPath = StandardFileSystem.Instance.GetParentDirectoryPath(filePath)!;
 
-                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, ProjectReader);
+                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, CacheProjectReader);
                 ISolution solution = await converter.ConvertAsync(rawSolution, solutionDirectoryPath, skipProjectLoading);
 
                 foreach (Issue issue in converter.Issues)
