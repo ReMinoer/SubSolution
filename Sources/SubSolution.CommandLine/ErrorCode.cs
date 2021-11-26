@@ -15,6 +15,8 @@
         FailWriteSolution = 201,
         FailBuildSolution = 210,
         FailInterpretSolution = 211,
-        FailUpdateSolution = 212
+        FailUpdateSolution = 212,
+        
+        FailLocateMsBuild = 300
     }
 }

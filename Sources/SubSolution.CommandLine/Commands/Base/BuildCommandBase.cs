@@ -14,12 +14,8 @@ namespace SubSolution.CommandLine.Commands.Base
     {
         public abstract IEnumerable<string>? FilePaths { get; set; }
 
-        protected abstract Task ExecuteCommandAsync(string configurationFilePath);
-
-        protected override async Task ExecuteCommandAsync()
+        protected override async Task ExecuteReadCommandAsync()
         {
-            await base.ExecuteCommandAsync();
-
             bool anyFile = false;
             foreach (string pathPattern in GetPathPatterns())
             {
@@ -34,7 +30,7 @@ namespace SubSolution.CommandLine.Commands.Base
                     anyFile = true;
                     anyMatchingFile = true;
 
-                    await ExecuteCommandAsync(configurationFilePath);
+                    await ExecuteBuildCommandAsync(configurationFilePath);
                 }
 
                 if (!anyMatchingFile)
@@ -44,6 +40,8 @@ namespace SubSolution.CommandLine.Commands.Base
                 }
             }
         }
+
+        protected abstract Task ExecuteBuildCommandAsync(string configurationFilePath);
 
         private IEnumerable<string> GetPathPatterns()
         {

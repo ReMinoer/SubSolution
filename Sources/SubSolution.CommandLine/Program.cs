@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CommandLine;
 using SubSolution.CommandLine.Commands;
-using SubSolution.CommandLine.Commands.Base;
 
 [assembly: ExcludeFromCodeCoverage]
 
@@ -23,7 +22,12 @@ namespace SubSolution.CommandLine
                     }
                     catch (Exception exception)
                     {
-                        CommandBase.LogError("An execution error occurred.", exception);
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.Error.WriteLine("ERROR: An execution error occurred.");
+                        Console.Error.WriteLine(exception);
+
+                        Console.ResetColor();
                         return ErrorCode.FatalException;
                     }
                 }, _ => Task.FromResult(ErrorCode.FailParseCommandLine));

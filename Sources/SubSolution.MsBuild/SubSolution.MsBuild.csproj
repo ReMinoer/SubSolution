@@ -10,7 +10,6 @@
   <!-- Use version 15.1.548 to support VS2017 and later. Exclude at runtime since the locator will find exisitng MSBuild. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" Version="15.1.548" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup>

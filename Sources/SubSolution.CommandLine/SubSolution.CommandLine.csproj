@@ -14,11 +14,33 @@ If you need the .NET libraries, use the others SubSolution NuGet packages.</Desc
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+  </ItemGroup>
+
+  <!-- Required to use MSBuild binaries from Visual Studio. -->
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SubSolution.Builders\SubSolution.Builders.csproj" />
     <ProjectReference Include="..\SubSolution.MsBuild\SubSolution.MsBuild.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Runtime\" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.build\15.1.548\lib\netstandard1.5\Microsoft.Build.dll" Link="Runtime\Microsoft.Build.dll" />
+    <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.build.framework\15.1.548\lib\netstandard1.3\Microsoft.Build.Framework.dll" Link="Runtime\Microsoft.Build.Framework.dll" />
+  </ItemGroup>
+
+  <!-- New syntax with GeneratePathProperty not working
+  <ItemGroup>
+    <Folder Include="Runtime\" />
+    <EmbeddedResource Include="${PkgMicrosoft_Build}\lib\netstandard1.5\Microsoft.Build.dll"
+                      Link="Runtime\Microsoft.Build.dll" />
+    <EmbeddedResource Include="${PkgMicrosoft_Build}\lib\netstandard1.3\Microsoft.Build.Framework.dll"
+                      Link="Runtime\Microsoft.Build.Framework.dll" />
+  </ItemGroup>
+  -->
 
 </Project>

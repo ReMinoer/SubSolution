@@ -14,10 +14,8 @@ namespace SubSolution.CommandLine.Commands
         [Value(0, MetaName = "files", Required = true, HelpText = "Paths of the solution files to show. Can be .sln or .subsln files.")]
         public IEnumerable<string>? FilePaths { get; set; }
 
-        protected override async Task ExecuteCommandAsync()
+        protected override async Task ExecuteReadCommandAsync()
         {
-            await base.ExecuteCommandAsync();
-
             if (FilePaths is null)
                 return;
 

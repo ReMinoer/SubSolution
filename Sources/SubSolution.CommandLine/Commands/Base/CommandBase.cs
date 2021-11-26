@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using CommandLine;
 using Microsoft.Extensions.Logging;
+using SubSolution.ProjectReaders;
 
 namespace SubSolution.CommandLine.Commands.Base
 {
@@ -10,6 +12,9 @@ namespace SubSolution.CommandLine.Commands.Base
     {
         static protected readonly ConsoleLogger Logger;
         private ErrorCode _errorCode;
+
+        [Option("debug", HelpText = "Enable debug mode to show exceptions and callstacks.")]
+        public bool DebugMode { get; set; }
 
         static CommandBase()
         {
@@ -33,9 +38,10 @@ namespace SubSolution.CommandLine.Commands.Base
             _errorCode = newErrorCode;
         }
 
-        static public void Log(string message) => Console.WriteLine(message);
-        static public void LogEmptyLine() => Console.WriteLine();
-        static public void LogError(string errorMessage, Exception? exception = null)
+        static protected void Log(string message) => Console.WriteLine(message);
+        static protected void LogEmptyLine() => Console.WriteLine();
+
+        protected void LogError(string errorMessage, Exception? exception = null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
 
@@ -43,12 +49,18 @@ namespace SubSolution.CommandLine.Commands.Base
             Console.Error.WriteLine(errorMessage);
 
             if (exception != null)
-                Console.Error.WriteLine(exception);
+            {
+                Console.Error.Write("---> ");
+                if (DebugMode)
+                    Console.Error.WriteLine(exception);
+                else
+                    Console.Error.WriteLine(exception.Message);
+            }
 
             Console.ResetColor();
         }
 
-        static public void LogWarning(string errorMessage)
+        static protected void LogWarning(string errorMessage)
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
 
@@ -58,12 +70,13 @@ namespace SubSolution.CommandLine.Commands.Base
             Console.ResetColor();
         }
 
-        static public void LogIssue(Issue issue)
+        protected void LogIssue(Issue issue)
         {
             switch (issue.Level)
             {
                 case IssueLevel.Error:
-                    LogError(issue.Message, issue.Exception);
+                    var projectReadException = issue.Exception as ProjectReadException;
+                    LogError(issue.Message, projectReadException?.InnerException ?? issue.Exception);
                     break;
                 case IssueLevel.Warning:
                     LogWarning(issue.Message);

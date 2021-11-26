@@ -44,6 +44,16 @@ The API is structured around 3 representations of solutions:
 > - Some small API breaking changes might happen until version v1.
 > - Some MSBuild project types are not supported yet. ([Supported project types](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution/ProjectType.cs))
 
+## About MSBuild usage
+
+`SubSolution.MsBuild` implements `MsBuildProjectReader` to read projects with MSBuild. But core MSBuild DLLs are not enough to read every project types because some dependencies are installed by Visual Studio modular setup. The MSBuild setup coming with .NET SDK also mostly support .NET projects only.
+
+For that reason, `SubSolution.MsBuild` package does not come with MSBuild DLLs to let you choose between multiple strategies if you need a project reader:
+
+1. Use [Microsoft.Build.Locator](https://docs.microsoft.com/en-gb/visualstudio/msbuild/updating-an-existing-application) to use existing MSBuild binaries on the user machine. For example, it can use MSBuild from a local Visual Studio or a .NET SDK install.
+    - It is recommended to target a framework compatible with the MSBuild binaries you are trying to use in that case.
+2. Use [Microsoft.Build](https://www.nuget.org/packages/Microsoft.Build) NuGet package to get only the core DLLs + set `MsBuildProjectReader.ImportFallback` to true to read project even on missing import/SDKs.
+3. Implement your own `IProjectReader` if you don't want to depends on MSBuild.
 
 # Command line tool: `subsln`
 
@@ -64,7 +74,7 @@ Or install it with the [.NET SDK](https://dotnet.microsoft.com/download) command
 > dotnet tool install subsln --global 
 ```
 
-Use `subsln help` or `subsln [command] --help` for more details on commands.
+By default, `subsln` will try to find MSBuild binaries on your machine. There are multiple options to specify which MSBuild binaries use to read projects. Use `subsln help` or `subsln [command] --help` for more details on commands.
 
 # Configuration files: `.subsln`
 

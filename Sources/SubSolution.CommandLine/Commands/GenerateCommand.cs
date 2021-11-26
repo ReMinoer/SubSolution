@@ -28,7 +28,7 @@ namespace SubSolution.CommandLine.Commands
         [Option('s', "show", HelpText = "Show representation of generated solutions.")]
         public bool Show { get; set; }
 
-        protected override async Task ExecuteCommandAsync(string configurationFilePath)
+        protected override async Task ExecuteBuildCommandAsync(string configurationFilePath)
         {
             SolutionBuilderContext? context = await GetBuildContextAsync(configurationFilePath);
             if (context is null)
