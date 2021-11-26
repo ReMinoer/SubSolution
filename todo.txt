@@ -1,0 +1,65 @@
+XML format:
+
+- Decide on a Xml namespace
+- Id as keyref
+- Change filter element names
+    - Nothing better for now
+- Xsd default values
+    - Considered as required attribute by LinqToXsd for some reason
+- Remove WhereProject/WhereFile ?
+    - Still more optimized/direct than Projects.Where/Files.Where
+
+Solution read/write:
+
+- Shared Projects & GlobalSection
+- RawSolution sections controllers
+- Detect project move
+    - Identifying is hard (by name + same folder/contexts)
+- Detect project rename/move made by program
+    - User dictionary ?
+- RawSolution versions
+    - Get released/local Visual Studio versions ?
+- Default GlobalSection SolutionProperties & ExtensibilityGlobals
+- Conserve file writing encoding
+    - Not that simple. Keep coherence for now.
+
+MSBuild:
+
+- Find Visual Studio MSBuild binaries first by default
+- Release alternative build of subsln using .NET Framework for VS MsBuild strong compatibility.
+
+Global API improvements:
+
+- CancellationToken
+- Better XSD to C# converter
+- Check duplicate GUIDs everywhere
+
+New features:
+
+- GeneratedFrom Global Section
+    - To find subsln from sln
+    - Reference a rebuild command line as alternative ?
+- Specific Project Config-platform support
+    - Do not make much sense but might be needed by some users
+- ProjectReference fix on project move ?
+    - Require project rewriting
+- MSBuild SolutionFile converter
+    - Lack project type GUID !!
+
+Tests:
+
+- Real unit-test instead of sample tests
+- Small project content to test SubSolution.MSBuild
+
+Clean:
+
+- "internal" access
+- Remove CovarientDictionary
+    - Still required by implementation
+    
+Documentation:
+
+- Icon 
+- C# documentation
+- SubSln samples
+- API samples
