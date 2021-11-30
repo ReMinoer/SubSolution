@@ -96,6 +96,10 @@ SubSolution introduce a XML file format using extension `.subsln` to describe th
 
 ## XML Syntax
 
+You can find the [XML schema here](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution.Builders/SubSolutionConfiguration.xsd).
+
+If you use the command "subsln create", it generates a default template with a configured XML schema so auto-completion should work in your favorite IDE.
+
 - Describe your item hierarchy: `<Root>`
     - Create folders to organize your items: `<Folder>`
     - Add projects with glob patterns: `<Projects>`
