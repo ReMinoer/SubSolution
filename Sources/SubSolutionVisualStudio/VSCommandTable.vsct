@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <Extern href="stdidcmd.h"/>
+    <Extern href="vsshlids.h"/>
+    <Include href="KnownImageIds.vsct"/>
+    <Include href="VSGlobals.vsct"/>
+
+    <Commands package="SubSolutionVisualStudio">
+        <Groups>
+            <Group guid="SubSolutionVisualStudio" id="MyMenuGroup" priority="0x0100">
+                <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_SOLNNODE" />
+            </Group>
+        </Groups>
+        <Buttons>
+            <Button guid="SubSolutionVisualStudio" id="OpenSubSlnFileCommand" priority="0x0100" type="Button">
+                <Parent guid="SubSolutionVisualStudio" id="MyMenuGroup" />
+                <Icon guid="ImageCatalogGuid" id="VisualStudioSettingsFile" />
+                <CommandFlag>IconIsMoniker</CommandFlag>
+                <Strings>
+                    <ButtonText>Open .subsln file</ButtonText>
+                    <LocCanonicalName>.SubSolutionVisualStudio.CreateEditSubSlnFileCommand</LocCanonicalName>
+                </Strings>
+            </Button>
+            <Button guid="SubSolutionVisualStudio" id="UpdateSolutionFromSubSln" priority="0x0100" type="Button">
+                <Parent guid="SubSolutionVisualStudio" id="MyMenuGroup" />
+                <Strings>
+                    <ButtonText>Update solution from .subsln file...</ButtonText>
+                    <LocCanonicalName>.SubSolutionVisualStudio.UpdateSolutionFromSubSln</LocCanonicalName>
+                </Strings>
+            </Button>
+        </Buttons>
+    </Commands>
+
+    <Symbols>
+        <GuidSymbol name="SubSolutionVisualStudio" value="{f9791f35-5647-4ee1-8cb6-50fca6c2ebcc}">
+            <IDSymbol name="MyMenuGroup" value="0x0001" />
+            <IDSymbol name="OpenSubSlnFileCommand" value="0x0100" />
+            <IDSymbol name="UpdateSolutionFromSubSln" value="0x0101" />
+        </GuidSymbol>
+    </Symbols>
+</CommandTable>

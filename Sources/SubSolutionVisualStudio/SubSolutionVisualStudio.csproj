@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <LangVersion>9.0</LangVersion>
+    <InstallRoot>Default</InstallRoot>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{B25AC0DB-326C-44D5-97FF-7403789752CB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SubSolutionVisualStudio</RootNamespace>
+    <AssemblyName>SubSolutionVisualStudio</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <UseCodebase>true</UseCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ActionBars\Base\ActionBarBase.cs" />
+    <Compile Include="ActionBars\Base\DocumentActionBarBase.cs" />
+    <Compile Include="ActionBars\GenerateAfterSaveActionBar.cs" />
+    <Compile Include="ActionBars\OutdatedSolutionActionBar.cs" />
+    <Compile Include="ActionBars\Base\SolutionExplorerActionBarBase.cs" />
+    <Compile Include="ActionBars\BackgroundGenerationErrorActionBar.cs" />
+    <Compile Include="Commands\OpenSubSlnFileCommand.cs" />
+    <Compile Include="Commands\Base\SubSolutionContextualCommandBase.cs" />
+    <Compile Include="Commands\UpdateSolutionFromSubSln.cs" />
+    <Compile Include="Helpers\SolutionUpdate.cs" />
+    <Compile Include="Helpers\VisualStudioOutputLogger.cs" />
+    <Compile Include="ViewModels\ISubSolutionTreeItemViewModel.cs" />
+    <Compile Include="ViewModels\SolutionChangeViewModel.cs" />
+    <Compile Include="ViewModels\SolutionConfigurationPlatformViewModel.cs" />
+    <Compile Include="ViewModels\SolutionFileViewModel.cs" />
+    <Compile Include="ViewModels\SolutionFolderViewModel.cs" />
+    <Compile Include="ViewModels\SolutionProjectContextViewModel.cs" />
+    <Compile Include="ViewModels\SolutionProjectViewModel.cs" />
+    <Compile Include="ViewModels\SolutionRootViewModel.cs" />
+    <Compile Include="Helpers\SubSolutionHelpers.cs" />
+    <Compile Include="Helpers\SolutionWatcher.cs" />
+    <Compile Include="Helpers\SubSolutionMonikers.cs" />
+    <Compile Include="Watchers\OutdatedSolutionWatcher.cs" />
+    <Compile Include="Helpers\WaitDialog.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Dialogs\ShowSolutionUpdateDialog.xaml.cs">
+      <DependentUpon>ShowSolutionUpdateDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SubSolutionVisualStudioPackage.cs" />
+    <Compile Include="source.extension.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>source.extension.vsixmanifest</DependentUpon>
+    </Compile>
+    <Compile Include="VSCommandTable.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>VSCommandTable.vsct</DependentUpon>
+    </Compile>
+    <Compile Include="Watchers\SavedSubSlnWatcher.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\SubSolution.Builders\SubSolutionConfiguration.xsd">
+      <Link>Resources\SubSolutionConfiguration.xsd</Link>
+      <SubType>Designer</SubType>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <InstallRoot>Schemas</InstallRoot>
+    </Content>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+      <Generator>VsixManifestGenerator</Generator>
+      <LastGenOutput>source.extension.cs</LastGenOutput>
+    </None>
+    <Content Include="Resources\Icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <VSCTCompile Include="VSCommandTable.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+      <Generator>VsctGenerator</Generator>
+      <LastGenOutput>VSCommandTable.cs</LastGenOutput>
+    </VSCTCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Community.VisualStudio.Toolkit.16" Version="16.0.330" ExcludeAssets="Runtime" />
+    <PackageReference Include="Community.VisualStudio.VSCT" Version="16.0.29.6" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.10.1055" />
+    <PackageReference Include="XObjectsCore">
+      <Version>3.2.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SubSolution.Builders\SubSolution.Builders.csproj">
+      <Project>{6656be24-edd5-45d2-9e62-2181acad39f9}</Project>
+      <Name>SubSolution.Builders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SubSolution.MsBuild\SubSolution.MsBuild.csproj">
+      <Project>{a42d9dfa-b1a0-4aba-9e06-7fb0383729d3}</Project>
+      <Name>SubSolution.MsBuild</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SubSolution\SubSolution.csproj">
+      <Project>{8cecbb52-0776-440a-9b19-5f114228941e}</Project>
+      <Name>SubSolution</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Dialogs\ShowSolutionUpdateDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
