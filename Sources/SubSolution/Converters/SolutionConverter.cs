@@ -622,12 +622,12 @@ namespace SubSolution.Converters
 
             if (objectType == SolutionObjectType.Folder)
             {
-                Logger?.Log(LogLevel.Trace, change.GetMessage(_fileSystem));
+                Logger?.Log(LogLevel.Trace, change.GetMessage(startWithBullet: true, _fileSystem));
             }
             else
             {
                 _changes.Add(change);
-                Logger?.Log(LogLevel, change.GetMessage(_fileSystem));
+                Logger?.Log(LogLevel, change.GetMessage(startWithBullet: true, _fileSystem));
             }
         }
 

@@ -37,7 +37,7 @@ namespace SubSolution.Converters.Changes
             }
         }
 
-        public string GetMessage(IFileSystem? getFileNameFileSystem = null)
+        public string GetMessage(bool startWithBullet = false, IFileSystem? getFileNameFileSystem = null)
         {
             string objectName = ObjectName;
             if (getFileNameFileSystem != null)
@@ -54,13 +54,15 @@ namespace SubSolution.Converters.Changes
                 }
             }
 
+            string bullet = startWithBullet ? $"[{Bullet}] " : string.Empty;
+
             if (TargetName is null)
             {
-                return $"[{Bullet}] {ChangeType} {ObjectType} \"{objectName}\"";
+                return $"{bullet}{ChangeType} {ObjectType} \"{objectName}\"";
             }
 
             string targetWord = ChangeType == SolutionChangeType.Remove || ChangeType == SolutionChangeType.Edit ? "from" : "to";
-            return $"[{Bullet}] {ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
+            return $"{bullet}{ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
         }
 
         private char Bullet

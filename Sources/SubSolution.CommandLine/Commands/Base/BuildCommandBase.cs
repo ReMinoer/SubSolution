@@ -78,7 +78,7 @@ namespace SubSolution.CommandLine.Commands.Base
 
                 foreach (SolutionChange change in solutionConverter.Changes.OrderBy(x => x))
                 {
-                    Log(change.GetMessage(StandardFileSystem.Instance));
+                    Log(change.GetMessage(startWithBullet: true, StandardFileSystem.Instance));
                 }
             }
             catch (Exception exception)
