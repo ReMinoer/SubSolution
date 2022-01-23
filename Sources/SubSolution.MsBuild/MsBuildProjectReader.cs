@@ -226,7 +226,7 @@ namespace SubSolution.MsBuild
                     solutionProject.Configurations.Add(configuration);
             }
 
-            foreach (string platform in project.GetItemsValues("ProjectConfiguration", "Platform"))
+            foreach (string platform in project.GetItemsValues("ProjectConfiguration", "Platform").Select(CleanPlatform))
             {
                 if (!string.IsNullOrEmpty(platform) && !solutionProject.Platforms.Contains(platform))
                     solutionProject.Platforms.Add(platform);
@@ -236,7 +236,7 @@ namespace SubSolution.MsBuild
         static private void ReadConfigurationPlatformsConditions(ProjectWrapper project, SolutionProject solutionProject)
         {
             solutionProject.Configurations.AddRange(project.GetConditionedPropertyValues("Configuration"));
-            solutionProject.Configurations.AddRange(project.GetConditionedPropertyValues("Platform"));
+            solutionProject.Platforms.AddRange(project.GetConditionedPropertyValues("Platform").Select(CleanPlatform));
         }
 
         static private void GetProjectDependencies(ProjectWrapper project, SolutionProject solutionProject)
