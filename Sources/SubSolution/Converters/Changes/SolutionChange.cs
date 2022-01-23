@@ -24,7 +24,7 @@ namespace SubSolution.Converters.Changes
                 case SolutionObjectType.Project:
                 case SolutionObjectType.Folder:
                     TargetType = SolutionObjectType.Folder;
-                    TargetName = targetName ?? "solution path";
+                    TargetName = targetName ?? "solution root";
                     break;
                 case SolutionObjectType.ProjectContext:
                     TargetType = SolutionObjectType.ConfigurationPlatform;
