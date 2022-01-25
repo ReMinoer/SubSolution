@@ -11,3 +11,5 @@ jobs:
   dotnet-validate:
     name: dotnet
     uses: ReMinoer/workflows/.github/workflows/dotnet-validate.yml@master
+    with:
+      os: windows-latest
