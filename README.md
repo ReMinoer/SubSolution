@@ -12,8 +12,8 @@ It comes in two forms:
 
 # .NET libraries
 
-[![Change](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Change?color=forestgreen&label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
-[![Release](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Release?color=forestgreen&label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
+[![Change](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Change?label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
+[![Release](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Release?label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
 
 You can use SubSolution .NET libraries as Nuget packages:
 
