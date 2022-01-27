@@ -7,6 +7,7 @@ jobs:
     name: dotnet
     uses: ReMinoer/workflows/.github/workflows/dotnet-release.yml@master
     with:
+      solution_file: SubSolution.Core.sln
       project_folder: Sources/SubSolution.CommandLine
       target_framework: net5.0
       zip_prefix: subsln
@@ -15,6 +16,7 @@ jobs:
     name: dotnet
     uses: ReMinoer/workflows/.github/workflows/dotnet-nuget.yml@master
     with:
+      solution_file: SubSolution.Core.sln
       sources_folder: Sources
     secrets:
       nuget_token: ${{ secrets.NUGET_TOKEN }}
