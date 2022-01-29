@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingEmptyFilter()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -40,7 +40,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingFilterPath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -77,7 +77,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingFilterNot()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -116,7 +116,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingFilterAll()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -162,7 +162,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingFilterAnyOf()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

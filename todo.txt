@@ -1,6 +1,5 @@
 XML format:
 
-- Decide on a Xml namespace
 - Id as keyref
 - Change filter element names
     - Nothing better for now

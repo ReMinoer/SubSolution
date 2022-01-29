@@ -13,7 +13,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsEmptyScopeBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsScopeFilesBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -82,7 +82,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsScopeProjectsBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -131,7 +131,7 @@ namespace SubSolution.Builders.Tests
             where T : SolutionContentFiles, new()
             where TScoped : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

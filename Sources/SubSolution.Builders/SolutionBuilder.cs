@@ -80,7 +80,7 @@ namespace SubSolution.Builders
             Issues = new List<Issue>();
         }
         
-        public async Task<Solution> BuildAsync(SubSolutionConfiguration configuration)
+        public async Task<Solution> BuildAsync(Subsln configuration)
         {
             Issues.Clear();
 
@@ -569,7 +569,7 @@ namespace SubSolution.Builders
 
                 if (solutionContentFiles.KeepOnly != null)
                 {
-                    SubSolutionConfiguration scopedConfiguration = new SubSolutionConfiguration
+                    Subsln scopedConfiguration = new Subsln
                     {
                         Root = new SolutionRoot()
                     };

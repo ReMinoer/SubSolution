@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFolderEmpty()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -35,7 +35,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFoldersEmbedded()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -95,7 +95,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessRootWithCollapseFoldersWithUniqueSubFolder()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -144,7 +144,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFolderWithCollapseFoldersWithUniqueSubFolder()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -199,7 +199,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessRootWithCollapseFoldersWithUniqueItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -254,7 +254,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFolderWithCollapseFoldersWithUniqueItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -309,7 +309,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessRootWithCollapseFoldersWithUniqueSubFolderOrItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -353,7 +353,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFolderWithCollapseFoldersWithUniqueSubFolderOrItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

@@ -32,7 +32,7 @@ The API is structured around 3 representations of solutions:
     - Match the .sln format.
     - Dedicated to input/ouput files (but hard to edit).
     - Convert to/from __`Solution`__ with __`RawSolutionConverter`__/__`SolutionConverter`__.
-- __`SubSolutionConfiguration`__:
+- __`Subsln`__:
     - Match the .subsln format.
     - Dedicated to build patterns & modular usages.
     - Build __`Solution`__ with __`SolutionBuilder`__.
@@ -81,7 +81,7 @@ By default, `subsln` will try to find MSBuild binaries on your machine. There ar
 SubSolution introduce a XML file format using extension `.subsln` to describe the content of Visual Studio solutions with a more user-friendly syntax than .sln format. You can generate a solution from it or update an existing one.
 
 ```xml
-<SubSolutionConfiguration>
+<Subsln xmlns="http://subsln.github.io">
     <Root>
         <Folder Name="Tools">
             <Files Path="tools/*.bat" />
@@ -91,12 +91,12 @@ SubSolution introduce a XML file format using extension `.subsln` to describe th
         </Folder>
         <Projects Path="src/">
     </Root>
-</SubSolutionConfiguration>
+</Subsln>
 ```
 
 ## XML Syntax
 
-You can find the [XML schema here](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution.Builders/SubSolutionConfiguration.xsd).
+You can find the [XML schema here](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution.Builders/subsln.xsd).
 
 If you use the command "subsln create", it generates a default template with a configured XML schema so auto-completion should work in your favorite IDE.
 

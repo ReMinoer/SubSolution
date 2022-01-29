@@ -27,7 +27,7 @@ namespace SubSolutionVisualStudio.Commands
 
         private void CreateFile(string filePath)
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

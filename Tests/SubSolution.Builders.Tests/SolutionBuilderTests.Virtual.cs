@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessVirtualEmpty()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets()
             };
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Tests
         public async Task ProcessVirtual<TProjectSource>(TProjectSource projectSource)
             where TProjectSource : SolutionProjects, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {

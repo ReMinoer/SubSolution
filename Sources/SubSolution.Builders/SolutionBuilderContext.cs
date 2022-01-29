@@ -11,7 +11,7 @@ namespace SubSolution.Builders
 {
     public class SolutionBuilderContext
     {
-        public SubSolutionConfiguration Configuration { get; }
+        public Subsln Configuration { get; }
         public string? ConfigurationFilePath { get; }
         public string SolutionPath { get; }
         public string SolutionDirectoryPath { get; }
@@ -24,7 +24,7 @@ namespace SubSolution.Builders
         public LogLevel LogLevel { get; set; } = LogLevel.Trace;
         public bool IgnoreConfigurationsAndPlatforms { get; set; }
 
-        public SolutionBuilderContext(SubSolutionConfiguration configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IGlobPatternFileSystem? fileSystem)
+        public SolutionBuilderContext(Subsln configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IGlobPatternFileSystem? fileSystem)
         {
             IGlobPatternFileSystem activeFileSystem = fileSystem ?? StandardGlobPatternFileSystem.Instance;
 
@@ -47,7 +47,7 @@ namespace SubSolution.Builders
 
             using TextReader textReader = new StreamReader(stream);
 
-            SubSolutionConfiguration configuration = await Task.Run(() => SubSolutionConfiguration.Load(textReader));
+            Subsln configuration = await Task.Run(() => Subsln.Load(textReader));
 
             string defaultOutputDirectory = activeFileSystem.GetParentDirectoryPath(configurationFilePath)!;
             string solutionPath = ComputeSolutionPath(configuration, configurationFilePath, defaultOutputDirectory, fileSystem);
@@ -56,7 +56,7 @@ namespace SubSolution.Builders
             return new SolutionBuilderContext(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
-        static public SolutionBuilderContext FromConfiguration(SubSolutionConfiguration configuration, IProjectReader projectReader, string defaultOutputDirectory, string? defaultWorkspaceDirectory = null, IGlobPatternFileSystem? fileSystem = null)
+        static public SolutionBuilderContext FromConfiguration(Subsln configuration, IProjectReader projectReader, string defaultOutputDirectory, string? defaultWorkspaceDirectory = null, IGlobPatternFileSystem? fileSystem = null)
         {
             string solutionPath = ComputeSolutionPath(configuration, nameof(SubSolution), defaultOutputDirectory, fileSystem);
             string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
@@ -70,7 +70,7 @@ namespace SubSolution.Builders
             return new SolutionBuilderContext(configuration, null, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
-        static private string ComputeSolutionPath(SubSolutionConfiguration configuration, string configurationFilePath, string defaultOutputDirectory, IGlobPatternFileSystem? fileSystem)
+        static private string ComputeSolutionPath(Subsln configuration, string configurationFilePath, string defaultOutputDirectory, IGlobPatternFileSystem? fileSystem)
         {
             string outputDirectory = configuration.OutputDirectory ?? defaultOutputDirectory;
             string solutionFileName = ComputeSolutionName(configuration, configurationFilePath, fileSystem) + ".sln";
@@ -78,7 +78,7 @@ namespace SubSolution.Builders
             return (fileSystem ?? StandardGlobPatternFileSystem.Instance).Combine(outputDirectory, solutionFileName);
         }
 
-        static private string ComputeSolutionName(SubSolutionConfiguration configuration, string configurationFilePath, IGlobPatternFileSystem? fileSystem)
+        static private string ComputeSolutionName(Subsln configuration, string configurationFilePath, IGlobPatternFileSystem? fileSystem)
         {
             string? solutionName = configuration.SolutionName;
 
@@ -91,7 +91,7 @@ namespace SubSolution.Builders
             return solutionName;
         }
 
-        static private string ComputeWorkspaceDirectoryPath(SubSolutionConfiguration configuration, string configurationFilePath, IGlobPatternFileSystem? fileSystem)
+        static private string ComputeWorkspaceDirectoryPath(Subsln configuration, string configurationFilePath, IGlobPatternFileSystem? fileSystem)
         {
             fileSystem ??= StandardGlobPatternFileSystem.Instance;
 

@@ -28,39 +28,39 @@ namespace SubSolution.Builders.Tests
 
         private const string TestConfigurationFilePath = @"C:\Directory\SubDirectory\MyWorkspace\MyApplication.subsln";
 
-        private async Task<ISolution> ProcessConfigurationMockFileAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        private async Task<ISolution> ProcessConfigurationMockFileAsync(Subsln configuration, bool haveSubSolutions = false)
         {
             (ISolution solution, Issue[] issues) = await ProcessConfigurationMockFileWithIssuesAsync(configuration, haveSubSolutions);
             issues.Should().BeEmpty();
             return solution;
         }
 
-        private Task<(ISolution, Issue[])> ProcessConfigurationMockFileWithIssuesAsync(SubSolutionConfiguration configuration, bool haveSubSolutions = false)
+        private Task<(ISolution, Issue[])> ProcessConfigurationMockFileWithIssuesAsync(Subsln configuration, bool haveSubSolutions = false)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
                 => SolutionBuilderContext.FromConfigurationFileAsync(TestConfigurationFilePath, projectReader, fileSystem));
         }
 
-        private async Task<ISolution> ProcessConfigurationAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
+        private async Task<ISolution> ProcessConfigurationAsync(Subsln configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions = false)
         {
             (ISolution solution, Issue[] issues) = await ProcessConfigurationWithIssuesAsync(configuration, outputDirectoryPath, workspaceDirectoryPath, haveSubSolutions);
             issues.Should().BeEmpty();
             return solution;
         }
 
-        private Task<(ISolution, Issue[])> ProcessConfigurationWithIssuesAsync(SubSolutionConfiguration configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions)
+        private Task<(ISolution, Issue[])> ProcessConfigurationWithIssuesAsync(Subsln configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
                 => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
-        private Task<SolutionBuilderContext> GetConfigurationMockFileContextAsync(SubSolutionConfiguration configuration)
+        private Task<SolutionBuilderContext> GetConfigurationMockFileContextAsync(Subsln configuration)
         {
             return PrepareContextAsync(configuration, haveSubSolutions: false, (fileSystem, projectReader)
                 => SolutionBuilderContext.FromConfigurationFileAsync(TestConfigurationFilePath, projectReader, fileSystem));
         }
 
-        private async Task<SolutionBuilderContext> PrepareContextAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+        private async Task<SolutionBuilderContext> PrepareContextAsync(Subsln configuration, bool haveSubSolutions,
             Func<MockGlobPatternFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             ILogger logger = new ConsoleLogger();
@@ -150,7 +150,7 @@ namespace SubSolution.Builders.Tests
             return context;
         }
 
-        private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(SubSolutionConfiguration configuration, bool haveSubSolutions,
+        private async Task<(ISolution, Issue[])> ProcessConfigurationAsync(Subsln configuration, bool haveSubSolutions,
             Func<MockGlobPatternFileSystem, MockProjectReader, Task<SolutionBuilderContext>> createContext)
         {
             SolutionBuilderContext context = await PrepareContextAsync(configuration, haveSubSolutions, createContext);
@@ -229,7 +229,7 @@ namespace SubSolution.Builders.Tests
             return (solution, buildIssues);
         }
 
-        private async Task ConfigureMockFileSystemAsync(MockGlobPatternFileSystem mockFileSystem, SubSolutionConfiguration configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
+        private async Task ConfigureMockFileSystemAsync(MockGlobPatternFileSystem mockFileSystem, Subsln configurationContent, bool haveSubSolutions, MockProjectReader mockProjectReader)
         {
             var relativeFilePath = new List<string>();
 
@@ -319,7 +319,7 @@ namespace SubSolution.Builders.Tests
 
             mockFileSystem.AddRoot(AlternativeRootName, relativeFilePath);
 
-            void AddConfigurationToFileSystem(string filePath, SubSolutionConfiguration configuration)
+            void AddConfigurationToFileSystem(string filePath, Subsln configuration)
             {
                 using var memoryStream = new MemoryStream();
 
@@ -330,7 +330,7 @@ namespace SubSolution.Builders.Tests
                 mockFileSystem.AddFileContent(filePath, content);
             }
 
-            async Task AddSolutionToFileSystemAsync(string filePath, SubSolutionConfiguration configuration)
+            async Task AddSolutionToFileSystemAsync(string filePath, Subsln configuration)
             {
                 string defaultWorkspaceDirectoryPath = mockFileSystem.GetParentDirectoryPath(filePath)!;
 
@@ -349,7 +349,7 @@ namespace SubSolution.Builders.Tests
             }
         }
 
-        static private readonly SubSolutionConfiguration MyApplicationConfiguration = new SubSolutionConfiguration
+        static private readonly Subsln MyApplicationConfiguration = new Subsln
         {
             Root = new SolutionRoot
             {
@@ -376,7 +376,7 @@ namespace SubSolution.Builders.Tests
             }
         };
 
-        static private readonly SubSolutionConfiguration MyFrameworkConfiguration = new SubSolutionConfiguration
+        static private readonly Subsln MyFrameworkConfiguration = new Subsln
         {
             Root = new SolutionRoot
             {
@@ -455,7 +455,7 @@ namespace SubSolution.Builders.Tests
             }
         }
 
-        static private readonly SubSolutionConfiguration MySubModuleConfiguration = new SubSolutionConfiguration
+        static private readonly Subsln MySubModuleConfiguration = new Subsln
         {
             Root = new SolutionRoot
             {
@@ -480,7 +480,7 @@ namespace SubSolution.Builders.Tests
             }
         }
 
-        static private readonly SubSolutionConfiguration ExternalSolutionConfiguration = new SubSolutionConfiguration
+        static private readonly Subsln ExternalSolutionConfiguration = new Subsln
         {
             Root = new SolutionRoot
             {

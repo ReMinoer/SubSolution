@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjects()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -37,7 +37,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingPath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -63,7 +63,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingPathAbsolute()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -89,7 +89,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingPathAbsoluteFromOtherRoot()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -115,7 +115,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingMultiplePath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -148,7 +148,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingMultiplePathsInDifferentSolutionFolders()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -193,7 +193,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingMultiplePathsWithOverwrite()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -251,7 +251,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsWithCreateFolders()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -312,7 +312,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueSubFolder()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -368,7 +368,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -409,7 +409,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsWithCreateFoldersAndCollapseFoldersWithUniqueSubFolderOrItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

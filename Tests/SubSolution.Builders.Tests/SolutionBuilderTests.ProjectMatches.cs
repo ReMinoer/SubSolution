@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyConfigurationMatch()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -44,7 +44,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyPlatformMatch()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -77,7 +77,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessConfigurationMatch()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -113,7 +113,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessPlatformMatch()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -149,7 +149,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyConfigurationAndPlatformMatch()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -191,7 +191,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessConfigurationAndPlatformMatches()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

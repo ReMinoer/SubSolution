@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingPath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingPathAbsolute()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -65,7 +65,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingPathAbsoluteFromOtherRoot()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -91,7 +91,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingMultiplePaths()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -123,7 +123,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingMultiplePathsInDifferentSolutionFolders()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -167,7 +167,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesMatchingMultiplePathsWithOverwrite()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -224,7 +224,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesWithCreateFolders()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -263,7 +263,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueSubFolder()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -303,7 +303,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -338,7 +338,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessFilesWithCreateFoldersAndCollapseFoldersWithUniqueSubFolderOrItem()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

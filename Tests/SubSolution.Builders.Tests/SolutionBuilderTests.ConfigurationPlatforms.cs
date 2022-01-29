@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessNoConfigurationsNorPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyConfigurations()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -59,7 +59,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -79,7 +79,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyConfigurationsAndPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -100,7 +100,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessConfigurationsWithEmptyPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -127,7 +127,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessPlatformsWithEmptyConfigurations()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -154,7 +154,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessConfigurationsAndNoPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -187,7 +187,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessPlatformsAndNoConfigurations()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -220,7 +220,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessConfigurationsAndPlatforms()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

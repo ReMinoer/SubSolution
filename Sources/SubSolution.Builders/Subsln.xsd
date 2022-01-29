@@ -4,10 +4,10 @@
            targetNamespace="http://subsln.github.io"
            elementFormDefault="qualified">
 
-    <xs:element name="SubSolutionConfiguration">
+    <xs:element name="Subsln">
         <xs:complexType>
             <xs:annotation>
-                <xs:documentation>Root element of a SubSolution configuration.</xs:documentation>
+                <xs:documentation>Root element of a subsln configuration.</xs:documentation>
             </xs:annotation>
             <xs:all>
                 <xs:element name="Virtual" type="subsln:VirtualProjectsSets" minOccurs="0">

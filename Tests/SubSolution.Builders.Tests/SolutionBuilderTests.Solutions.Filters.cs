@@ -12,7 +12,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingEmptyFilterBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -36,7 +36,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFilterPathBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -69,7 +69,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFilterNotBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -105,7 +105,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFilterAllBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -148,7 +148,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFilterAnyOfBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

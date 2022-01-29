@@ -13,7 +13,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingIgnoreAllFilterBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -46,7 +46,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingEmptyFileFilterBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -94,7 +94,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFileFilterPathBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -142,7 +142,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFileFilterNotBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -193,7 +193,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFileFilterAllBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -251,7 +251,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingFileFilterAnyOfBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

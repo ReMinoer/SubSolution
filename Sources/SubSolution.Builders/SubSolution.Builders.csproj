@@ -17,23 +17,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="SubSolutionConfiguration.xsd">
+    <None Update="subsln.xsd">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
     
   <!-- Inspired from:  https://gist.github.com/KirillOsenkov/f20cb84d37a89b01db63f8aafe03f19b -->
-  <Target Name="GenerateCSharpFromXsd" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs">
+  <Target Name="GenerateCSharpFromXsd" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)subsln.xsd.cs">
     <PropertyGroup>
-      <GeneratedFilePath>$(IntermediateOutputPath)SubSolutionConfiguration.xsd.cs</GeneratedFilePath>
+      <GeneratedFilePath>$(IntermediateOutputPath)subsln.xsd.cs</GeneratedFilePath>
     </PropertyGroup>
       <ItemGroup>
           <Compile Include="$(GeneratedFilePath)" />
           <FileWrites Include="$(GeneratedFilePath)" />
       </ItemGroup>
       <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
-      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool run LinqToXsd gen &quot;SubSolutionConfiguration.xsd&quot; -c &quot;SubSolutionConfiguration.xsd.config&quot; -o &quot;$(GeneratedFilePath)&quot;" />
+      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool run LinqToXsd gen &quot;subsln.xsd&quot; -c &quot;subsln.xsd.config&quot; -o &quot;$(GeneratedFilePath)&quot;" />
   </Target>
 
 </Project>

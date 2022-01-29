@@ -10,7 +10,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjects()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -39,7 +39,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithAbsolutePath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -68,7 +68,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlyDirect()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -99,7 +99,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfied()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -130,7 +130,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfiedBis()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -167,7 +167,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfiedWithFilter()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -209,7 +209,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilter()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -240,7 +240,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilterBis()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -277,7 +277,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsKeepOnlySatisfiedBeforeFilterWithFilter()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -320,7 +320,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithTarget()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -353,7 +353,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithTargetVirtual()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -391,7 +391,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithTargetAndScope()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -435,7 +435,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithTargetVirtualAndScope()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -478,7 +478,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsDependenciesWithTarget()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -528,7 +528,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsDependenciesWithTargetVirtual()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -577,7 +577,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsDependentsWithTarget()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -627,7 +627,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsDependentsWithTargetVirtual()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -676,7 +676,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithoutDependents()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -707,7 +707,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithoutDependentsVirtual()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -742,7 +742,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessDependentsProjectsWithDependentsComputedButIgnoredByScope()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Virtual = new VirtualProjectsSets
                 {
@@ -789,7 +789,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task IssueOnInvalidDependentsTarget()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -817,7 +817,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task IssueOnInvalidDependentsScope()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

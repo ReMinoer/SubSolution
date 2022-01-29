@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<SubSolutionConfiguration xmlns="http://subsln.github.io">
+<Subsln xmlns="http://subsln.github.io">
     <Root>
         <Folder Name="Plugins">
             <Projects Path="Plugins/*/" />
@@ -9,4 +9,4 @@
         </Folder>
         <Projects Path="Sources/*/" />
     </Root>
-</SubSolutionConfiguration>
+</Subsln>

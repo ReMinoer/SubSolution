@@ -11,7 +11,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingEmptyFilter()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -40,7 +40,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingFilterPath()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -77,7 +77,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingFilterNot()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -115,7 +115,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingFilterAll()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -160,7 +160,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessProjectsMatchingFilterAnyOf()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

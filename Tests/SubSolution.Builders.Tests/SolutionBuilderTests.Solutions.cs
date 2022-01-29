@@ -13,7 +13,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -34,7 +34,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingPathBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -55,7 +55,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingPathAbsoluteBase<T>(string extension)
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -76,7 +76,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingPathAbsoluteFromOtherRootBase<T>(string extension)
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -97,7 +97,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingMultiplePathsBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -119,7 +119,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingMultiplePathsInDifferentFolderBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -151,7 +151,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsMatchingMultiplePathsWithOverwriteBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -200,7 +200,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsWithReverseOrderBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -222,7 +222,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsWithCreateRootFolderBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -248,7 +248,7 @@ namespace SubSolution.Builders.Tests
         private async Task ProcessSolutionsWithCreateRootFolderAndReverseOrderBase<T>()
             where T : SolutionContentFiles, new()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {

@@ -12,7 +12,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessEmptyConfiguration()
         {
-            var configuration = new SubSolutionConfiguration();
+            var configuration = new Subsln();
             ISolution solution = await ProcessConfigurationMockFileAsync(configuration);
             
             solution.Root.FilePaths.Should().BeEmpty();
@@ -23,7 +23,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessWithSolutionName()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 SolutionName = "MyCustomSolutionName"
             };
@@ -34,7 +34,7 @@ namespace SubSolution.Builders.Tests
             context.SolutionDirectoryPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
             context.SolutionName.Should().Be("MyCustomSolutionName");
 
-            configuration = new SubSolutionConfiguration
+            configuration = new Subsln
             {
                 SolutionName = "MyCustomSolutionName.sln"
             };
@@ -45,7 +45,7 @@ namespace SubSolution.Builders.Tests
             context.SolutionDirectoryPath.Should().Be(@"C:\Directory\SubDirectory\MyWorkspace");
             context.SolutionName.Should().Be("MyCustomSolutionName");
 
-            configuration = new SubSolutionConfiguration
+            configuration = new Subsln
             {
                 SolutionName = "MyCustomSolutionName.txt"
             };
@@ -60,7 +60,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessWithOutput()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 SolutionName = "MyCustomSolutionName",
                 OutputDirectory = @"C:\MySolutions\MyCustomSolutions"
@@ -76,7 +76,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ProcessWithConfigurationWorkspaceDirectory()
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 WorkspaceDirectory = WorkspaceDirectoryPath
             };
@@ -91,7 +91,7 @@ namespace SubSolution.Builders.Tests
         [Test]
         public async Task ThrowOnProcessWithoutAnyWorkspaceDirectory()
         {
-            var configuration = new SubSolutionConfiguration();
+            var configuration = new Subsln();
             await Invoking(async () => await ProcessConfigurationAsync(configuration, Environment.CurrentDirectory, workspaceDirectoryPath: null))
                 .Should().ThrowAsync<ArgumentNullException>();
         }

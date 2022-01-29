@@ -67,7 +67,7 @@ namespace SubSolution.CommandLine.Commands
 
         private void CreateFile(string filePath)
         {
-            var configuration = new SubSolutionConfiguration
+            var configuration = new Subsln
             {
                 Root = new SolutionRoot
                 {
@@ -84,7 +84,7 @@ namespace SubSolution.CommandLine.Commands
             if (Xsd)
             {
                 string executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-                string xsdFullPath = Path.Combine(executableLocation, "SubSolutionConfiguration.xsd");
+                string xsdFullPath = Path.Combine(executableLocation, "subsln.xsd");
                 if (File.Exists(xsdFullPath))
                 {
                     XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
