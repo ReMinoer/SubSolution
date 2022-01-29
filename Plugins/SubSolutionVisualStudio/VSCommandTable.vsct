@@ -24,6 +24,8 @@
             </Button>
             <Button guid="SubSolutionVisualStudio" id="UpdateSolutionFromSubSln" priority="0x0100" type="Button">
                 <Parent guid="SubSolutionVisualStudio" id="MyMenuGroup" />
+                <Icon guid="ImageCatalogGuid" id="Refresh" />
+                <CommandFlag>IconIsMoniker</CommandFlag>
                 <Strings>
                     <ButtonText>Update solution from .subsln file...</ButtonText>
                     <LocCanonicalName>.SubSolutionVisualStudio.UpdateSolutionFromSubSln</LocCanonicalName>
