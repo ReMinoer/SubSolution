@@ -15,16 +15,8 @@ namespace SubSolutionVisualStudio.ActionBars
         protected override IEnumerable<IVsInfoBarTextSpan> TextSpans { get; } = new[]
         {
             new InfoBarTextSpan("Do you want to regenerate a solution from your saved .subsln file ?   "),
-            new InfoBarButton("Ignore", Action.Ignore),
-            new InfoBarTextSpan("   "),
-            new InfoBarButton("Preview", Action.Preview)
+            new InfoBarButton("Preview")
         };
-
-        private enum Action
-        {
-            Ignore,
-            Preview
-        }
 
         public GenerateAfterSaveActionBar(string subSlnPath)
             : base(subSlnPath)
@@ -33,15 +25,7 @@ namespace SubSolutionVisualStudio.ActionBars
 
         protected override async Task<bool> RunActionAsync(IVsInfoBarActionItem actionItem, VisualStudioOutputLogger outputLogger)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            switch (actionItem.ActionContext)
-            {
-                case Action.Preview:
-                    await SubSolutionHelpers.GenerateAndUpdateSolutionAsync(DocumentFilePath, outputLogger);
-                    break;
-            }
-
+            await SubSolutionHelpers.GenerateAndUpdateSolutionAsync(DocumentFilePath, outputLogger);
             return true;
         }
     }

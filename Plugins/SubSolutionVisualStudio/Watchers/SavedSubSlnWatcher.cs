@@ -25,10 +25,12 @@ namespace SubSolutionVisualStudio.Watchers
             _actionBarsByFilePath = new ConcurrentDictionary<string, GenerateAfterSaveActionBar>(PathComparer.Default);
 
             VS.Events.DocumentEvents.Saved += OnDocumentSaved;
+            VS.Events.DocumentEvents.Closed += OnDocumentClosed;
         }
 
         public void Dispose()
         {
+            VS.Events.DocumentEvents.Closed -= OnDocumentClosed;
             VS.Events.DocumentEvents.Saved -= OnDocumentSaved;
         }
 
@@ -45,12 +47,17 @@ namespace SubSolutionVisualStudio.Watchers
                 actionBar = new GenerateAfterSaveActionBar(filePath);
                 await actionBar.ShowAsync(CancellationToken.None);
 
-                _actionBarsByFilePath.TryAdd(filePath, actionBar);
+                _actionBarsByFilePath.AddOrUpdate(filePath, _ => actionBar, (_, __) => actionBar);
             }
             catch (Exception ex)
             {
                 await ex.LogAsync();
             }
+        }
+
+        private void OnDocumentClosed(string filePath)
+        {
+            _actionBarsByFilePath.TryRemove(filePath, out _);
         }
     }
 }
