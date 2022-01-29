@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Subsln xmlns="http://subsln.github.io">
+<Subsln xmlns="http://subsln.github.io"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://subsln.github.io Sources/SubSolution.Builders/subsln.xsd">
     <Root>
         <Folder Name="Plugins">
             <Projects Path="Plugins/*/" />
