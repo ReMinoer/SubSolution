@@ -21,6 +21,8 @@ namespace SubSolution.CommandLine.Commands
         public bool Force { get; set; }
         [Option('o', "open", HelpText = "Open .sln file with its default application.")]
         public bool Open { get; set; }
+        [Option('x', "xsd", HelpText = "Set the XSD schema location. Allow to have auto-completion in your XML editor even if it doesn't recognize the XML namespace.")]
+        public bool Xsd { get; set; }
 
         protected override Task ExecuteCommandAsync()
         {
@@ -76,13 +78,19 @@ namespace SubSolution.CommandLine.Commands
                 }
             };
 
-            string executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-            string xsdFullPath = Path.Combine(executableLocation, "SubSolutionConfiguration.xsd");
-            if (File.Exists(xsdFullPath))
+            const string subslnNamespace = "http://subsln.github.io";
+            configuration.Untyped.SetAttributeValue("xmlns", subslnNamespace);
+
+            if (Xsd)
             {
-                XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
-                configuration.Untyped.SetAttributeValue(XNamespace.Xmlns + "xsi", xsi.NamespaceName);
-                configuration.Untyped.SetAttributeValue(xsi + "noNamespaceSchemaLocation", xsdFullPath);
+                string executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+                string xsdFullPath = Path.Combine(executableLocation, "SubSolutionConfiguration.xsd");
+                if (File.Exists(xsdFullPath))
+                {
+                    XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+                    configuration.Untyped.SetAttributeValue(XNamespace.Xmlns + "xsi", xsi.NamespaceName);
+                    configuration.Untyped.SetAttributeValue(xsi + "schemaLocation", $"{subslnNamespace} {xsdFullPath}");
+                }
             }
 
             using XmlWriter xmlWriter = new XmlTextWriter(filePath, null)
