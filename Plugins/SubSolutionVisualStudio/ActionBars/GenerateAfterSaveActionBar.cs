@@ -14,9 +14,22 @@ namespace SubSolutionVisualStudio.ActionBars
         protected override ImageMoniker Moniker => KnownMonikers.VisualStudioSettingsFile;
         protected override IEnumerable<IVsInfoBarTextSpan> TextSpans { get; } = new[]
         {
-            new InfoBarTextSpan("Do you want to regenerate a solution from your saved .subsln file ?   "),
-            new InfoBarButton("Preview")
+            new InfoBarTextSpan("Do you want to regenerate a solution from your saved .subsln file ?")
         };
+
+        protected override IEnumerable<IVsInfoBarActionItem> ActionItems { get; } = new IVsInfoBarActionItem[]
+        {
+            new InfoBarButton("Preview", Action.Preview),
+            new InfoBarHyperlink("Ignore", Action.Ignore)
+        };
+
+        private enum Action
+        {
+            Preview,
+            Ignore
+        }
+
+        protected override bool HasCloseButton => false;
 
         public GenerateAfterSaveActionBar(string subSlnPath)
             : base(subSlnPath)
@@ -25,7 +38,15 @@ namespace SubSolutionVisualStudio.ActionBars
 
         protected override async Task<bool> RunActionAsync(IVsInfoBarActionItem actionItem, VisualStudioOutputLogger outputLogger)
         {
-            await SubSolutionHelpers.GenerateAndUpdateSolutionAsync(DocumentFilePath, outputLogger);
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            switch (actionItem.ActionContext)
+            {
+                case Action.Preview:
+                    await SubSolutionHelpers.GenerateAndUpdateSolutionAsync(DocumentFilePath, outputLogger);
+                    break;
+            }
+
             return true;
         }
     }

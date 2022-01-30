@@ -6,7 +6,8 @@ namespace SubSolutionVisualStudio.ActionBars.Base
 {
     public abstract class DocumentActionBarBase : ActionBarBase
     {
-        protected readonly string DocumentFilePath;
+        public string DocumentFilePath { get; }
+        public DocumentView? DocumentView { get; private set; }
 
         protected DocumentActionBarBase(string documentFilePath)
         {
@@ -15,7 +16,8 @@ namespace SubSolutionVisualStudio.ActionBars.Base
 
         protected override async Task<WindowFrame?> GetWindowFrameAsync(CancellationToken cancellationToken)
         {
-            return await VS.Windows.FindDocumentWindowAsync(DocumentFilePath);
+            DocumentView = await VS.Documents.GetDocumentViewAsync(DocumentFilePath);
+            return DocumentView?.WindowFrame;
         }
     }
 }

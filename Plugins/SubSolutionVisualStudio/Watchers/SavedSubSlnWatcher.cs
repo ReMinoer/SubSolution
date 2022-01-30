@@ -12,7 +12,7 @@ namespace SubSolutionVisualStudio.Watchers
 {
     public class SavedSubSlnWatcher : IDisposable
     {
-        private ConcurrentDictionary<string, GenerateAfterSaveActionBar> _actionBarsByFilePath;
+        private readonly ConcurrentDictionary<string, GenerateAfterSaveActionBar> _actionBarsByFilePath;
 
         static public async Task<IDisposable> RunAsync()
         {
@@ -41,13 +41,14 @@ namespace SubSolutionVisualStudio.Watchers
                 if (Path.GetExtension(filePath) != ".subsln")
                     return;
 
-                if (_actionBarsByFilePath.TryRemove(filePath, out GenerateAfterSaveActionBar actionBar))
-                    actionBar.Dispose();
+                if (!_actionBarsByFilePath.ContainsKey(filePath))
+                {
+                    var actionBar = new GenerateAfterSaveActionBar(filePath);
+                    actionBar.Closed += OnActionBarClosed;
 
-                actionBar = new GenerateAfterSaveActionBar(filePath);
-                await actionBar.ShowAsync(CancellationToken.None);
-
-                _actionBarsByFilePath.AddOrUpdate(filePath, _ => actionBar, (_, __) => actionBar);
+                    await actionBar.ShowAsync(CancellationToken.None);
+                    _actionBarsByFilePath.TryAdd(filePath, actionBar);
+                }
             }
             catch (Exception ex)
             {
@@ -55,9 +56,18 @@ namespace SubSolutionVisualStudio.Watchers
             }
         }
 
+        private void OnActionBarClosed(object sender, EventArgs e)
+        {
+            var actionBar = (GenerateAfterSaveActionBar)sender;
+
+            if (_actionBarsByFilePath.TryRemove(actionBar.DocumentFilePath, out _))
+                actionBar.Closed -= OnActionBarClosed;
+        }
+
         private void OnDocumentClosed(string filePath)
         {
-            _actionBarsByFilePath.TryRemove(filePath, out _);
+            if (_actionBarsByFilePath.TryRemove(filePath, out GenerateAfterSaveActionBar actionBar))
+                actionBar.Closed -= OnActionBarClosed;
         }
     }
 }

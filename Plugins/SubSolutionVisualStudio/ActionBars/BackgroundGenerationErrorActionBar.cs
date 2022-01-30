@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Imaging;
@@ -18,7 +19,8 @@ namespace SubSolutionVisualStudio.ActionBars
         protected override ImageMoniker Moniker => KnownMonikers.XMLSchemaError;
         protected override IEnumerable<IVsInfoBarTextSpan> TextSpans { get; } = new[]
         {
-            new InfoBarTextSpan("We failed to generate a preview of your solution from your .subsln file to check it's up-to-date.   "),
+            new InfoBarTextSpan("We failed to generate a preview of your solution from your .subsln file to check it's up-to-date."),
+            new InfoBarTextSpan(Environment.NewLine),
             new InfoBarHyperlink("Open .subsln", Action.OpenFile),
             new InfoBarTextSpan("   "),
             new InfoBarHyperlink("See log", Action.SeeLog)

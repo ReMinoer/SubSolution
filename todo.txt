@@ -10,6 +10,7 @@ XML format:
 
 Solution read/write:
 
+- Prevent files at root
 - Shared Projects & GlobalSection
 - RawSolution sections controllers
 - Detect project move

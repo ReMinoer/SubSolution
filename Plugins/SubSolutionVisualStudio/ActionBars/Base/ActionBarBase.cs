@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Community.VisualStudio.Toolkit;
@@ -8,33 +9,38 @@ using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SubSolutionVisualStudio.Helpers;
-using Task = System.Threading.Tasks.Task;
 
 namespace SubSolutionVisualStudio.ActionBars.Base
 {
     public abstract class ActionBarBase : IDisposable
     {
         protected InfoBar? InfoBar { get; private set; }
+        public event EventHandler? Closed;
 
-        protected abstract IEnumerable<IVsInfoBarTextSpan> TextSpans { get; }
         protected abstract ImageMoniker Moniker { get; }
+        protected abstract IEnumerable<IVsInfoBarTextSpan> TextSpans { get; }
+        protected virtual IEnumerable<IVsInfoBarActionItem> ActionItems => Enumerable.Empty<IVsInfoBarActionItem>();
+        protected virtual bool HasCloseButton => true;
+
         protected abstract Task<WindowFrame?> GetWindowFrameAsync(CancellationToken cancellationToken);
         protected abstract Task<bool> RunActionAsync(IVsInfoBarActionItem actionItem, VisualStudioOutputLogger outputLogger);
 
-        public async Task ShowAsync(CancellationToken cancellationToken)
+        public async Task<bool> ShowAsync(CancellationToken cancellationToken)
         {
-            var infoBarModel = new InfoBarModel(TextSpans, Moniker);
+            var infoBarModel = new InfoBarModel(TextSpans, ActionItems, Moniker, HasCloseButton);
 
             WindowFrame? windowFrame = await GetWindowFrameAsync(cancellationToken);
             if (windowFrame is null)
-                return;
+                return false;
             
             InfoBar = await VS.InfoBar.CreateAsync(windowFrame, infoBarModel);
             if (InfoBar is null)
-                return;
+                return false;
 
             InfoBar.ActionItemClicked += OnActionClicked;
             await InfoBar.TryShowInfoBarUIAsync();
+            
+            return true;
         }
 
         private async void OnActionClicked(object s, InfoBarActionItemEventArgs e)
@@ -65,6 +71,8 @@ namespace SubSolutionVisualStudio.ActionBars.Base
             InfoBar.ActionItemClicked -= OnActionClicked;
             InfoBar.Close();
             InfoBar = null;
+
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         public void Dispose()
