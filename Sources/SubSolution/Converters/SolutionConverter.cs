@@ -39,14 +39,6 @@ namespace SubSolution.Converters
                 VisualStudioVersion = new Version(16, 0, 31424, 327),
                 MinimumVisualStudioVersion = new Version(10, 0, 40219, 1)
             };
-
-            var solutionPropertiesSection = new RawSolution.Section(RawKeyword.GlobalSection, RawKeyword.SolutionProperties, RawKeyword.PreSolution);
-            solutionPropertiesSection.AddValue(RawKeyword.SolutionPropertiesHideSolutionNode, RawKeyword.SolutionPropertiesHideSolutionNodeFalse);
-            rawSolution.GlobalSections.Add(solutionPropertiesSection);
-
-            var extensibilityGlobalsSection = new RawSolution.Section(RawKeyword.GlobalSection, RawKeyword.ExtensibilityGlobals, RawKeyword.PostSolution);
-            extensibilityGlobalsSection.AddValue(RawKeyword.ExtensibilityGlobalsSolutionGuid, Guid.NewGuid().ToRawFormat());
-            rawSolution.GlobalSections.Add(extensibilityGlobalsSection);
             
             AddFolderContent(rawSolution, solution.Root, projectGuids);
             AddConfigurationPlatforms(rawSolution, solution, projectGuids);

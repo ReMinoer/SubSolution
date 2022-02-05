@@ -44,6 +44,17 @@ namespace SubSolution.Raw
             _readOnlyGlobalSections = GlobalSections.AsReadOnly();
         }
 
+        public void AddVisualStudioDefaultSections()
+        {
+            var solutionPropertiesSection = new Section(RawKeyword.GlobalSection, RawKeyword.SolutionProperties, RawKeyword.PreSolution);
+            solutionPropertiesSection.AddValue(RawKeyword.SolutionPropertiesHideSolutionNode, RawKeyword.SolutionPropertiesHideSolutionNodeFalse);
+            GlobalSections.Add(solutionPropertiesSection);
+
+            var extensibilityGlobalsSection = new Section(RawKeyword.GlobalSection, RawKeyword.ExtensibilityGlobals, RawKeyword.PostSolution);
+            extensibilityGlobalsSection.AddValue(RawKeyword.ExtensibilityGlobalsSolutionGuid, Guid.NewGuid().ToRawFormat());
+            GlobalSections.Add(extensibilityGlobalsSection);
+        }
+
         public async Task WriteAsync(Stream stream)
         {
             await using IAsyncDisposable _ = new StreamWriter(stream, new UTF8Encoding(true), 1024, leaveOpen: true)
