@@ -16,6 +16,13 @@
         public const string SolutionConfigurationPlatforms = "SolutionConfigurationPlatforms";
         public const string ProjectConfigurationPlatforms = "ProjectConfigurationPlatforms";
 
+        public const string SolutionProperties = "SolutionProperties";
+        public const string SolutionPropertiesHideSolutionNode = "HideSolutionNode";
+        public const string SolutionPropertiesHideSolutionNodeFalse = "FALSE";
+
+        public const string ExtensibilityGlobals = "ExtensibilityGlobals";
+        public const string ExtensibilityGlobalsSolutionGuid = "SolutionGuid";
+
         public const string ActiveCfg = "ActiveCfg";
         public const string Build0 = "Build.0";
         public const string Deploy0 = "Deploy.0";

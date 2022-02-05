@@ -89,25 +89,26 @@ namespace SubSolutionVisualStudio.Helpers
 
             var solutionBuilder = new SolutionBuilder(builderContext);
             Solution generatedSolution = await solutionBuilder.BuildAsync(builderContext.Configuration);
-
-            await progressAction("Read current solution...", ++step);
+            
+            var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
+            solutionConverter.Logger = logger;
 
             RawSolution rawSolution;
             if (File.Exists(builderContext.SolutionPath))
             {
+                await progressAction("Read current solution...", ++step);
                 using FileStream solutionStream = File.OpenRead(builderContext.SolutionPath);
                 rawSolution = await RawSolution.ReadAsync(solutionStream);
+
+                await progressAction("Update solution...", ++step);
+                solutionConverter.Update(rawSolution, generatedSolution);
             }
             else
             {
-                rawSolution = new RawSolution();
+                ++step;
+                await progressAction("Generate solution...", ++step);
+                rawSolution = solutionConverter.Convert(generatedSolution);
             }
-
-            await progressAction("Update solution...", ++step);
-
-            var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
-            solutionConverter.Logger = logger;
-            solutionConverter.Update(rawSolution, generatedSolution);
 
             return new SolutionUpdate(builderContext.SolutionPath, subSlnPath, generatedSolution, rawSolution, solutionConverter.Changes);
         }
