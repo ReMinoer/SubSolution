@@ -1,10 +1,12 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using Community.VisualStudio.Toolkit;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell.Interop;
 using SubSolution.Builders.Configuration;
 using SubSolutionVisualStudio.Commands.Base;
 using SubSolutionVisualStudio.Helpers;
-using Task = System.Threading.Tasks.Task;
 
 namespace SubSolutionVisualStudio.Commands
 {
@@ -20,9 +22,25 @@ namespace SubSolutionVisualStudio.Commands
                 return;
 
             if (!File.Exists(subSlnPath))
-                CreateFile(subSlnPath);
+            {
+                if (await AskToCreateFileAsync())
+                    CreateFile(subSlnPath);
+                else
+                    return;
+            }
 
             await VS.Documents.OpenAsync(subSlnPath);
+        }
+
+        private async Task<bool> AskToCreateFileAsync()
+        {
+            VSConstants.MessageBoxResult askUserResult = await VS.MessageBox.ShowAsync(
+                "No .subsln file found.",
+                "Do you want to create a .subsln file next to the solution ?",
+                OLEMSGICON.OLEMSGICON_QUERY,
+                OLEMSGBUTTON.OLEMSGBUTTON_YESNO);
+
+            return askUserResult == VSConstants.MessageBoxResult.IDYES;
         }
 
         private void CreateFile(string filePath)

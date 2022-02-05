@@ -2,7 +2,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using Community.VisualStudio.Toolkit;
+using EnvDTE;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using SubSolution.Builders;
 using SubSolution.Converters;
@@ -11,6 +14,7 @@ using SubSolution.MsBuild;
 using SubSolution.Raw;
 using SubSolutionVisualStudio.Dialogs;
 using Solution = SubSolution.Solution;
+using Task = System.Threading.Tasks.Task;
 
 namespace SubSolutionVisualStudio.Helpers
 {
@@ -52,15 +56,17 @@ namespace SubSolutionVisualStudio.Helpers
             {
                 await outputLogger.OutputPane.ClearAsync();
                 await outputLogger.OutputPane.ActivateAsync();
+                
+                using WaitDialog waitDialog = await WaitDialog.ShowAsync("SubSolution", "Update solution from .subsln", maxProgress: 3);
+                SolutionUpdate solutionUpdate = await PrepareUpdateAsync(subSlnPath, outputLogger, async (s, i) => await waitDialog.UpdateAsync(s, i));
 
-                SolutionUpdate solutionUpdate;
+                if (!solutionUpdate.HasChanges)
                 {
-                    using WaitDialog waitDialog = await WaitDialog.ShowAsync("SubSolution", "Update solution from .subsln", maxProgress: 3);
-                    solutionUpdate = await PrepareUpdateAsync(subSlnPath, outputLogger, async (s, i) => await waitDialog.UpdateAsync(s, i));
+                    await VS.MessageBox.ShowAsync("No changes in solution", buttons: OLEMSGBUTTON.OLEMSGBUTTON_OK);
+                    return true;
                 }
 
-                bool? updateDone = await AskToApplyUpdateAsync(solutionUpdate);
-                return updateDone != false;
+                return await AskToApplyUpdateAsync(solutionUpdate);
             }
             catch (Exception ex)
             {
@@ -87,9 +93,14 @@ namespace SubSolutionVisualStudio.Helpers
             await progressAction("Read current solution...", ++step);
 
             RawSolution rawSolution;
+            if (File.Exists(builderContext.SolutionPath))
             {
                 using FileStream solutionStream = File.OpenRead(builderContext.SolutionPath);
                 rawSolution = await RawSolution.ReadAsync(solutionStream);
+            }
+            else
+            {
+                rawSolution = new RawSolution();
             }
 
             await progressAction("Update solution...", ++step);
@@ -101,22 +112,53 @@ namespace SubSolutionVisualStudio.Helpers
             return new SolutionUpdate(builderContext.SolutionPath, subSlnPath, generatedSolution, rawSolution, solutionConverter.Changes);
         }
 
-        static public async Task<bool?> AskToApplyUpdateAsync(SolutionUpdate solutionUpdate)
+        static private async Task<bool> AskToApplyUpdateAsync(SolutionUpdate solutionUpdate)
         {
-            if (!solutionUpdate.HasChanges)
-            {
-                await VS.MessageBox.ShowAsync("No changes in solution", buttons: OLEMSGBUTTON.OLEMSGBUTTON_OK);
-                return null;
-            }
-
             var dialog = new ShowSolutionUpdateDialog(solutionUpdate);
             if (await VS.Windows.ShowDialogAsync(dialog) == true)
             {
+                string? currentSolutionPath = await GetCurrentSolutionPathAsync();
+                bool isGeneratedSolutionOpened = PathComparer.Equals(solutionUpdate.SolutionFilePath, currentSolutionPath, PathCaseComparison.EnvironmentDefault);
+                
+                _DTE? dte = null;
+                if (isGeneratedSolutionOpened)
+                {
+                    dte = await VS.GetServiceAsync<_DTE, _DTE>();
+
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    dte?.Solution.Close(SaveFirst: false);
+                }
+
                 await solutionUpdate.ApplyAsync();
+
+                if (isGeneratedSolutionOpened)
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    dte?.Solution.Open(currentSolutionPath);
+                }
+                else
+                    await AskToOpenSolutionAsync(solutionUpdate.SolutionFilePath);
+
                 return true;
             }
 
             return false;
+        }
+
+        static private async Task AskToOpenSolutionAsync(string solutionFilePath)
+        {
+            VSConstants.MessageBoxResult askToOpenResult = await VS.MessageBox.ShowAsync("Do you want to open the generated solution ?",
+                solutionFilePath,
+                OLEMSGICON.OLEMSGICON_INFO,
+                OLEMSGBUTTON.OLEMSGBUTTON_YESNO);
+
+            if (askToOpenResult != VSConstants.MessageBoxResult.IDYES)
+                return;
+            
+            IVsSolution solution = await VS.Services.GetSolutionAsync();
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            solution.OpenSolutionFile(0, solutionFilePath);
         }
     }
 }

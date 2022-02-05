@@ -22,6 +22,5 @@ namespace SubSolutionVisualStudio
     {
         public const int MyMenuGroup = 0x0001;
         public const int OpenSubSlnFileCommand = 0x0100;
-        public const int UpdateSolutionFromSubSln = 0x0101;
     }
 }

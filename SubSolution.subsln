@@ -1,14 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Subsln xmlns="http://subsln.github.io"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://subsln.github.io Sources/SubSolution.Builders/subsln.xsd">
+<?xml version="1.0"?>
+<Subsln xmlns="http://subsln.github.io">
     <Root>
-        <Folder Name="Plugins">
-            <Projects Path="Plugins/*/" />
-        </Folder>
-        <Folder Name="Tests">
-            <Projects Path="Tests/*/" />
-        </Folder>
-        <Projects Path="Sources/*/" />
+		<Folder Name="Plugins">
+			<Projects Path="Plugins/**/*.csproj" />
+		</Folder>
+		<Folder Name="Tests">
+			<Projects Path="Tests/**/*.csproj" />
+		</Folder>
+        <Projects />
     </Root>
 </Subsln>

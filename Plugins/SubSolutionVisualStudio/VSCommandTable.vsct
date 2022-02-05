@@ -22,15 +22,6 @@
                     <LocCanonicalName>.SubSolutionVisualStudio.CreateEditSubSlnFileCommand</LocCanonicalName>
                 </Strings>
             </Button>
-            <Button guid="SubSolutionVisualStudio" id="UpdateSolutionFromSubSln" priority="0x0100" type="Button">
-                <Parent guid="SubSolutionVisualStudio" id="MyMenuGroup" />
-                <Icon guid="ImageCatalogGuid" id="Refresh" />
-                <CommandFlag>IconIsMoniker</CommandFlag>
-                <Strings>
-                    <ButtonText>Update solution from .subsln file...</ButtonText>
-                    <LocCanonicalName>.SubSolutionVisualStudio.UpdateSolutionFromSubSln</LocCanonicalName>
-                </Strings>
-            </Button>
         </Buttons>
     </Commands>
 
@@ -38,7 +29,6 @@
         <GuidSymbol name="SubSolutionVisualStudio" value="{f9791f35-5647-4ee1-8cb6-50fca6c2ebcc}">
             <IDSymbol name="MyMenuGroup" value="0x0001" />
             <IDSymbol name="OpenSubSlnFileCommand" value="0x0100" />
-            <IDSymbol name="UpdateSolutionFromSubSln" value="0x0101" />
         </GuidSymbol>
     </Symbols>
 </CommandTable>

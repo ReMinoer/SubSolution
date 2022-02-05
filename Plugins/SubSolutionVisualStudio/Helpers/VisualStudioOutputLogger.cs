@@ -27,12 +27,15 @@ namespace SubSolutionVisualStudio.Helpers
             return new VisualStudioOutputLogger(await VS.Windows.CreateOutputWindowPaneAsync(name));
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
                 return;
 
-            OutputPane.WriteLine(formatter(state, exception));
+            if (state is not null)
+                OutputPane.WriteLine(state.ToString());
+            if (exception is not null)
+                OutputPane.WriteLine(exception.ToString());
         }
 
         public bool IsEnabled(LogLevel logLevel) => true;

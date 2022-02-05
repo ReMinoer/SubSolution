@@ -57,7 +57,6 @@
     <Compile Include="ActionBars\BackgroundGenerationErrorActionBar.cs" />
     <Compile Include="Commands\OpenSubSlnFileCommand.cs" />
     <Compile Include="Commands\Base\SubSolutionContextualCommandBase.cs" />
-    <Compile Include="Commands\UpdateSolutionFromSubSln.cs" />
     <Compile Include="Helpers\SolutionUpdate.cs" />
     <Compile Include="Helpers\VisualStudioOutputLogger.cs" />
     <Compile Include="ViewModels\ISubSolutionTreeItemViewModel.cs" />
