@@ -3,78 +3,17 @@
 [![Nuget](https://img.shields.io/nuget/v/SubSolution?label=SubSolution&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution)
 [![Nuget](https://img.shields.io/nuget/v/subsln?label=subsln&color=004880&logo=windowsterminal&style=for-the-badge)](https://www.nuget.org/packages/subsln)
 
-SubSolution is a tool giving you control on your Visual Studio solutions.
-
-It comes in two forms:
-
-- __SubSolution .NET libraries__ to manipulate read/edit/write solutions as you want.
-- __"subsln" command line tool__ to generate/update .sln files from .subsln files.
-
-# .NET libraries
-
 [![Change](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Change?label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
 [![Release](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Release?label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
 
-You can use SubSolution .NET libraries as Nuget packages:
+SubSolution is a tool set giving you control on your Visual Studio solutions.
 
-- [SubSolution](https://www.nuget.org/packages/SubSolution): core package to edit solutions using minimum dependencies.
-- [SubSolution.Builders](https://www.nuget.org/packages/SubSolution.Builders): solution building features used by .subsln format.
-- [SubSolution.MsBuild](https://www.nuget.org/packages/SubSolution.MsBuild): project reader implementation based on MSBuild.
+It includes various tools:
 
-The API is structured around 3 representations of solutions:
-
-- __`Solution`__:
-    - Match the Visual Studio edition experience.
-    - Edit the item hierarchy as it show in the Solution Explorer.
-    - Automatically fill solution configurations-platforms with your projects.
-    - Use __`ManualSolution`__ to manually fill configuration-platforms.
-- __`RawSolution`__:
-    - Match the .sln format.
-    - Dedicated to input/ouput files (but hard to edit).
-    - Convert to/from __`Solution`__ with __`RawSolutionConverter`__/__`SolutionConverter`__.
-- __`Subsln`__:
-    - Match the .subsln format.
-    - Dedicated to build patterns & modular usages.
-    - Build __`Solution`__ with __`SolutionBuilder`__.
-
-> __SubSolution is currently released as version v0.__ All core features are already implemented but it needs to be tested in more practical cases.
->
-> Also be aware of the following:
->
-> - Some small API breaking changes might happen until version v1.
-> - Some MSBuild project types are not supported yet. ([Supported project types](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution/ProjectType.cs))
-
-## About MSBuild usage
-
-`SubSolution.MsBuild` implements `MsBuildProjectReader` to read projects with MSBuild. But core MSBuild DLLs are not enough to read every project types because some dependencies are installed by Visual Studio modular setup. The MSBuild setup coming with .NET SDK also mostly support .NET projects only.
-
-For that reason, `SubSolution.MsBuild` package does not come with MSBuild DLLs to let you choose between multiple strategies if you need a project reader:
-
-1. Use [Microsoft.Build.Locator](https://docs.microsoft.com/en-gb/visualstudio/msbuild/updating-an-existing-application) to use existing MSBuild binaries on the user machine. For example, it can use MSBuild from a local Visual Studio or a .NET SDK install.
-    - It is recommended to target a framework compatible with the MSBuild binaries you are trying to use in that case.
-2. Use [Microsoft.Build](https://www.nuget.org/packages/Microsoft.Build) NuGet package to get only the core DLLs + set `MsBuildProjectReader.ImportFallback` to true to read project even on missing import/SDKs.
-3. Implement your own `IProjectReader` if you don't want to depends on MSBuild.
-
-# Command line tool: `subsln`
-
-"`subsln`" is a command line tool using `.subsln` configuration files to build Visual Studio solutions.
-
-```bash
-> subsln create MySolution
-> subsln generate MySolution.subsln
-> subsln validate MySolution.subsln
-> subsln show MySolution.sln
-```
-
-You can download a standalone version from the [Releases](https://github.com/ReMinoer/SubSolution/releases) page.
-
-Or install it with the [.NET SDK](https://dotnet.microsoft.com/download) command line:
-
-```bash
-> dotnet tool install subsln --global 
-```
-
-By default, `subsln` will try to find MSBuild binaries on your machine. There are multiple options to specify which MSBuild binaries use to read projects. Use `subsln help` or `subsln [command] --help` for more details on commands.
+- __.Subsln files__ able to generate .sln files.
+- __A Visual Studio extension__ using .subsln files to update your solutions.
+- __A command line tool__ working with .subsln files.
+- __.NET libraries__ to read/write/edit solutions in many ways.
 
 # Configuration files: `.subsln`
 
@@ -117,14 +56,87 @@ If you use the command "subsln create", it generates a default template with a c
 ## Why use a `.subsln` file ?
 
 - It allows you to __express your organization rules__ ("those projects in that folder, unit tests in that one...") and __ensure they are respected__ on solution changes.
-- It acts as a __substitute or edition assistant__ of .sln files, to describe the solution content with a __user-friendly structure__ similar to Visual Studio representation.
+- It acts as a __substitute or edition assistant__ of .sln files, to describe the solution content with a __user-friendly structure__.
 - It can also be used as a punctual tool, to __apply a one-time update__.
-- It allows to __quickly iterate__ on your solution structure until it matches your needs, without even running Visual Studio.
-- It can __build an entirely customized hierarchy__, or at contrary __mirror your file system structure__.
-- It can __find and fill your solution with dependencies__ of your central projects.
+- It allows to __quickly iterate__ on your solution structure until it matches your needs, without even opening the solution in Visual Studio.
+- It can __automatically fill your solution with dependencies__ of your core projects.
 - It can describe solutions __in a modular way__ by including the content of a solution into another.
-- It can __apply changes to multiple solutions__ sharing the same projects.
+- It makes it easier to __apply changes to multiple solutions__ sharing projects.
 - It can __divide a big solution in smaller ones__ to reduce impact on Visual Studio performances.
+
+# Visual Studio extension
+
+You can download the Visual Studio extension from the [Releases](https://github.com/ReMinoer/SubSolution/releases) page.
+
+The extension include the following features:
+
+- You can create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
+- You can edit .subsln files with auto-completion support.
+- When saving .subsln files, a preview of the resulting solution is shown so you can decide if you want to applied it or not.
+- Visual Studio automatically check if the solution is up-to-date at solution opening.
+
+# Command line tool: `subsln`
+
+"`subsln`" is a command line tool using `.subsln` configuration files to build Visual Studio solutions.
+
+```bash
+> subsln create MySolution
+> subsln generate MySolution.subsln
+> subsln validate MySolution.subsln
+> subsln show MySolution.sln
+```
+
+You can download a standalone version from the [Releases](https://github.com/ReMinoer/SubSolution/releases) page.
+
+Or install it with the [.NET SDK](https://dotnet.microsoft.com/download) command line:
+
+```bash
+> dotnet tool install subsln --global 
+```
+
+By default, `subsln` will try to find MSBuild binaries on your machine. There are multiple options to specify which MSBuild binaries use to read projects. Use `subsln help` or `subsln [command] --help` for more details on commands.
+
+# .NET libraries
+
+You can use SubSolution .NET libraries as Nuget packages:
+
+- [SubSolution](https://www.nuget.org/packages/SubSolution): core package to edit solutions using minimum dependencies.
+- [SubSolution.Builders](https://www.nuget.org/packages/SubSolution.Builders): solution building features used by .subsln format.
+- [SubSolution.MsBuild](https://www.nuget.org/packages/SubSolution.MsBuild): project reader implementation based on MSBuild.
+
+The API is structured around 3 representations of solutions:
+
+- __`Solution`__:
+    - Match the Visual Studio edition experience.
+    - Edit the item hierarchy as it show in the Solution Explorer.
+    - Automatically fill solution configurations-platforms with your projects.
+    - Use __`ManualSolution`__ to manually fill configuration-platforms.
+- __`RawSolution`__:
+    - Match the .sln format.
+    - Dedicated to input/ouput files (but hard to edit).
+    - Convert to/from __`Solution`__ with __`RawSolutionConverter`__/__`SolutionConverter`__.
+- __`Subsln`__:
+    - Match the .subsln format.
+    - Dedicated to build patterns & modular usages.
+    - Build __`Solution`__ with __`SolutionBuilder`__.
+
+> __SubSolution is currently released as version v0.__ All core features are already implemented but it needs to be tested in more practical cases.
+>
+> Also be aware of the following:
+>
+> - Some small API breaking changes might happen until version v1.
+> - Some MSBuild project types are not supported yet. ([Supported project types](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution/ProjectType.cs))
+
+## About MSBuild usage
+
+`SubSolution.MsBuild` implements `MsBuildProjectReader` to read projects with MSBuild. But core MSBuild DLLs are not enough to read every project types because some dependencies are installed by Visual Studio modular setup. The MSBuild setup coming with .NET SDK also mostly support .NET projects only.
+
+For that reason, `SubSolution.MsBuild` package does not come with MSBuild DLLs to let you choose between multiple strategies if you need a project reader:
+
+1. Use [Microsoft.Build.Locator](https://docs.microsoft.com/en-gb/visualstudio/msbuild/updating-an-existing-application) to use existing MSBuild binaries on the user machine. For example, it can use MSBuild from a local Visual Studio or a .NET SDK install.
+    - It is recommended to target a framework compatible with the MSBuild binaries you are trying to use in that case.
+2. Use [Microsoft.Build](https://www.nuget.org/packages/Microsoft.Build) NuGet package to get only the core DLLs + set `MsBuildProjectReader.ImportFallback` to true to read project even on missing import/SDKs.
+3. Implement your own `IProjectReader` if you don't want to depends on MSBuild.
 
 # Contribute
 
