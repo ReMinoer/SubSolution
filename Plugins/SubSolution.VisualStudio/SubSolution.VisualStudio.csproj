@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\Sources\SubSolution.Builders\subsln.xsd">
-      <Link>Resources\subsln.xsd</Link>
+      <Link>subsln.xsd</Link>
       <SubType>Designer</SubType>
       <IncludeInVSIX>true</IncludeInVSIX>
       <InstallRoot>Schemas</InstallRoot>
