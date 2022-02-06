@@ -4,11 +4,14 @@
         <Identity Id="SubSolution.3bc7a66c-1151-4e36-a52e-e3eb7c4b3ba2" Version="1.0" Language="en-US" Publisher="Rémi Morillon" />
         <DisplayName>SubSolution</DisplayName>
         <Description xml:space="preserve">Use .subsln files to maintain Visual Studio solutions.</Description>
+        <MoreInfo>https://github.com/ReMinoer/SubSolution</MoreInfo>
+        <License>LICENSE.txt</License>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Icon.png</PreviewImage>
+        <Tags>subsolution subsln solution sln generate configuration</Tags>
     </Metadata>
     <Installation AllUsers="true">
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
     </Installation>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,)" DisplayName="Visual Studio core editor" />
