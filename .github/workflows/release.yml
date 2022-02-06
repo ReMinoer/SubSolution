@@ -11,6 +11,13 @@ jobs:
       project_folder: Sources/SubSolution.CommandLine
       target_framework: net5.0
       zip_prefix: subsln
+  vsix-release:
+    name: vsix
+    uses: ReMinoer/workflows/.github/workflows/vsix-release.yml@master
+    with:
+      solution_file: SubSolution.sln
+      project_folder: Plugins/SubSolution.VisualStudio
+      vsix_name: SubSolution.VisualStudio
   dotnet-nuget:
     needs: dotnet-release
     name: dotnet
