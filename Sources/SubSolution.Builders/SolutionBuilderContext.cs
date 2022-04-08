@@ -11,6 +11,7 @@ namespace SubSolution.Builders
 {
     public class SolutionBuilderContext
     {
+        public string CurrentDirectoryPath { get; }
         public Subsln Configuration { get; }
         public string? ConfigurationFilePath { get; }
         public string SolutionPath { get; }
@@ -24,10 +25,11 @@ namespace SubSolution.Builders
         public LogLevel LogLevel { get; set; } = LogLevel.Trace;
         public bool IgnoreConfigurationsAndPlatforms { get; set; }
 
-        public SolutionBuilderContext(Subsln configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IGlobPatternFileSystem? fileSystem)
+        public SolutionBuilderContext(string currentDirectoryPath, Subsln configuration, string? configurationFilePath, string solutionPath, string workspaceDirectoryPath, IProjectReader projectReader, IGlobPatternFileSystem? fileSystem)
         {
             IGlobPatternFileSystem activeFileSystem = fileSystem ?? StandardGlobPatternFileSystem.Instance;
 
+            CurrentDirectoryPath = currentDirectoryPath;
             Configuration = configuration;
             ConfigurationFilePath = configurationFilePath;
             SolutionPath = solutionPath;
@@ -42,32 +44,23 @@ namespace SubSolution.Builders
         {
             IFileSystem activeFileSystem = fileSystem ?? StandardGlobPatternFileSystem.Instance;
 
-            await using IAsyncDisposable _ = activeFileSystem.OpenStream(configurationFilePath)
-                .AsAsyncDisposable(out Stream stream);
-
+            await using IAsyncDisposable _ = activeFileSystem.OpenStream(configurationFilePath).AsAsyncDisposable(out Stream stream);
             using TextReader textReader = new StreamReader(stream);
-
             Subsln configuration = await Task.Run(() => Subsln.Load(textReader));
 
-            string defaultOutputDirectory = activeFileSystem.GetParentDirectoryPath(configurationFilePath)!;
-            string solutionPath = ComputeSolutionPath(configuration, configurationFilePath, defaultOutputDirectory, fileSystem);
-            string workspaceDirectoryPath = ComputeWorkspaceDirectoryPath(configuration, configurationFilePath, fileSystem);
+            string currentDirectoryPath = activeFileSystem.GetParentDirectoryPath(configurationFilePath)!;
+            string solutionPath = ComputeSolutionPath(configuration, configurationFilePath, currentDirectoryPath, fileSystem);
+            string workspaceDirectoryPath = ComputeWorkspaceDirectoryPath(currentDirectoryPath, configuration, currentDirectoryPath, fileSystem);
 
-            return new SolutionBuilderContext(configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
+            return new SolutionBuilderContext(currentDirectoryPath, configuration, configurationFilePath, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
-        static public SolutionBuilderContext FromConfiguration(Subsln configuration, IProjectReader projectReader, string defaultOutputDirectory, string? defaultWorkspaceDirectory = null, IGlobPatternFileSystem? fileSystem = null)
+        static public SolutionBuilderContext FromConfiguration(string currentDirectoryPath, Subsln configuration, IProjectReader projectReader, string defaultOutputDirectory, string? defaultWorkspaceDirectory = null, IGlobPatternFileSystem? fileSystem = null)
         {
             string solutionPath = ComputeSolutionPath(configuration, nameof(SubSolution), defaultOutputDirectory, fileSystem);
-            string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
+            string workspaceDirectoryPath = ComputeWorkspaceDirectoryPath(currentDirectoryPath, configuration, defaultWorkspaceDirectory, fileSystem);
 
-            if (workspaceDirectoryPath is null)
-                throw new ArgumentNullException(nameof(defaultWorkspaceDirectory), "configuration.WorkspaceDirectory or defaultWorkspaceDirectory must be not null.");
-
-            workspaceDirectoryPath = (fileSystem ?? StandardGlobPatternFileSystem.Instance)
-                .MakeAbsolutePath(Environment.CurrentDirectory, workspaceDirectoryPath);
-
-            return new SolutionBuilderContext(configuration, null, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
+            return new SolutionBuilderContext(currentDirectoryPath, configuration, null, solutionPath, workspaceDirectoryPath, projectReader, fileSystem);
         }
 
         static private string ComputeSolutionPath(Subsln configuration, string configurationFilePath, string defaultOutputDirectory, IGlobPatternFileSystem? fileSystem)
@@ -91,12 +84,15 @@ namespace SubSolution.Builders
             return solutionName;
         }
 
-        static private string ComputeWorkspaceDirectoryPath(Subsln configuration, string configurationFilePath, IGlobPatternFileSystem? fileSystem)
+        static private string ComputeWorkspaceDirectoryPath(string currentDirectoryPath, Subsln configuration, string? defaultWorkspaceDirectory, IGlobPatternFileSystem? fileSystem)
         {
             fileSystem ??= StandardGlobPatternFileSystem.Instance;
 
-            string workspaceDirectoryPath = configuration.WorkspaceDirectory ?? fileSystem.GetParentDirectoryPath(configurationFilePath)!;
-            return fileSystem.MakeAbsolutePath(Environment.CurrentDirectory, workspaceDirectoryPath);
+            string? workspaceDirectoryPath = configuration.WorkspaceDirectory ?? defaultWorkspaceDirectory;
+            if (workspaceDirectoryPath is null)
+                throw new ArgumentNullException(nameof(defaultWorkspaceDirectory), "configuration.WorkspaceDirectory or defaultWorkspaceDirectory must be not null.");
+
+            return fileSystem.MakeAbsolutePath(currentDirectoryPath, workspaceDirectoryPath);
         }
     }
 }

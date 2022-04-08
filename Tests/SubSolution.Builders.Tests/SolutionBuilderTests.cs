@@ -51,7 +51,7 @@ namespace SubSolution.Builders.Tests
         private Task<(ISolution, Issue[])> ProcessConfigurationWithIssuesAsync(Subsln configuration, string outputDirectoryPath, string? workspaceDirectoryPath, bool haveSubSolutions)
         {
             return ProcessConfigurationAsync(configuration, haveSubSolutions, (fileSystem, projectReader)
-                => Task.FromResult(SolutionBuilderContext.FromConfiguration(configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
+                => Task.FromResult(SolutionBuilderContext.FromConfiguration(Environment.CurrentDirectory, configuration, projectReader, outputDirectoryPath, workspaceDirectoryPath, fileSystem)));
         }
 
         private Task<SolutionBuilderContext> GetConfigurationMockFileContextAsync(Subsln configuration)
@@ -199,7 +199,7 @@ namespace SubSolution.Builders.Tests
             checkSolution = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
             solutionConverter.Issues.Should().BeEmpty();
 
-            SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(MyApplicationConfiguration, context.ProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, context.FileSystem);
+            SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(Environment.CurrentDirectory, MyApplicationConfiguration, context.ProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, context.FileSystem);
             var referenceSolutionBuilder = new SolutionBuilder(referenceContext);
             ISolution referenceSolution = await referenceSolutionBuilder.BuildAsync(referenceContext.Configuration);
             RawSolution referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
@@ -334,7 +334,7 @@ namespace SubSolution.Builders.Tests
             {
                 string defaultWorkspaceDirectoryPath = mockFileSystem.GetParentDirectoryPath(filePath)!;
 
-                SolutionBuilderContext context = SolutionBuilderContext.FromConfiguration(configuration, mockProjectReader, defaultWorkspaceDirectoryPath, defaultWorkspaceDirectoryPath, mockFileSystem);
+                SolutionBuilderContext context = SolutionBuilderContext.FromConfiguration(Environment.CurrentDirectory, configuration, mockProjectReader, defaultWorkspaceDirectoryPath, defaultWorkspaceDirectoryPath, mockFileSystem);
                 var solutionBuilder = new SolutionBuilder(context);
                 ISolution solution = await solutionBuilder.BuildAsync(configuration);
 

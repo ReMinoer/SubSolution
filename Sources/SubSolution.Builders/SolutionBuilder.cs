@@ -21,6 +21,7 @@ namespace SubSolution.Builders
         private const string LogTokenNone = "*none*";
         private const string LogTokenRoot = "*root*";
 
+        private readonly string _currentDirectoryPath;
         private readonly string _workspaceDirectoryPath;
         
         private readonly Solution _solution;
@@ -51,6 +52,7 @@ namespace SubSolution.Builders
 
         public SolutionBuilder(SolutionBuilderContext context)
         {
+            _currentDirectoryPath = context.CurrentDirectoryPath;
             _workspaceDirectoryPath = context.WorkspaceDirectoryPath;
 
             _solution = new Solution(context.SolutionDirectoryPath, context.FileSystem);
@@ -578,7 +580,7 @@ namespace SubSolution.Builders
                         scopedConfiguration.Root.SolutionItems.Add(keptSolutionFiles);
 
                     SolutionBuilderContext scopedContext = SolutionBuilderContext.FromConfiguration(
-                        scopedConfiguration, _projectReader, _solution.OutputDirectoryPath, _workspaceDirectoryPath, _fileSystem);
+                        _currentDirectoryPath, scopedConfiguration, _projectReader, _solution.OutputDirectoryPath, _workspaceDirectoryPath, _fileSystem);
 
                     scopedContext.Logger = _logger;
                     scopedContext.LogLevel = _logLevel;
