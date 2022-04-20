@@ -58,7 +58,7 @@ namespace SubSolution.CommandLine.Commands.Base
             if (fileSystem.IsAbsolutePath(pathPattern))
                 return fileSystem.FileExists(pathPattern) ? new[] { pathPattern } : Enumerable.Empty<string>();
 
-            string simplifiedPathPattern = GlobPatternUtils.CompleteSimplifiedPattern(pathPattern, "subsln");
+            string simplifiedPathPattern = GlobPatternUtils.Expand(pathPattern, "subsln");
             return fileSystem.GetFilesMatchingGlobPattern(Environment.CurrentDirectory, simplifiedPathPattern);
         }
 

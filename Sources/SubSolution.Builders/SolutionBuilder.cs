@@ -675,7 +675,7 @@ namespace SubSolution.Builders
                 return Enumerable.Empty<string>();
             }
 
-            globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
+            globPattern = GlobPatternUtils.Expand(globPattern, defaultFileExtension);
 
             Log($"Search for files matching pattern: {globPattern}");
             return _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, globPattern);
@@ -691,19 +691,23 @@ namespace SubSolution.Builders
                 return Enumerable.Empty<string>();
             }
 
-            Log($"Search for files matching pattern: {string.Join("|", ProjectFileExtensions.ExtensionPatterns)}");
+            var expandedGlobPatterns = new HashSet<string>();
+            foreach (string projectExtensionPattern in ProjectFileExtensions.ExtensionPatterns)
+                expandedGlobPatterns.Add(GlobPatternUtils.Expand(globPattern, projectExtensionPattern));
+            
+            Log($"Search for files matching pattern: {string.Join("|", expandedGlobPatterns)}");
 
-            var allMatchingProjects = new List<string>();
-            foreach (string extensionPattern in ProjectFileExtensions.ExtensionPatterns)
+            var allMatchingProjects = new HashSet<string>(_fileSystem.PathComparer);
+            foreach (string fullGlobPattern in expandedGlobPatterns)
             {
-                string fullGlobPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, extensionPattern);
                 IEnumerable<string> matchingProjects = _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, fullGlobPattern);
 
                 // If globPattern was updated to include project file extension patterns, keep only known extensions.
                 if (fullGlobPattern != globPattern)
                     matchingProjects = matchingProjects.Where(ProjectFileExtensions.MatchAny);
 
-                allMatchingProjects.AddRange(matchingProjects);
+                foreach (string matchingProject in matchingProjects)
+                    allMatchingProjects.Add(matchingProject);
             }
             
             return allMatchingProjects;

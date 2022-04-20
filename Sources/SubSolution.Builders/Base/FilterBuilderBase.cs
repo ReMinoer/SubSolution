@@ -52,21 +52,20 @@ namespace SubSolution.Builders.Base
         {
             if (defaultFileExtensions.Length == 1)
             {
-                globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtensions[0]);
-                BuiltFilter = new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath);
-            }
-            else
-            {
-                var filter = new AnyOfFilter<TItem>();
-                foreach (string defaultFileExtension in defaultFileExtensions)
-                {
-                    globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
-                    filter.Filters.Add(new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath));
-                }
-
-                BuiltFilter = filter;
+                string fullGlobPattern = GlobPatternUtils.Expand(globPattern, defaultFileExtensions[0]);
+                BuiltFilter = new PathFilter(fullGlobPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath);
+                return Task.CompletedTask;
             }
 
+            var expandedGlobPatterns = new HashSet<string>();
+            foreach (string defaultFileExtension in defaultFileExtensions)
+                expandedGlobPatterns.Add(GlobPatternUtils.Expand(globPattern, defaultFileExtension));
+
+            var filter = new AnyOfFilter<TItem>();
+            foreach (string fullGlobPattern in expandedGlobPatterns)
+                filter.Filters.Add(new PathFilter(fullGlobPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath));
+
+            BuiltFilter = filter;
             return Task.CompletedTask;
         }
     }
