@@ -50,8 +50,12 @@ namespace SubSolution.VisualStudio.ViewModels
             }
 
             ChangeTypeMoniker = SubSolutionMonikers.GetChangeTypeMoniker(ChangeType);
-            ObjectTypeMoniker = SubSolutionMonikers.GetObjectTypeMoniker(ObjectType);
-            TargetTypeMoniker = SubSolutionMonikers.GetObjectTypeMoniker(change.TargetType);
+            TargetTypeMoniker = SubSolutionMonikers.GetObjectTypeMoniker(TargetType);
+
+            if (ObjectType == SolutionObjectType.Project && change.ObjectTag is ProjectType projectType)
+                ObjectTypeMoniker = SubSolutionMonikers.GetObjectTypeMoniker(projectType);
+            else
+                ObjectTypeMoniker = SubSolutionMonikers.GetObjectTypeMoniker(ObjectType);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace SubSolution.FileSystems
         bool IsCaseSensitive { get; }
         string GetName(string path);
         string GetFileNameWithoutExtension(string fileName);
+        string? GetExtension(string fileName);
         string? GetParentDirectoryPath(string path);
         string Combine(string firstPath, string secondPath);
         string[] SplitPath(string path);

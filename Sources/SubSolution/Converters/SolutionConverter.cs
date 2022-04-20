@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SubSolution.Converters.Changes;
 using SubSolution.FileSystems;
+using SubSolution.ProjectReaders;
 using SubSolution.Raw;
 
 namespace SubSolution.Converters
@@ -11,22 +13,31 @@ namespace SubSolution.Converters
     public class SolutionConverter
     {
         private readonly IFileSystem _fileSystem;
-
-        private List<SolutionChange> _changes;
+        private readonly IProjectReader? _projectReader;
+        private readonly IProjectGraph? _projectGraph;
+        private readonly string? _solutionDirectoryPath;
+        
+        private readonly List<SolutionChange> _changes;
         public IReadOnlyCollection<SolutionChange> Changes { get; }
 
         public ILogger? Logger { get; set; }
         public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
-        public SolutionConverter(IFileSystem fileSystem)
+        public SolutionConverter(IFileSystem fileSystem, IProjectReader? projectReader, string? solutionDirectoryPath)
         {
             _fileSystem = fileSystem;
+            _solutionDirectoryPath = solutionDirectoryPath;
+            if (projectReader != null)
+            {
+                _projectReader = new CacheProjectReader(_fileSystem, projectReader);
+                _projectGraph = new ProjectGraph(_fileSystem, projectReader);
+            }
 
             _changes = new List<SolutionChange>();
             Changes = _changes.AsReadOnly();
         }
 
-        public RawSolution Convert(ISolution solution)
+        public async Task<RawSolution> ConvertAsync(ISolution solution)
         {
             _changes.Clear();
 
@@ -39,13 +50,14 @@ namespace SubSolution.Converters
                 VisualStudioVersion = new Version(16, 0, 31424, 327),
                 MinimumVisualStudioVersion = new Version(10, 0, 40219, 1)
             };
-            
-            AddFolderContent(rawSolution, solution.Root, projectGuids);
+
+            await ComputeDependenciesIfNecessaryAsync(solution);
+            await AddFolderContentAsync(rawSolution, solution.Root, projectGuids);
             AddConfigurationPlatforms(rawSolution, solution, projectGuids);
             return rawSolution;
         }
 
-        public void Update(RawSolution rawSolution, ISolution solution)
+        public async Task UpdateAsync(RawSolution rawSolution, ISolution solution)
         {
             _changes.Clear();
 
@@ -55,14 +67,18 @@ namespace SubSolution.Converters
             var projectGuidByPath = new Dictionary<string, Guid>(_fileSystem.PathComparer);
             var projectPathByGuid = new Dictionary<Guid, string>();
 
+            Task computeDependenciesTask = ComputeDependenciesIfNecessaryAsync(solution);
+
             UpdateExistingFileAndFolders(rawSolution, solution, existingFolders, rawFolderPaths, missingFilePaths);
             CleanExistingProjects(rawSolution, solution, existingFolders, rawFolderPaths, projectGuidByPath, projectPathByGuid);
 
             HashSet<string> removedSolutionConfigs = new HashSet<string>();
             CleanExistingSolutionConfigurationPlatforms(rawSolution, solution, removedSolutionConfigs);
             CleanExistingProjectConfigurationPlatforms(rawSolution, solution, removedSolutionConfigs, projectPathByGuid);
+            CleanExistingSharedProjectDependencies(rawSolution, solution, projectPathByGuid);
 
-            AddFolderContent(rawSolution, solution.Root, projectGuidByPath, existingFolders, missingFilePaths);
+            await computeDependenciesTask;
+            await AddFolderContentAsync(rawSolution, solution.Root, projectGuidByPath, existingFolders, missingFilePaths);
             AddConfigurationPlatforms(rawSolution, solution, projectGuidByPath, checkExisting: true);
             
             foreach ((string filePath, int count) in missingFilePaths)
@@ -72,7 +88,23 @@ namespace SubSolution.Converters
             rawSolution.GlobalSections.RemoveAll(x => x.OrderedValuePairs.Count == 0);
         }
 
-        private void AddFolderContent(RawSolution rawSolution, ISolutionFolder solutionFolder, Dictionary<string, Guid> projectGuids,
+        private async Task ComputeDependenciesIfNecessaryAsync(ISolution solution)
+        {
+            if (_projectGraph is null || _solutionDirectoryPath is null)
+                return;
+            
+            await Task.WhenAll(solution.Root.GetAllProjectPaths()
+                .Select(x => _fileSystem.MakeAbsolutePath(_solutionDirectoryPath, x))
+                .Select(_projectGraph.GetDependenciesAsync));
+        }
+
+        private Exception SharedProjectsUnsupportedException()
+        {
+            return new InvalidOperationException("Shared projects are not supported by this converter. " +
+                "You must provide the solution path and a project reader when creating your converter.");
+        }
+
+        private async Task AddFolderContentAsync(RawSolution rawSolution, ISolutionFolder solutionFolder, Dictionary<string, Guid> projectGuids,
             Dictionary<ISolutionFolder, RawSolution.Project>? existingFolders = null, Dictionary<string, int>? missingFilePaths = null,
             string? folderPath = null, RawSolution.Project? folderProject = null)
         {
@@ -80,13 +112,72 @@ namespace SubSolution.Converters
 
             foreach ((string projectPath, ISolutionProject project) in solutionFolder.Projects)
             {
-                if (checkExisting && projectGuids.ContainsKey(projectPath))
-                    continue;
+                if (!checkExisting || !projectGuids.ContainsKey(projectPath))
+                {
+                    Log(SolutionChangeType.Add, SolutionObjectType.Project, projectPath, folderPath);
 
-                Log(SolutionChangeType.Add, SolutionObjectType.Project, projectPath, folderPath);
+                    RawSolution.Project rawProject = CreateProject(rawSolution, project.TypeGuid, projectPath, folderProject?.ProjectGuid);
+                    projectGuids.Add(rawProject.Path, rawProject.ProjectGuid);
+                }
 
-                RawSolution.Project rawProject = CreateProject(rawSolution, project.TypeGuid, projectPath, folderProject?.ProjectGuid);
-                projectGuids.Add(rawProject.Path, rawProject.ProjectGuid);
+                if (project.Type == ProjectType.Shared || project.Type == ProjectType.SharedItems)
+                {
+                    if (_projectReader is null || _projectGraph is null || _solutionDirectoryPath is null)
+                        throw SharedProjectsUnsupportedException();
+
+                    string sharedItemsFilePath = projectPath;
+                    if (project.Type == ProjectType.Shared)
+                        sharedItemsFilePath = _fileSystem.ChangeFileExtension(projectPath, ProjectFileExtensions.Extensions[ProjectFileExtension.Projitems]);
+                    
+                    string key = $"{sharedItemsFilePath}*{projectGuids[projectPath].ToRawFormat().ToLower()}*{RawKeyword.SharedMSBuildProjectFilesSharedItemsImports}";
+                    string value;
+                    switch (project.Type)
+                    {
+                        case ProjectType.Shared:
+                            value = RawKeyword.SharedItemsImportsShprojValue;
+                            break;
+                        case ProjectType.SharedItems:
+                            value = RawKeyword.SharedItemsImportsVcxitemsValue;
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+
+                    RawSolution.Section sharedProjectSection = GetOrAddGlobalSection(rawSolution, RawKeyword.SharedMSBuildProjectFiles);
+                    if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out string existingValue) || value != existingValue)
+                        sharedProjectSection.SetOrAddValue(key, value);
+
+                    string absoluteProjectPath = _fileSystem.MakeAbsolutePath(_solutionDirectoryPath, projectPath);
+                    foreach (string dependentProjectAbsolutePath in (await _projectGraph.GetDependentsAsync(absoluteProjectPath, directOnly: true)))
+                    {
+                        string dependentProjectRelativePath = _fileSystem.MakeRelativePath(_solutionDirectoryPath, dependentProjectAbsolutePath);
+                        key = $"{sharedItemsFilePath}*{projectGuids[dependentProjectRelativePath].ToRawFormat().ToLower()}*{RawKeyword.SharedMSBuildProjectFilesSharedItemsImports}";
+
+                        ISolutionProject dependentProject = await _projectReader.ReadAsync(dependentProjectAbsolutePath);
+                        switch (dependentProject.Type)
+                        {
+                            case ProjectType.Shared:
+                                value = RawKeyword.SharedItemsImportsShprojValue;
+                                break;
+                            case ProjectType.SharedItems:
+                                value = RawKeyword.SharedItemsImportsVcxitemsValue;
+                                break;
+                            case ProjectType.CSharpDotNetSdk:
+                            case ProjectType.VisualBasicDotNetSdk:
+                                value = RawKeyword.SharedItemsImportsDotNetSdkValue;
+                                break;
+                            default:
+                                value = RawKeyword.SharedItemsImportsDefaultValue;
+                                break;
+                        }
+                        
+                        if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out existingValue) || (existingValue != null && value != existingValue))
+                        {
+                            Log(SolutionChangeType.Add, SolutionObjectType.SharedProject, projectPath, dependentProjectRelativePath);
+                            sharedProjectSection.SetOrAddValue(key, value);
+                        }
+                    }
+                }
             }
 
             foreach ((string subFolderName, ISolutionFolder subFolder) in solutionFolder.SubFolders.Select(x => (x.Key, x.Value)))
@@ -101,7 +192,7 @@ namespace SubSolution.Converters
                 else
                     subFolderProject = existingFolders[subFolder];
 
-                AddFolderContent(rawSolution, subFolder, projectGuids, existingFolders, missingFilePaths, AppendFolderPath(folderPath, subFolderName), subFolderProject);
+                await AddFolderContentAsync(rawSolution, subFolder, projectGuids, existingFolders, missingFilePaths, AppendFolderPath(folderPath, subFolderName), subFolderProject);
             }
 
             if (solutionFolder.FilePaths.Count > 0)
@@ -407,7 +498,7 @@ namespace SubSolution.Converters
                     GetProjectHierarchy(subFolder);
             }
 
-            List<RawSolution.Project> removedProjects = new List<RawSolution.Project>();
+            List<(RawSolution.Project, ProjectType?)> removedProjects = new List<(RawSolution.Project, ProjectType?)>();
             foreach (RawSolution.Project rawProject in rawSolution.Projects)
             {
                 if (rawProject.TypeGuid == ProjectTypes.FolderGuid)
@@ -440,17 +531,18 @@ namespace SubSolution.Converters
                         nestedProjectsSection?.RemoveValue(rawProject.ProjectGuid.ToRawFormat());
                     }
 
-                    Log(SolutionChangeType.Move, SolutionObjectType.Project, rawProject.Path, folderPath);
+                    Log(SolutionChangeType.Move, rawProject.Path, folderPath, project.Type);
 
                     continue;
                 }
-                
-                removedProjects.Add(rawProject);
+
+                ProjectType? projectType = ProjectTypes.FromGuidAndExtension(rawProject.TypeGuid, _fileSystem.GetProjectExtension(rawProject.Path));
+                removedProjects.Add((rawProject, projectType));
             }
 
-            foreach (RawSolution.Project removedProject in removedProjects)
+            foreach ((RawSolution.Project removedProject, ProjectType? projectType) in removedProjects)
             {
-                Log(SolutionChangeType.Remove, SolutionObjectType.Project, removedProject.Path, null);
+                Log(SolutionChangeType.Remove, removedProject.Path, null, projectType);
 
                 rawSolution.Projects.Remove(removedProject);
                 nestedProjectsSection?.RemoveValue(removedProject.ProjectGuid.ToRawFormat());
@@ -561,6 +653,96 @@ namespace SubSolution.Converters
                 projectConfigsSection.RemoveValue(removedConfigKey);
         }
 
+        private void CleanExistingSharedProjectDependencies(RawSolution rawSolution, ISolution solution,
+            Dictionary<Guid, string> projectPathByGuids)
+        {
+            RawSolution.Section? sharedProjectsSection = GetGlobalSection(rawSolution, RawKeyword.SharedMSBuildProjectFiles);
+            if (sharedProjectsSection is null)
+                return;
+
+            IReadOnlyDictionary<string, ISolutionProject>? allProjectsByPath = null;
+            List<string> removedSharedProjectItems = new List<string>();
+            foreach ((string itemKey, string itemValue) in sharedProjectsSection.ValuesByKey)
+            {
+                string[] splitKey = itemKey.Split('*');
+                if (splitKey.Length != 3)
+                    continue;
+
+                string itemKeyword = splitKey[2];
+                if (!itemKeyword.Equals(RawKeyword.SharedMSBuildProjectFilesSharedItemsImports, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!RawGuid.TryParse(splitKey[1], out Guid projectGuid))
+                    throw new FormatException($"Failed to parse GUID in key \"{splitKey}\".");
+
+                string sharedProjectPath;
+                string sharedItemsFilePath = splitKey[0];
+                string? sharedItemsExtension = _fileSystem.GetExtension(sharedItemsFilePath);
+
+                if (sharedItemsExtension == ProjectFileExtensions.Extensions[ProjectFileExtension.Projitems])
+                {
+                    sharedProjectPath = _fileSystem.ChangeFileExtension(sharedItemsFilePath, ProjectFileExtensions.Extensions[ProjectFileExtension.Shproj]);
+                }
+                else if (sharedItemsExtension == ProjectFileExtensions.Extensions[ProjectFileExtension.Vcxitems])
+                {
+                    sharedProjectPath = sharedItemsFilePath;
+                }
+                else
+                {
+                    throw new NotSupportedException($"Shared items files using extension {sharedItemsExtension} are unknown.");
+                }
+                
+                // If project is not existing anymore, remove the item.
+                if (!projectPathByGuids.TryGetValue(projectGuid, out string projectPath))
+                {
+                    removedSharedProjectItems.Add(itemKey);
+                    continue;
+                }
+
+                allProjectsByPath ??= solution.Root.GetAllProjects();
+                if (!allProjectsByPath.TryGetValue(projectPath, out ISolutionProject solutionProject))
+                {
+                    removedSharedProjectItems.Add(itemKey);
+                    continue;
+                }
+
+                if (itemValue == RawKeyword.SharedItemsImportsDefaultValue || itemValue == RawKeyword.SharedItemsImportsDotNetSdkValue)
+                {
+                    if (_solutionDirectoryPath is null)
+                        throw SharedProjectsUnsupportedException();
+
+                    string projectDirectoryPath = _fileSystem.GetParentDirectoryPath(projectPath)!;
+                    string projectAbsolutePath = _fileSystem.MakeAbsolutePath(_solutionDirectoryPath, projectDirectoryPath);
+                    string sharedProjectDependencyPath = _fileSystem.MoveRelativePathRoot(sharedProjectPath, _solutionDirectoryPath, projectAbsolutePath);
+
+                    // If project is not dependent of the shared project anymore, remove the item.
+                    if (!solutionProject.ProjectDependencies.Contains(sharedProjectDependencyPath, _fileSystem.PathComparer))
+                    {
+                        Log(SolutionChangeType.Remove, SolutionObjectType.SharedProject, sharedProjectPath, projectPath);
+                        removedSharedProjectItems.Add(itemKey);
+                    }
+                }
+                else if (itemValue == RawKeyword.SharedItemsImportsShprojValue || itemValue == RawKeyword.SharedItemsImportsVcxitemsValue)
+                {
+                    // If project is not a shared project anymore, remove the item.
+                    if (solutionProject.Type != ProjectType.Shared && solutionProject.Type != ProjectType.SharedItems)
+                    {
+                        Log(SolutionChangeType.Remove, SolutionObjectType.SharedProject, sharedProjectPath, projectPath);
+                        removedSharedProjectItems.Add(itemKey);
+                    }
+                }
+                else
+                {
+                    // On any unsupported value, remove the item.
+                    Log(SolutionChangeType.Remove, SolutionObjectType.SharedProject, sharedProjectPath, projectPath);
+                    removedSharedProjectItems.Add(itemKey);
+                }
+            }
+
+            foreach (string removedSharedProjectItem in removedSharedProjectItems)
+                sharedProjectsSection.RemoveValue(removedSharedProjectItem);
+        }
+
         static private RawSolution.Project? GetRootFileFolderProject(RawSolution rawSolution)
             => rawSolution.Projects.FirstOrDefault(x => x.Name == RawKeyword.DefaultRootFileFolderName);
 
@@ -617,8 +799,16 @@ namespace SubSolution.Converters
         }
 
         private void Log(SolutionChangeType changeType, SolutionObjectType objectType, string objectName, string? targetName)
+            => Log(changeType, objectType, objectName, targetName, null);
+        private void Log(SolutionChangeType changeType, string projectPath, string? solutionFolderPath, ProjectType? projectType)
+            => Log(changeType, SolutionObjectType.Project, projectPath, solutionFolderPath, projectType);
+
+        private void Log(SolutionChangeType changeType, SolutionObjectType objectType, string objectName, string? targetName, object? objectTag)
         {
-            SolutionChange change = new SolutionChange(changeType, objectType, objectName, targetName);
+            SolutionChange change = new SolutionChange(changeType, objectType, objectName, targetName)
+            {
+                ObjectTag = objectTag
+            };
 
             if (objectType == SolutionObjectType.Folder)
             {

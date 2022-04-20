@@ -77,7 +77,7 @@ namespace SubSolution.CommandLine.Commands
             }
             else
             {
-                RawSolution? convertedSolution = ConvertSolution(solution, configurationFilePath);
+                RawSolution? convertedSolution = await ConvertSolutionAsync(solution, configurationFilePath, context.SolutionDirectoryPath);
                 if (convertedSolution is null)
                     return;
 

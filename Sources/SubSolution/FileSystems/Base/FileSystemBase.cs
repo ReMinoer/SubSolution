@@ -11,6 +11,7 @@ namespace SubSolution.FileSystems.Base
 
         public abstract string GetName(string path);
         public abstract string GetFileNameWithoutExtension(string fileName);
+        public abstract string? GetExtension(string fileName);
         public abstract string? GetParentDirectoryPath(string path);
         public abstract string Combine(string firstPath, string secondPath);
         public abstract string[] SplitPath(string path);

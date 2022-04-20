@@ -39,6 +39,12 @@ namespace SubSolution
         Sql,
         [ProjectTypeName("Windows Application Packaging")]
         [ProjectTypeGuid("C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5")]
-        Wap
+        Wap,
+        [ProjectTypeName("Shared (.NET)")]
+        [ProjectTypeGuid("D954291E-2A0B-460D-934E-DC6B0785DB48")]
+        Shared,
+        [ProjectTypeName("Shared Items (C++)")]
+        [ProjectTypeGuid("8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942")]
+        SharedItems
     }
 }

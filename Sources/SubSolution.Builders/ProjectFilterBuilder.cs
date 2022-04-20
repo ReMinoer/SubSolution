@@ -19,6 +19,6 @@ namespace SubSolution.Builders
         public Task VisitAsync(ProjectNot projectNot) => BuildNotAsync(projectNot.ProjectFilters);
         public Task VisitAsync(ProjectMatchAll projectMatchAll) => BuildAllAsync(projectMatchAll.ProjectFilters);
         public Task VisitAsync(ProjectMatchAnyOf projectMatchAnyOf) => BuildAnyOfAsync(projectMatchAnyOf.ProjectFilters);
-        public Task VisitAsync(ProjectPath projectPath) => BuildPathAsync(projectPath.Match, ProjectFileExtensions.Wildcard);
+        public Task VisitAsync(ProjectPath projectPath) => BuildPathAsync(projectPath.Match, ProjectFileExtensions.ExtensionPatterns);
     }
 }

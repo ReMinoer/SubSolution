@@ -34,6 +34,7 @@ namespace SubSolution.Builders.GlobPatterns
         public bool IsCaseSensitive => FileSystem.IsCaseSensitive;
         public string GetName(string path) => FileSystem.GetName(path);
         public string GetFileNameWithoutExtension(string fileName) => FileSystem.GetFileNameWithoutExtension(fileName);
+        public string? GetExtension(string fileName) => FileSystem.GetExtension(fileName);
         public string? GetParentDirectoryPath(string path) => FileSystem.GetParentDirectoryPath(path);
         public string Combine(string firstPath, string secondPath) => FileSystem.Combine(firstPath, secondPath);
         public string[] SplitPath(string path) => FileSystem.SplitPath(path);

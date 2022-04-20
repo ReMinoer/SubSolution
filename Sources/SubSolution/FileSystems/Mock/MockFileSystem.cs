@@ -68,6 +68,17 @@ namespace SubSolution.FileSystems.Mock
             return fileName[..dotIndex];
         }
 
+        public override string? GetExtension(string path)
+        {
+            string fileName = GetName(path);
+
+            int dotIndex = fileName.LastIndexOf('.');
+            if (dotIndex == -1)
+                return null;
+
+            return fileName[(dotIndex + 1)..];
+        }
+
         public override string? GetParentDirectoryPath(string path)
         {
             int lastSeparatorIndex = TrimPath(path).LastIndexOfAny(DirectorySeparators);

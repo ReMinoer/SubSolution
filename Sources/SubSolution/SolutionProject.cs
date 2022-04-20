@@ -41,15 +41,11 @@ namespace SubSolution
             TypeGuid = ProjectTypes.Guids[projectType];
         }
 
-        public SolutionProject(Guid projectTypeGuid)
+        public SolutionProject(Guid projectTypeGuid, ProjectFileExtension projectFileExtension)
             : this()
         {
+            Type = ProjectTypes.FromGuidAndExtension(projectTypeGuid, projectFileExtension);
             TypeGuid = projectTypeGuid;
-
-            if (ProjectTypes.ByGuids.TryGetValue(projectTypeGuid, out ProjectType type))
-                Type = type;
-            else
-                Type = null;
         }
 
         public SolutionProject(ISolutionProject project)

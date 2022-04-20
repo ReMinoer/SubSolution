@@ -116,10 +116,9 @@ namespace SubSolution.Converters
                     string absoluteProjectPath = _fileSystem.MakeAbsolutePath(solution.OutputDirectoryPath, relativeProjectPath);
 
                     ISolutionProject solutionProject;
-
                     if (skipProjectLoading)
                     {
-                        solutionProject = new SolutionProject(childProject.TypeGuid);
+                        solutionProject = new SolutionProject(childProject.TypeGuid, _fileSystem.GetProjectExtension(relativeProjectPath));
                     }
                     else
                     {

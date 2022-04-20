@@ -173,7 +173,7 @@ namespace SubSolution.Builders.Tests
             context.Logger.LogDebug(logMessage);
 
             // Full pipe checks
-            var rawSolutionConverter = new SolutionConverter(context.FileSystem!)
+            var rawSolutionConverter = new SolutionConverter(context.FileSystem!, context.ProjectReader, context.SolutionDirectoryPath)
             {
                 Logger = NullLogger.Instance,
                 LogLevel = LogLevel.Trace
@@ -183,7 +183,7 @@ namespace SubSolution.Builders.Tests
             ISolution checkSolution = solution;
             RawSolution rawSolution;
 
-            rawSolution = rawSolutionConverter.Convert(checkSolution);
+            rawSolution = await rawSolutionConverter.ConvertAsync(checkSolution);
             using var firstPassStream = new MemoryStream();
             await rawSolution.WriteAsync(firstPassStream);
             firstPassStream.Position = 0;
@@ -191,7 +191,7 @@ namespace SubSolution.Builders.Tests
             checkSolution = await solutionConverter.ConvertAsync(rawSolution, context.SolutionDirectoryPath);
             solutionConverter.Issues.Should().BeEmpty();
 
-            rawSolution = rawSolutionConverter.Convert(checkSolution);
+            rawSolution = await rawSolutionConverter.ConvertAsync(checkSolution);
             using var secondPassStream = new MemoryStream();
             await rawSolution.WriteAsync(secondPassStream);
             secondPassStream.Position = 0;
@@ -202,9 +202,9 @@ namespace SubSolution.Builders.Tests
             SolutionBuilderContext referenceContext = SolutionBuilderContext.FromConfiguration(Environment.CurrentDirectory, MyApplicationConfiguration, context.ProjectReader, WorkspaceDirectoryPath, WorkspaceDirectoryPath, context.FileSystem);
             var referenceSolutionBuilder = new SolutionBuilder(referenceContext);
             ISolution referenceSolution = await referenceSolutionBuilder.BuildAsync(referenceContext.Configuration);
-            RawSolution referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
+            RawSolution referenceRawSolution = await rawSolutionConverter.ConvertAsync(referenceSolution);
 
-            rawSolutionConverter.Update(referenceRawSolution, checkSolution);
+            await rawSolutionConverter.UpdateAsync(referenceRawSolution, checkSolution);
             CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
 
             using var thirdPassStream = new MemoryStream();
@@ -214,9 +214,9 @@ namespace SubSolution.Builders.Tests
             checkSolution = await solutionConverter.ConvertAsync(referenceRawSolution, context.SolutionDirectoryPath);
             solutionConverter.Issues.Should().BeEmpty();
 
-            referenceRawSolution = rawSolutionConverter.Convert(referenceSolution);
+            referenceRawSolution = await rawSolutionConverter.ConvertAsync(referenceSolution);
 
-            rawSolutionConverter.Update(referenceRawSolution, checkSolution);
+            await rawSolutionConverter.UpdateAsync(referenceRawSolution, checkSolution);
             CheckRawSolutionAreEqual(rawSolution, referenceRawSolution);
             
             using var forthPassStream = new MemoryStream();
@@ -338,8 +338,8 @@ namespace SubSolution.Builders.Tests
                 var solutionBuilder = new SolutionBuilder(context);
                 ISolution solution = await solutionBuilder.BuildAsync(configuration);
 
-                var rawSolutionConverter = new SolutionConverter(mockFileSystem);
-                RawSolution rawSolution = rawSolutionConverter.Convert(solution);
+                var rawSolutionConverter = new SolutionConverter(mockFileSystem, context.ProjectReader, context.SolutionDirectoryPath);
+                RawSolution rawSolution = await rawSolutionConverter.ConvertAsync(solution);
 
                 using var memoryStream = new MemoryStream();
                 await rawSolution.WriteAsync(memoryStream);

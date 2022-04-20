@@ -1,4 +1,4 @@
-﻿namespace SubSolution.ProjectReaders
+﻿namespace SubSolution
 {
     public enum ProjectFileExtension
     {
@@ -10,6 +10,9 @@
         Njsproj,
         Pyproj,
         Sqlproj,
-        Wapproj
+        Wapproj,
+        Shproj,
+        Projitems,
+        Vcxitems
     }
 }

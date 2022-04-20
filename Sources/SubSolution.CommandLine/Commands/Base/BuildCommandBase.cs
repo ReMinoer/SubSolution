@@ -71,8 +71,9 @@ namespace SubSolution.CommandLine.Commands.Base
             bool changed;
             try
             {
-                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
-                solutionConverter.Update(rawSolution, solution);
+                string solutionDirectoryPath = StandardFileSystem.Instance.GetParentDirectoryPath(existingSolutionPath)!;
+                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance, ProjectReader, solutionDirectoryPath);
+                await solutionConverter.UpdateAsync(rawSolution, solution);
 
                 changed = solutionConverter.Changes.Count > 0;
 
@@ -91,12 +92,12 @@ namespace SubSolution.CommandLine.Commands.Base
             return (rawSolution, changed);
         }
 
-        protected RawSolution? ConvertSolution(ISolution solution, string configurationFilePath)
+        protected async Task<RawSolution?> ConvertSolutionAsync(ISolution solution, string configurationFilePath, string solutionDirectoryPath)
         {
             try
             {
-                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
-                return solutionConverter.Convert(solution);
+                var solutionConverter = new SolutionConverter(StandardFileSystem.Instance, ProjectReader, solutionDirectoryPath);
+                return await solutionConverter.ConvertAsync(solution);
             }
             catch (Exception exception)
             {

@@ -6,6 +6,7 @@
         Project = 1,
         File = 2,
         ConfigurationPlatform = 3,
-        ProjectContext = 4
+        ProjectContext = 4,
+        SharedProject = 5
     }
 }

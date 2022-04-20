@@ -109,6 +109,9 @@ namespace SubSolution
 
             public void AddProjectContext(string projectPath, ISolutionProject project)
             {
+                if (project.Configurations.Count == 0 || project.Platforms.Count == 0)
+                    return;
+
                 string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
                 string? matchingProjectPlatform = MatchNames(project.Platforms, MatchingProjectPlatformNames);
                 bool isCompleteMatch = matchingProjectConfiguration != null && matchingProjectPlatform != null;

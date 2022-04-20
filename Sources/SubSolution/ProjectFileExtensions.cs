@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SubSolution.ProjectReaders
+namespace SubSolution
 {
     static public class ProjectFileExtensions
     {
-        public const string Wildcard = "*proj";
+        static public readonly string[] ExtensionPatterns = {"*proj", "vcxitems"};
 
         static public Dictionary<ProjectFileExtension, string> Extensions { get; }
         static public Dictionary<string, ProjectFileExtension> ByExtensions { get; }

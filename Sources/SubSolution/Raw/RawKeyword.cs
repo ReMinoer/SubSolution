@@ -16,6 +16,13 @@
         public const string SolutionConfigurationPlatforms = "SolutionConfigurationPlatforms";
         public const string ProjectConfigurationPlatforms = "ProjectConfigurationPlatforms";
 
+        public const string SharedMSBuildProjectFiles = "SharedMSBuildProjectFiles";
+        public const string SharedMSBuildProjectFilesSharedItemsImports = "SharedItemsImports";
+        public const string SharedItemsImportsDefaultValue = "4";
+        public const string SharedItemsImportsDotNetSdkValue = "5";
+        public const string SharedItemsImportsVcxitemsValue = "9";
+        public const string SharedItemsImportsShprojValue = "13";
+
         public const string SolutionProperties = "SolutionProperties";
         public const string SolutionPropertiesHideSolutionNode = "HideSolutionNode";
         public const string SolutionPropertiesHideSolutionNodeFalse = "FALSE";

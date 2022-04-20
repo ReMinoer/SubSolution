@@ -21,6 +21,7 @@ namespace SubSolution.CommandLine.Commands.Base
     {
         static private IProjectReader? _projectReader;
         static private CacheProjectReader? _cacheProjectReader;
+        static protected CacheProjectReader ProjectReader => _cacheProjectReader ?? throw new InvalidOperationException();
 
         private Assembly? _executingAssembly;
         private string[]? _manifestResourceNames;
@@ -185,7 +186,7 @@ namespace SubSolution.CommandLine.Commands.Base
             if (!CheckFileExist(configurationFilePath))
                 return null;
 
-            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, _cacheProjectReader!);
+            SolutionBuilderContext context = await SolutionBuilderContext.FromConfigurationFileAsync(configurationFilePath, ProjectReader);
             context.Logger = Logger;
             context.LogLevel = Verbose ? LogLevel.Information : LogLevel.None;
 
@@ -245,7 +246,7 @@ namespace SubSolution.CommandLine.Commands.Base
             {
                 string solutionDirectoryPath = StandardFileSystem.Instance.GetParentDirectoryPath(filePath)!;
 
-                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, _cacheProjectReader!);
+                RawSolutionConverter converter = new RawSolutionConverter(StandardFileSystem.Instance, ProjectReader);
                 ISolution solution = await converter.ConvertAsync(rawSolution, solutionDirectoryPath, skipProjectLoading);
 
                 foreach (Issue issue in converter.Issues)

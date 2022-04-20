@@ -1,4 +1,6 @@
-﻿namespace SubSolution.FileSystems
+﻿using System;
+
+namespace SubSolution.FileSystems
 {
     static public class FileSystemExtension
     {
@@ -14,6 +16,28 @@
                 return absolutePath;
 
             return fileSystem.MakeRelativePath(rootPath, absolutePath);
+        }
+
+        static public string ChangeFileExtension(this IFileSystem fileSystem, string filePath, string newExtension)
+        {
+            string newFileName = fileSystem.GetFileNameWithoutExtension(filePath) + "." + newExtension;
+            string? parentDirectoryPath = fileSystem.GetParentDirectoryPath(filePath);
+            if (parentDirectoryPath is null)
+                return newFileName;
+
+            return fileSystem.Combine(parentDirectoryPath, newFileName);
+        }
+
+        static public ProjectFileExtension GetProjectExtension(this IFileSystem fileSystem, string projectPath)
+        {
+            string? extension = fileSystem.GetExtension(projectPath);
+            if (extension is null)
+                throw new ArgumentException($"Path {projectPath} has no extension.");
+
+            if (!ProjectFileExtensions.ByExtensions.TryGetValue(extension, out ProjectFileExtension projectExtension))
+                throw new NotSupportedException($"Project extension \"{extension}\" is unknown.");
+
+            return projectExtension;
         }
     }
 }

@@ -59,21 +59,24 @@ namespace SubSolution.MsBuild
 
             GetConfigurationsAndPlatforms(project, solutionProject);
 
-            if (solutionProject.Configurations.Count == 0)
+            if (solutionProject.Type != ProjectType.Shared && solutionProject.Type != ProjectType.SharedItems)
             {
-                if (ImportFallback)
+                if (solutionProject.Configurations.Count == 0)
                 {
-                    solutionProject.Configurations.Add("Debug");
-                    solutionProject.Configurations.Add("Release");
+                    if (ImportFallback)
+                    {
+                        solutionProject.Configurations.Add("Debug");
+                        solutionProject.Configurations.Add("Release");
+                    }
+                    else
+                    {
+                        throw new ProjectReadException(project.FullPath, "No configuration found.");
+                    }
                 }
-                else
-                {
-                    throw new ProjectReadException(project.FullPath, "No configuration found.");
-                }
-            }
 
-            if (solutionProject.Platforms.Count == 0)
-                solutionProject.Platforms.Add("Any CPU");
+                if (solutionProject.Platforms.Count == 0)
+                    solutionProject.Platforms.Add("Any CPU");
+            }
 
             GetProjectDependencies(project, solutionProject);
 
@@ -145,32 +148,10 @@ namespace SubSolution.MsBuild
 
         static private ProjectType GetType(ProjectWrapper project)
         {
-            string extensionString = Path.GetExtension(project.FullPath).TrimStart('.');
-            if (!ProjectFileExtensions.ByExtensions.TryGetValue(extensionString, out ProjectFileExtension extension))
-                throw new ProjectReadException(project.FullPath, $"Project extension \"{extensionString}\" is not supported.");
+            string extension = Path.GetExtension(project.FullPath).TrimStart('.');
 
-            switch (extension)
-            {
-                case ProjectFileExtension.Csproj:
-                    return HasDotNetSdk(project) ? ProjectType.CSharpDotNetSdk : ProjectType.CSharpLegacy;
-                case ProjectFileExtension.Fsproj:
-                    return HasDotNetSdk(project) ? ProjectType.FSharpDotNetSdk : ProjectType.FSharpLegacy;
-                case ProjectFileExtension.Vbproj:
-                    return HasDotNetSdk(project) ? ProjectType.VisualBasicDotNetSdk : ProjectType.VisualBasicLegacy;
-                case ProjectFileExtension.Vcxproj:
-                case ProjectFileExtension.Vcproj:
-                    return ProjectType.Cpp;
-                case ProjectFileExtension.Njsproj:
-                    return ProjectType.NodeJs;
-                case ProjectFileExtension.Pyproj:
-                    return ProjectType.Python;
-                case ProjectFileExtension.Sqlproj:
-                    return ProjectType.Sql;
-                case ProjectFileExtension.Wapproj:
-                    return ProjectType.Wap;
-                default:
-                    throw new NotSupportedException();
-            }
+            return ProjectTypes.FromExtension(extension, () => HasDotNetSdk(project))
+                ?? throw new NotSupportedException($"Failed to resolve a project type from extension \"{extension}\".");
         }
         
         static private void GetConfigurationsAndPlatforms(ProjectWrapper project, SolutionProject solutionProject)
@@ -243,6 +224,27 @@ namespace SubSolution.MsBuild
         {
             foreach (string projectDependencyPath in project.GetItemsIncludes("ProjectReference"))
                 solutionProject.ProjectDependencies.Add(projectDependencyPath.Replace('\\', '/'));
+
+            // Add shared items imports as dependency on the shared project (if shared project is not the current project itself).
+            foreach (string sharedProjectFilePath in project.GetImportsProjects("Shared").Where(x => !string.IsNullOrEmpty(Path.GetDirectoryName(x))))
+            {
+                string sharedProjectExtension = Path.GetExtension(sharedProjectFilePath).TrimStart('.');
+                string sharedDependencyRelativePath = sharedProjectFilePath.Replace('\\', '/');
+
+                if (sharedProjectExtension == ProjectFileExtensions.Extensions[ProjectFileExtension.Projitems])
+                {
+                    string shprojFilePath = Path.ChangeExtension(sharedDependencyRelativePath, ProjectFileExtensions.Extensions[ProjectFileExtension.Shproj]);
+                    solutionProject.ProjectDependencies.Add(shprojFilePath);
+                }
+                else if (sharedProjectExtension == ProjectFileExtensions.Extensions[ProjectFileExtension.Vcxitems])
+                {
+                    solutionProject.ProjectDependencies.Add(sharedDependencyRelativePath);
+                }
+                else
+                {
+                    throw new ProjectReadException(project.FullPath, $"Shared items files using extension {sharedProjectExtension} are unknown.");
+                }
+            }
         }
 
         static private string CleanPlatform(string platform)
@@ -315,6 +317,11 @@ namespace SubSolution.MsBuild
             public IEnumerable<string> GetItemsIncludes(string itemTypeName)
             {
                 return ConcatValues(p => p.GetItems(itemTypeName).Select(x => x.EvaluatedInclude));
+            }
+
+            public IEnumerable<string> GetImportsProjects(string? label = null)
+            {
+                return ConcatValues(p => p.Imports.Where(x => label is null || x.ImportingElement.Label == label).Select(x => x.ImportingElement.Project));
             }
 
             private IEnumerable<string> ConcatValues(Func<Project, IEnumerable<string>> valuesFunc)

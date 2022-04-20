@@ -89,7 +89,7 @@ namespace SubSolution.VisualStudio.Helpers
             var solutionBuilder = new SolutionBuilder(builderContext);
             Solution generatedSolution = await solutionBuilder.BuildAsync(builderContext.Configuration);
             
-            var solutionConverter = new SolutionConverter(StandardFileSystem.Instance);
+            var solutionConverter = new SolutionConverter(StandardFileSystem.Instance, builderContext.ProjectReader, builderContext.SolutionDirectoryPath);
             solutionConverter.Logger = logger;
 
             RawSolution rawSolution;
@@ -100,13 +100,13 @@ namespace SubSolution.VisualStudio.Helpers
                 rawSolution = await RawSolution.ReadAsync(solutionStream);
 
                 await progressAction("Update solution...", ++step);
-                solutionConverter.Update(rawSolution, generatedSolution);
+                await solutionConverter.UpdateAsync(rawSolution, generatedSolution);
             }
             else
             {
                 ++step;
                 await progressAction("Generate solution...", ++step);
-                rawSolution = solutionConverter.Convert(generatedSolution);
+                rawSolution = await solutionConverter.ConvertAsync(generatedSolution);
             }
 
             return new SolutionUpdate(builderContext.SolutionPath, subSlnPath, generatedSolution, rawSolution, solutionConverter.Changes);

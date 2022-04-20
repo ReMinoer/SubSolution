@@ -4,10 +4,10 @@
 		xsi:schemaLocation="http://subsln.github.io Sources/SubSolution.Builders/subsln.xsd">
 	<Root>
 		<Folder Name="Plugins">
-			<Projects Path="Plugins/**/*.csproj" />
+			<Projects Path="Plugins/*/" />
 		</Folder>
 		<Folder Name="Tests">
-			<Projects Path="Tests/**/*.csproj" />
+			<Projects Path="Tests/*/" />
 		</Folder>
 		<Projects Path="Sources/*/" />
 	</Root>

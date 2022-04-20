@@ -11,6 +11,8 @@ namespace SubSolution.Converters.Changes
         public SolutionObjectType? TargetType { get; }
         public string? TargetName { get; }
 
+        public object? ObjectTag { get; set; }
+
         public SolutionChange(SolutionChangeType changeType, SolutionObjectType objectType, string objectName, string? targetName)
         {
             ChangeType = changeType;
@@ -29,6 +31,9 @@ namespace SubSolution.Converters.Changes
                 case SolutionObjectType.ProjectContext:
                     TargetType = SolutionObjectType.ConfigurationPlatform;
                     break;
+                case SolutionObjectType.SharedProject:
+                    TargetType = SolutionObjectType.Project;
+                    break;
                 case SolutionObjectType.ConfigurationPlatform:
                     TargetType = null;
                     break;
@@ -39,30 +44,31 @@ namespace SubSolution.Converters.Changes
 
         public string GetMessage(bool startWithBullet = false, IFileSystem? getFileNameFileSystem = null)
         {
-            string objectName = ObjectName;
-            if (getFileNameFileSystem != null)
-            {
-                switch (ObjectType)
-                {
-                    case SolutionObjectType.Project:
-                    case SolutionObjectType.ProjectContext:
-                        objectName = getFileNameFileSystem.GetFileNameWithoutExtension(objectName);
-                        break;
-                    case SolutionObjectType.File:
-                        objectName = getFileNameFileSystem.GetName(objectName);
-                        break;
-                }
-            }
-
+            string objectName = FormatName(ObjectName, ObjectType, getFileNameFileSystem);
             string bullet = startWithBullet ? $"[{Bullet}] " : string.Empty;
 
             if (TargetName is null)
-            {
                 return $"{bullet}{ChangeType} {ObjectType} \"{objectName}\"";
-            }
 
             string targetWord = ChangeType == SolutionChangeType.Remove || ChangeType == SolutionChangeType.Edit ? "from" : "to";
-            return $"{bullet}{ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{TargetName}\"";
+            string targetName = FormatName(TargetName, TargetType, getFileNameFileSystem);
+
+            return $"{bullet}{ChangeType} {ObjectType} \"{objectName}\" {targetWord} \"{targetName}\"";
+        }
+
+        private string FormatName(string name, SolutionObjectType? objectType, IFileSystem? getFileNameFileSystem)
+        {
+            switch (objectType)
+            {
+                case SolutionObjectType.Project:
+                case SolutionObjectType.ProjectContext:
+                case SolutionObjectType.SharedProject:
+                    return getFileNameFileSystem?.GetFileNameWithoutExtension(name) ?? name;
+                case SolutionObjectType.File:
+                    return getFileNameFileSystem?.GetName(name) ?? name;
+                default:
+                    return name;
+            }
         }
 
         private char Bullet

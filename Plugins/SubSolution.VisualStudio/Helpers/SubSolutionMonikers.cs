@@ -22,6 +22,8 @@ namespace SubSolution.VisualStudio.Helpers
                 ProjectType.NodeJs => KnownMonikers.JSProjectNode,
                 ProjectType.Sql => KnownMonikers.DatabaseApplication,
                 ProjectType.Wap => KnownMonikers.Application,
+                ProjectType.Shared => KnownMonikers.SharedProject,
+                ProjectType.SharedItems => KnownMonikers.CPPSharedProject,
                 _ => KnownMonikers.Application
             };
         }
@@ -46,6 +48,7 @@ namespace SubSolution.VisualStudio.Helpers
                 SolutionObjectType.File => KnownMonikers.TextFile,
                 SolutionObjectType.ConfigurationPlatform => KnownMonikers.ShowAllConfigurations,
                 SolutionObjectType.ProjectContext => KnownMonikers.Property,
+                SolutionObjectType.SharedProject => KnownMonikers.Reference,
                 _ => null
             };
         }

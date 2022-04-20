@@ -691,16 +691,22 @@ namespace SubSolution.Builders
                 return Enumerable.Empty<string>();
             }
 
-            string fullGlobPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, ProjectFileExtensions.Wildcard);
+            Log($"Search for files matching pattern: {string.Join("|", ProjectFileExtensions.ExtensionPatterns)}");
 
-            Log($"Search for files matching pattern: {fullGlobPattern}");
-            IEnumerable<string> matchingProjects = _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, fullGlobPattern);
+            var allMatchingProjects = new List<string>();
+            foreach (string extensionPattern in ProjectFileExtensions.ExtensionPatterns)
+            {
+                string fullGlobPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, extensionPattern);
+                IEnumerable<string> matchingProjects = _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, fullGlobPattern);
 
-            // If globPattern was updated to include project file extensions wildcard, keep only known extensions.
-            if (fullGlobPattern != globPattern)
-                matchingProjects = matchingProjects.Where(ProjectFileExtensions.MatchAny);
+                // If globPattern was updated to include project file extension patterns, keep only known extensions.
+                if (fullGlobPattern != globPattern)
+                    matchingProjects = matchingProjects.Where(ProjectFileExtensions.MatchAny);
 
-            return matchingProjects;
+                allMatchingProjects.AddRange(matchingProjects);
+            }
+            
+            return allMatchingProjects;
         }
 
         private void AddFoldersAndFileToSolution(string workspaceRelativeFilePath, Action<Solution.Folder, string, string, bool> addEntry, bool createFolders, bool overwrite)

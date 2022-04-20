@@ -48,11 +48,25 @@ namespace SubSolution.Builders.Base
             BuiltFilter = filter;
         }
 
-        protected Task BuildPathAsync(string globPattern, string defaultFileExtension)
+        protected Task BuildPathAsync(string globPattern, params string[] defaultFileExtensions)
         {
-            globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
+            if (defaultFileExtensions.Length == 1)
+            {
+                globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtensions[0]);
+                BuiltFilter = new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath);
+            }
+            else
+            {
+                var filter = new AnyOfFilter<TItem>();
+                foreach (string defaultFileExtension in defaultFileExtensions)
+                {
+                    globPattern = GlobPatternUtils.CompleteSimplifiedPattern(globPattern, defaultFileExtension);
+                    filter.Filters.Add(new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath));
+                }
 
-            BuiltFilter = new PathFilter(globPattern, _fileSystem.IsCaseSensitive).Cast<TItem, string>(GetItemPath);
+                BuiltFilter = filter;
+            }
+
             return Task.CompletedTask;
         }
     }
