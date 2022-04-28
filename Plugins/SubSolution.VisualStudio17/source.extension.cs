@@ -13,6 +13,6 @@ namespace SubSolution.VisualStudio
         public const string Language = "en-US";
         public const string Version = "1.0";
         public const string Author = "Rémi Morillon";
-        public const string Tags = "subsolution subsln solution sln generate configuration";
+        public const string Tags = "subsolution subsln solution sln";
     }
 }

@@ -71,7 +71,7 @@ You can download the Visual Studio extension from the [Releases](https://github.
 The extension include the following features:
 
 - You can create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
-- You can edit .subsln files with auto-completion support.
+- You can edit .subsln files *~~with auto-completion support~~ (disabled for now)*.
 - When saving .subsln files, a preview of the resulting solution is shown so you can decide if you want to applied it or not.
 - Visual Studio automatically check if the solution is up-to-date at solution opening.
 
