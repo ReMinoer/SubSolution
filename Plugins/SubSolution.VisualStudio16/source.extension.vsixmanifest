@@ -8,7 +8,7 @@
         <License>LICENSE.txt</License>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Icon.png</PreviewImage>
-        <Tags>subsolution subsln solution sln</Tags>
+        <Tags>subsolution;subsln;solution;sln</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,17.0)" />
