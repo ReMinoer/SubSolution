@@ -66,12 +66,11 @@ If you use the command "subsln create", it generates a default template with a c
 
 # Visual Studio extension
 
-You can download the Visual Studio extension from the [Releases](https://github.com/ReMinoer/SubSolution/releases) page.
+Visual Studio 2019 & 2022 extensions are available on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/search?term=subsolution&target=VS).
 
-The extension include the following features:
+They include the following features:
 
 - You can create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
-- You can edit .subsln files *~~with auto-completion support~~ (disabled for now)*.
 - When saving .subsln files, a preview of the resulting solution is shown so you can decide if you want to applied it or not.
 - Visual Studio automatically check if the solution is up-to-date at solution opening.
 
