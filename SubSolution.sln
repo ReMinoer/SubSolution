@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31313.79
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.CommandLine", "Sources\SubSolution.CommandLine\SubSolution.CommandLine.csproj", "{9B35C7E3-F33A-481F-BDB4-203AE6AFDD98}"
 EndProject
@@ -17,9 +17,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubSolution.MsBuild", "Sour
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{90DB7E3C-4340-4342-94E3-D7D6E6C7544D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubSolution.VisualStudio", "Plugins\SubSolution.VisualStudio\SubSolution.VisualStudio.csproj", "{699E8B91-2ED8-407B-8BBF-5E3B680170F3}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SubSolution.VisualStudio.Shared", "Plugins\SubSolution.VisualStudio.Shared\SubSolution.VisualStudio.Shared.shproj", "{7312F8B0-E399-45CD-AD41-5541DE77BE80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubSolution.VisualStudio16", "Plugins\SubSolution.VisualStudio16\SubSolution.VisualStudio16.csproj", "{A67973E1-DB53-4AD1-9551-4F6015B8FEEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubSolution.VisualStudio17", "Plugins\SubSolution.VisualStudio17\SubSolution.VisualStudio17.csproj", "{46C5AE1F-E7B7-4C9E-945B-E25896184ADB}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Plugins\SubSolution.VisualStudio.Shared\SubSolution.VisualStudio.Shared.projitems*{46c5ae1f-e7b7-4c9e-945b-e25896184adb}*SharedItemsImports = 4
+		Plugins\SubSolution.VisualStudio.Shared\SubSolution.VisualStudio.Shared.projitems*{7312f8b0-e399-45cd-ad41-5541de77be80}*SharedItemsImports = 13
+		Plugins\SubSolution.VisualStudio.Shared\SubSolution.VisualStudio.Shared.projitems*{a67973e1-db53-4ad1-9551-4f6015b8feec}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -45,17 +54,23 @@ Global
 		{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42D9DFA-B1A0-4ABA-9E06-7FB0383729D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{699E8B91-2ED8-407B-8BBF-5E3B680170F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{699E8B91-2ED8-407B-8BBF-5E3B680170F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{699E8B91-2ED8-407B-8BBF-5E3B680170F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{699E8B91-2ED8-407B-8BBF-5E3B680170F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A67973E1-DB53-4AD1-9551-4F6015B8FEEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A67973E1-DB53-4AD1-9551-4F6015B8FEEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A67973E1-DB53-4AD1-9551-4F6015B8FEEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A67973E1-DB53-4AD1-9551-4F6015B8FEEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46C5AE1F-E7B7-4C9E-945B-E25896184ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46C5AE1F-E7B7-4C9E-945B-E25896184ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46C5AE1F-E7B7-4C9E-945B-E25896184ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46C5AE1F-E7B7-4C9E-945B-E25896184ADB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{70CA2BB1-1545-46ED-AABD-ED4C3190A8E6} = {DCA4B9AE-20BF-40E4-A150-25CC261FABB4}
-		{699E8B91-2ED8-407B-8BBF-5E3B680170F3} = {90DB7E3C-4340-4342-94E3-D7D6E6C7544D}
+		{7312F8B0-E399-45CD-AD41-5541DE77BE80} = {90DB7E3C-4340-4342-94E3-D7D6E6C7544D}
+		{A67973E1-DB53-4AD1-9551-4F6015B8FEEC} = {90DB7E3C-4340-4342-94E3-D7D6E6C7544D}
+		{46C5AE1F-E7B7-4C9E-945B-E25896184ADB} = {90DB7E3C-4340-4342-94E3-D7D6E6C7544D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB41EFA5-8828-4F73-BEB2-9C4FC0D96030}

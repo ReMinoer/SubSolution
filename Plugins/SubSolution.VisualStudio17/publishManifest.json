@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/vsix-publish",
+    "identity": {
+        "internalName": "SubSolution2022"
+    },
+    "publisher": "ReMinoer",
+    "categories": ["other"],
+    "overview": "overview.md",
+    "priceCategory": "free",
+    "private": false,
+    "qna": false,
+    "repo": "https://github.com/ReMinoer/SubSolution"
+}

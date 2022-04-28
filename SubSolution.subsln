@@ -11,4 +11,7 @@
 		</Folder>
 		<Projects Path="Sources/*/" />
 	</Root>
+	<Platforms>
+		<Platform Name="Any CPU" />
+    </Platforms>
 </Subsln>

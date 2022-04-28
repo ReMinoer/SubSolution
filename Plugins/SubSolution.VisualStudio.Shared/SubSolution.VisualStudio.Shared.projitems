@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7312f8b0-e399-45cd-ad41-5541de77be80</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SubSolution.VisualStudio</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\BackgroundGenerationErrorActionBar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\Base\ActionBarBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\Base\DocumentActionBarBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\Base\SolutionExplorerActionBarBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\GenerateAfterSaveActionBar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ActionBars\OutdatedSolutionActionBar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\Base\SubSolutionContextualCommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\OpenSubSlnFileCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dialogs\ShowSolutionUpdateDialog.xaml.cs">
+      <DependentUpon>ShowSolutionUpdateDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SolutionUpdate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SolutionWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SubSolutionHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SubSolutionMonikers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualStudioOutputLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\WaitDialog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SubSolutionVisualStudioPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ISubSolutionTreeItemViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionChangeViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionConfigurationPlatformViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionFileViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionFolderViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionProjectContextViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionProjectViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionRootViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VSCommandTable.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Watchers\OutdatedSolutionWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Watchers\SavedSubSlnWatcher.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Dialogs\ShowSolutionUpdateDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>
