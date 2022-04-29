@@ -47,6 +47,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\SubSolution.VisualStudio.Shared\SharedFiles\VSCommandTable.cs">
+      <Link>VSCommandTable.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>VSCommandTable.vsct</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="source.extension.cs">
       <AutoGen>True</AutoGen>
@@ -63,11 +69,12 @@
       <Link>LICENSE.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <VSCTInclude Include="..\SubSolution.VisualStudio.Shared\SharedFiles\VSCommandTable.vsct">
+    <VSCTCompile Include="..\SubSolution.VisualStudio.Shared\SharedFiles\VSCommandTable.vsct">
       <Link>VSCommandTable.vsct</Link>
+      <ResourceName>Menus.ctmenu</ResourceName>
       <Generator>VsctGenerator</Generator>
       <LastGenOutput>VSCommandTable.cs</LastGenOutput>
-    </VSCTInclude>
+    </VSCTCompile>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
       <Generator>VsixManifestGenerator</Generator>

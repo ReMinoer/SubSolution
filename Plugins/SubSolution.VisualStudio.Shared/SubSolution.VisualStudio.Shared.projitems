@@ -35,10 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionProjectContextViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionProjectViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SolutionRootViewModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)VSCommandTable.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Watchers\OutdatedSolutionWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Watchers\SavedSubSlnWatcher.cs" />
   </ItemGroup>
