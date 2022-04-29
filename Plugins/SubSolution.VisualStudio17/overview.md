@@ -1,12 +1,6 @@
-# SubSolution extension
+# SubSolution
 
-- Create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
-- When saving .subsln files, a preview of the resulting solution is shown so you can decide if you want to applied it or not.
-- Visual Studio automatically check if the solution is up-to-date at solution opening.
-
-# SubSolution configuration files
-
-SubSolution use a XML file format with extension `.subsln` to describe the content of Visual Studio solutions in a more user-friendly syntax than .sln format.
+SubSolution use XML files with the extension `.subsln` to describe the content of Visual Studio solutions in a user-friendly syntax.
 
 ```xml
 <Subsln xmlns="http://subsln.github.io">
@@ -22,4 +16,17 @@ SubSolution use a XML file format with extension `.subsln` to describe the conte
 </Subsln>
 ```
 
-More details on our [GitHub page](https://github.com/ReMinoer/SubSolution).
+The Visual Studio extension includes the following features:
+
+- You can create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
+
+  ![Command](https://raw.githubusercontent.com/ReMinoer/SubSolution/master/Images/vs_command.png)
+
+- When saving a .subsln file, you can see a preview of the updated solution and decide if you want to modify the solution or not.
+
+  ![Save](https://raw.githubusercontent.com/ReMinoer/SubSolution/master/Images/vs_save.png)
+
+- When opening a solution with an associated .subsln file, it automatically checks if your solution is up-to-date.
+
+  ![Load](https://raw.githubusercontent.com/ReMinoer/SubSolution/master/Images/vs_load.png)
+

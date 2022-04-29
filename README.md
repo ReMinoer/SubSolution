@@ -18,7 +18,7 @@ It includes various tools:
 
 # Configuration files: `.subsln`
 
-SubSolution introduce a XML file format using extension `.subsln` to describe the content of Visual Studio solutions with a more user-friendly syntax than .sln format. You can generate a solution from it or update an existing one.
+SubSolution use XML files with the extension `.subsln` to describe the content of Visual Studio solutions in a user-friendly syntax.
 
 ```xml
 <Subsln xmlns="http://subsln.github.io">
@@ -80,7 +80,7 @@ The Visual Studio extension includes the following features:
 
   ![Save](Images/vs_save.png)
 
-- When opening a solution, it automatically check if you solution is up-to-date.
+- When opening a solution, it automatically checks if your solution is up-to-date.
 
   ![Load](Images/vs_load.png)
 
