@@ -1,7 +1,8 @@
 # SubSolution
 
-[![Nuget](https://img.shields.io/nuget/v/SubSolution?label=SubSolution&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution)
-[![Nuget](https://img.shields.io/nuget/v/subsln?label=subsln&color=004880&logo=windowsterminal&style=for-the-badge)](https://www.nuget.org/packages/subsln)
+[![Visual Studio Extension](https://img.shields.io/visual-studio-marketplace/v/ReMinoer.SubSolution2022?label=VISUAL%20STUDIO&color=5C2D91&logo=visualstudio&style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=ReMinoer.SubSolution2022)
+[![Command Line](https://img.shields.io/nuget/v/subsln?label=Command%20Line&color=333333&logo=windowsterminal&style=for-the-badge)](https://www.nuget.org/packages/subsln)
+[![Nuget](https://img.shields.io/nuget/v/SubSolution?label=Nuget&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution)
 
 [![Change](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Change?label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
 [![Release](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Release?label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
@@ -66,15 +67,26 @@ If you use the command "subsln create", it generates a default template with a c
 
 # Visual Studio extension
 
-Visual Studio 2019 & 2022 extensions are available on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/search?term=subsolution&target=VS).
+[![Visual Studio 2019](https://img.shields.io/visual-studio-marketplace/v/ReMinoer.SubSolution2019?label=VISUAL%20STUDIO%202019&color=5C2D91&logo=visualstudio&style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=ReMinoer.SubSolution2019)
+[![Visual Studio 2022](https://img.shields.io/visual-studio-marketplace/v/ReMinoer.SubSolution2022?label=VISUAL%20STUDIO%202022&color=5C2D91&logo=visualstudio&style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=ReMinoer.SubSolution2022)
 
-They include the following features:
+The Visual Studio extension includes the following features:
 
 - You can create/open the .subsln file associated to the current solution from the Solution Explorer context menu.
-- When saving .subsln files, a preview of the resulting solution is shown so you can decide if you want to applied it or not.
-- Visual Studio automatically check if the solution is up-to-date at solution opening.
+
+  ![Command](Images/vs_command.png)
+
+- When saving a .subsln file, you can see a preview of the updated solution and decide if you want to apply it or not.
+
+  ![Save](Images/vs_save.png)
+
+- When opening a solution, it automatically check if you solution is up-to-date.
+
+  ![Load](Images/vs_load.png)
 
 # Command line tool: `subsln`
+
+[![Command Line Tool](https://img.shields.io/nuget/v/subsln?label=subsln&color=333333&logo=windowsterminal&style=for-the-badge)](https://www.nuget.org/packages/subsln)
 
 "`subsln`" is a command line tool using `.subsln` configuration files to build Visual Studio solutions.
 
@@ -85,17 +97,21 @@ They include the following features:
 > subsln show MySolution.sln
 ```
 
-You can download a standalone version from the [Releases](https://github.com/ReMinoer/SubSolution/releases) page.
-
-Or install it with the [.NET SDK](https://dotnet.microsoft.com/download) command line:
+Install it with the [.NET SDK](https://dotnet.microsoft.com/download) command line:
 
 ```bash
 > dotnet tool install subsln --global 
 ```
 
+Check the [Releases](https://github.com/ReMinoer/SubSolution/releases) page for standalone executables.
+
 By default, `subsln` will try to find MSBuild binaries on your machine. There are multiple options to specify which MSBuild binaries use to read projects. Use `subsln help` or `subsln [command] --help` for more details on commands.
 
 # .NET libraries
+
+[![SubSolution Nuget](https://img.shields.io/nuget/v/SubSolution?label=SubSolution&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution)
+[![Nuget](https://img.shields.io/nuget/v/SubSolution.Builders?label=SubSolution.Builders&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution.Builders)
+[![Nuget](https://img.shields.io/nuget/v/SubSolution?label=SubSolution.MsBuild&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution.MsBuild)
 
 You can use SubSolution .NET libraries as Nuget packages:
 
