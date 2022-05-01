@@ -20,6 +20,10 @@ It includes various tools:
 
 SubSolution use XML files with the extension `.subsln` to describe the content of Visual Studio solutions in a user-friendly syntax.
 
+You can find the .subsln format documentation at this address: **https://subsln.github.io**.
+
+That address is also the XML namespace used by .subsln files so you will always be a click away from the doc!
+
 ```xml
 <Subsln xmlns="http://subsln.github.io">
     <Root>
@@ -34,16 +38,12 @@ SubSolution use XML files with the extension `.subsln` to describe the content o
 </Subsln>
 ```
 
-## XML Syntax
-
-You can find the [XML schema here](https://github.com/ReMinoer/SubSolution/blob/master/Sources/SubSolution.Builders/subsln.xsd).
-
-If you use the command "subsln create", it generates a default template with a configured XML schema so auto-completion should work in your favorite IDE.
+## Syntax overview
 
 - Describe your item hierarchy: `<Root>`
-    - Create folders to organize your items: `<Folder>`
     - Add projects with glob patterns: `<Projects>`
     - Add files for quick-access: `<Files>`
+    - Create folders to organize your items: `<Folder>`
     - Find project dependencies and dependents: `<Dependencies>` / `<Dependents>`
     - Include the content of existing solutions: `<Solutions>` / `<SubSolutions>`
     - Select what you want to keep from other solutions: `<KeepOnly>`
@@ -54,16 +54,19 @@ If you use the command "subsln create", it generates a default template with a c
     - Match them with project configurations and platforms: `<ProjectConfiguration>` / `<ProjectPlatform>`
 - And a lot more options as XML attributes !
 
+The complete documentation is available on **https://subsln.github.io**.
+
 ## Why use a `.subsln` file ?
 
-- It allows you to __express your organization rules__ ("those projects in that folder, unit tests in that one...") and __ensure they are respected__ on solution changes.
-- It acts as a __substitute or edition assistant__ of .sln files, to describe the solution content with a __user-friendly structure__.
+- It allows you to __express your solution organization rules__ ("those projects in that folder, unit tests in that one...") and ensure they are respected on solution changes.
+- It acts as a __substitute or edition assistant__ of .sln files, to describe the solution content with a user-friendly structure similar to the Visual Studio "Solution Explorer" representation.
 - It can also be used as a punctual tool, to __apply a one-time update__.
-- It allows to __quickly iterate__ on your solution structure until it matches your needs, without even opening the solution in Visual Studio.
-- It can __automatically fill your solution with dependencies__ of your core projects.
+- It allows to __quickly iterate__ on your solution structure until it matches your needs, without requiring to run Visual Studio.
+- It can __build an entirely customized hierarchy__, or at contrary mirror your file system structure.
+- It can __find and fill your solution with dependencies__ of your central projects.
 - It can describe solutions __in a modular way__ by including the content of a solution into another.
-- It makes it easier to __apply changes to multiple solutions__ sharing projects.
-- It can __divide a big solution in smaller ones__ to reduce impact on Visual Studio performances.
+- It makes it easier to __apply changes to multiple solutions__ sharing the same projects.
+- It can __create a smaller solution from a big one__ to have a better environment or performances in Visual Studio.
 
 # Visual Studio extension
 
