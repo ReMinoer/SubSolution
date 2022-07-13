@@ -266,7 +266,7 @@ namespace SubSolution.Builders
             string[] matchingFilePaths = GetMatchingProjectPaths(projects.Path).ToArray();
             
             Task<ISolutionProject>[] readProjectTasks = matchingFilePaths
-                .Select(x => _projectReader.ReadAsync(_fileSystem.MakeAbsolutePath(_solution.OutputDirectoryPath, x)))
+                .Select(x => _projectReader.ReadAsync(_fileSystem.MakeAbsolutePath(_workspaceDirectoryPath, x)))
                 .ToArray();
 
             try
