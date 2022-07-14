@@ -720,7 +720,7 @@ namespace SubSolution.Builders
 
             if (createFolders)
             {
-                string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(outputRelativeFilePath) ?? string.Empty;
+                string relativeDirectoryPath = _fileSystem.GetParentDirectoryPath(workspaceRelativeFilePath) ?? string.Empty;
                 string[] solutionFolderPath = _fileSystem.SplitPath(relativeDirectoryPath);
 
                 using (MoveCurrentFolder(solutionFolderPath))
