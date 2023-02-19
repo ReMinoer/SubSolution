@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Community.VisualStudio.Toolkit;
 using EnvDTE;
@@ -59,6 +60,23 @@ namespace SubSolution.VisualStudio.Helpers
                 using WaitDialog waitDialog = await WaitDialog.ShowAsync("SubSolution", "Update solution from .subsln", maxProgress: 3);
                 SolutionUpdate solutionUpdate = await PrepareUpdateAsync(subSlnPath, outputLogger, async (s, i) => await waitDialog.UpdateAsync(s, i));
 
+                if (solutionUpdate.Issues.Count > 0)
+                {
+                    bool asWarning = solutionUpdate.Issues.Any(x => x.Level == IssueLevel.Warning)
+                        && solutionUpdate.Issues.All(x => x.Level != IssueLevel.Error);
+
+                    if (asWarning)
+                        outputLogger.LogWarning("Warning(s) encountered when checking if the solution is up-to-date.");
+                    else
+                        outputLogger.LogError("Error(s) encountered when checking if the solution is up-to-date.");
+                    
+                    await outputLogger.OutputPane.ActivateAsync();
+                    await VS.MessageBox.ShowAsync($"We failed to generate a preview of the solution.{Environment.NewLine}(See log for details)",
+                        buttons: OLEMSGBUTTON.OLEMSGBUTTON_OK, icon: OLEMSGICON.OLEMSGICON_CRITICAL);
+
+                    return false;
+                }
+
                 if (!solutionUpdate.HasChanges)
                 {
                     await VS.MessageBox.ShowAsync("No changes in solution", buttons: OLEMSGBUTTON.OLEMSGBUTTON_OK);
@@ -70,7 +88,10 @@ namespace SubSolution.VisualStudio.Helpers
             catch (Exception ex)
             {
                 outputLogger.LogError(ex, $"Failed to generate and update solution from {subSlnPath}.");
+
                 await outputLogger.OutputPane.ActivateAsync();
+                await VS.MessageBox.ShowAsync($"We failed to generate a preview of the solution.{Environment.NewLine}(See log for details)",
+                    buttons: OLEMSGBUTTON.OLEMSGBUTTON_OK, icon: OLEMSGICON.OLEMSGICON_CRITICAL);
 
                 return false;
             }
@@ -109,7 +130,7 @@ namespace SubSolution.VisualStudio.Helpers
                 rawSolution = await solutionConverter.ConvertAsync(generatedSolution);
             }
 
-            return new SolutionUpdate(builderContext.SolutionPath, subSlnPath, generatedSolution, rawSolution, solutionConverter.Changes);
+            return new SolutionUpdate(builderContext.SolutionPath, subSlnPath, generatedSolution, rawSolution, solutionConverter.Changes, solutionBuilder.Issues);
         }
 
         static private async Task<bool> AskToApplyUpdateAsync(SolutionUpdate solutionUpdate)

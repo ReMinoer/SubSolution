@@ -10,6 +10,7 @@ XML format:
 
 Solution read/write:
 
+- Support some MSBuild variables (like $(SolutionDir))
 - Prevent files at root
 - Shared Projects & GlobalSection
 - RawSolution sections controllers

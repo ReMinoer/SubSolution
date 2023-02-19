@@ -16,7 +16,7 @@ namespace SubSolution.VisualStudio.ActionBars
         private readonly string _subSlnFilePath;
         private readonly OutputWindowPane _outputPane;
 
-        protected override ImageMoniker Moniker => KnownMonikers.XMLSchemaError;
+        protected override ImageMoniker Moniker { get; }
         protected override IEnumerable<IVsInfoBarTextSpan> TextSpans { get; } = new[]
         {
             new InfoBarTextSpan("We failed to generate a preview of your solution from your .subsln file to check it's up-to-date."),
@@ -32,10 +32,12 @@ namespace SubSolution.VisualStudio.ActionBars
             SeeLog
         }
 
-        public BackgroundGenerationErrorActionBar(string subSlnFilePath, OutputWindowPane outputPane)
+        public BackgroundGenerationErrorActionBar(string subSlnFilePath, OutputWindowPane outputPane, bool asWarning = false)
         {
             _subSlnFilePath = subSlnFilePath;
             _outputPane = outputPane;
+
+            Moniker = asWarning ? KnownMonikers.XMLSchemaWarning : KnownMonikers.XMLSchemaError;
         }
 
         protected override async Task<bool> RunActionAsync(IVsInfoBarActionItem actionItem, VisualStudioOutputLogger _)

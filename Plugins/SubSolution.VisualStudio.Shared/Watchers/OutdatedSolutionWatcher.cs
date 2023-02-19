@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Community.VisualStudio.Toolkit;
@@ -114,9 +115,10 @@ namespace SubSolution.VisualStudio.Watchers
             CancellationToken cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(token, taskHandler.UserCancellation).Token;
             cancellationToken.ThrowIfCancellationRequested();
 
+            SolutionUpdate solutionUpdate;
             try
             {
-                SolutionUpdate solutionUpdate = await SubSolutionHelpers.PrepareUpdateAsync(
+                solutionUpdate = await SubSolutionHelpers.PrepareUpdateAsync(
                     subSlnPath, _outputLogger,
                     (text, i) =>
                     {
@@ -128,7 +130,7 @@ namespace SubSolution.VisualStudio.Watchers
                         return Task.CompletedTask;
                     }
                 );
-
+                
                 if (!solutionUpdate.HasChanges)
                     return;
             }
@@ -144,6 +146,22 @@ namespace SubSolution.VisualStudio.Watchers
                 await _generationErrorActionBar.ShowAsync(CancellationToken.None);
 
                 throw;
+            }
+
+            if (solutionUpdate.Issues.Count > 0)
+            {
+                bool asWarning = solutionUpdate.Issues.Any(x => x.Level == IssueLevel.Warning)
+                    && solutionUpdate.Issues.All(x => x.Level != IssueLevel.Error);
+
+                if (asWarning)
+                    _outputLogger.LogWarning("Warning(s) encountered when checking if the solution is up-to-date.");
+                else
+                    _outputLogger.LogError("Error(s) encountered when checking if the solution is up-to-date.");
+
+                _generationErrorActionBar = new BackgroundGenerationErrorActionBar(subSlnPath, _outputLogger.OutputPane, asWarning);
+                await _generationErrorActionBar.ShowAsync(CancellationToken.None);
+
+                return;
             }
 
             _outdatedSolutionActionBar = new OutdatedSolutionActionBar(subSlnPath);
