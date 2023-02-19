@@ -13,8 +13,14 @@ jobs:
     uses: ReMinoer/workflows/.github/workflows/dotnet-validate.yml@master
     with:
       solution_file: SubSolution.Core.sln
+      dotnet_version: |
+        3.1
+        5
   vsix-validate:
     name: vsix
     uses: ReMinoer/workflows/.github/workflows/vsix-validate.yml@master
     with:
       solution_file: SubSolution.sln
+      dotnet_version: |
+        3.1
+        5
