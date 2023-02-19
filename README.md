@@ -4,8 +4,8 @@
 [![Command Line](https://img.shields.io/nuget/v/subsln?label=Command%20Line&color=333333&logo=windowsterminal&style=for-the-badge)](https://www.nuget.org/packages/subsln)
 [![Nuget](https://img.shields.io/nuget/v/SubSolution?label=Nuget&color=004880&logo=nuget&style=for-the-badge)](https://www.nuget.org/packages/SubSolution)
 
-[![Change](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Change?label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
-[![Release](https://img.shields.io/github/workflow/status/ReMinoer/SubSolution/Release?label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
+[![Change](https://img.shields.io/github/actions/workflow/status/ReMinoer/SubSolution/change.yml?label=Change&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/change.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/ReMinoer/SubSolution/release.yml?label=Release&logo=github&style=for-the-badge)](https://github.com/ReMinoer/SubSolution/actions/workflows/release.yml)
 
 SubSolution is a tool set giving you control on your Visual Studio solutions.
 
