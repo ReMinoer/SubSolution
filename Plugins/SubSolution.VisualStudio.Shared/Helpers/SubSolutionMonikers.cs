@@ -24,6 +24,7 @@ namespace SubSolution.VisualStudio.Helpers
                 ProjectType.Wap => KnownMonikers.Application,
                 ProjectType.Shared => KnownMonikers.SharedProject,
                 ProjectType.SharedItems => KnownMonikers.CPPSharedProject,
+                ProjectType.Installer => KnownMonikers.DeploymentApplication,
                 _ => KnownMonikers.Application
             };
         }

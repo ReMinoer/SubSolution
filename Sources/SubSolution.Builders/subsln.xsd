@@ -86,7 +86,7 @@
         </xs:annotation>
         <xs:attribute name="Match" type="subsln:ConfigurationPlatformName" use="required">
             <xs:annotation>
-                <xs:documentation>Part of a project configuration name to match.</xs:documentation>
+                <xs:documentation>Regex of a project configuration name to match.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -128,7 +128,7 @@
         </xs:annotation>
         <xs:attribute name="Match" type="subsln:ConfigurationPlatformName" use="required">
             <xs:annotation>
-                <xs:documentation>Part of a project platform name to match.</xs:documentation>
+                <xs:documentation>Regex of a project platform name to match.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

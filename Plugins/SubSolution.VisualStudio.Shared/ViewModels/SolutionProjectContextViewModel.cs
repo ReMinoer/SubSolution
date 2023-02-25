@@ -47,7 +47,7 @@ namespace SubSolution.VisualStudio.ViewModels
             _projectContext = projectContext;
 
             DisplayName = $"{System.IO.Path.GetFileNameWithoutExtension(projectPath)}" +
-                $" -> {_projectContext.ConfigurationName} | {_projectContext.PlatformName}";
+                $" -> {_projectContext.GetConfigurationPlatformName(" | ")}";
 
             Path = projectPath;
         }

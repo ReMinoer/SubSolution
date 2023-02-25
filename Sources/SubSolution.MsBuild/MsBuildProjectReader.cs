@@ -48,6 +48,9 @@ namespace SubSolution.MsBuild
 
         private async Task<ISolutionProject> ReadProjectAsync(string absoluteProjectPath)
         {
+            if (ProjectFileExtension.Vdproj.IsExtensionOf(absoluteProjectPath))
+                return await InstallerProjectReader.ReadInstallerProjectAsync(absoluteProjectPath);
+
             ProjectWrapper project = await Task.Run(() => ReadProject(absoluteProjectPath));
 
             var solutionProject = new SolutionProject(GetType(project))
@@ -268,6 +271,7 @@ namespace SubSolution.MsBuild
             messageBuilder.AppendLine("- CanBuild: " + solutionProject.CanBuild);
             messageBuilder.AppendLine("- CanDeploy: " + solutionProject.CanDeploy);
             messageBuilder.AppendLine("- AlwaysDeploy: " + solutionProject.AlwaysDeploy);
+            messageBuilder.AppendLine("- NoPlatform: " + solutionProject.NoPlatform);
             messageBuilder.AppendLine("- Configurations: " + string.Join(", ", solutionProject.Configurations));
             messageBuilder.Append("- Platforms: " + string.Join(", ", solutionProject.Platforms));
 

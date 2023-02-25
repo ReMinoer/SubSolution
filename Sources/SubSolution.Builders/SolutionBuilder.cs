@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -119,8 +120,8 @@ namespace SubSolution.Builders
         {
             foreach (SolutionConfiguration configuration in configurations.Configuration)
             {
-                string[]? matchingProjectConfigurations = configuration.ProjectConfiguration.Count > 0
-                    ? configuration.ProjectConfiguration.Select(x => x.Match).ToArray()
+                Regex[]? matchingProjectConfigurations = configuration.ProjectConfiguration.Count > 0
+                    ? configuration.ProjectConfiguration.Select(x => new Regex(x.Match, RegexOptions.IgnoreCase)).ToArray()
                     : null;
 
                 _solution.AddConfiguration(configuration.Name, matchingProjectConfigurations);
@@ -128,8 +129,8 @@ namespace SubSolution.Builders
 
             foreach (SolutionPlatform platform in platforms.Platform)
             {
-                string[]? matchingProjectPlatforms = platform.ProjectPlatform.Count > 0
-                    ? platform.ProjectPlatform.Select(x => x.Match).ToArray()
+                Regex[]? matchingProjectPlatforms = platform.ProjectPlatform.Count > 0
+                    ? platform.ProjectPlatform.Select(x => new Regex(x.Match, RegexOptions.IgnoreCase)).ToArray()
                     : null;
 
                 _solution.AddPlatform(platform.Name, matchingProjectPlatforms);

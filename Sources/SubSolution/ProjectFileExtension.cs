@@ -13,6 +13,7 @@
         Wapproj,
         Shproj,
         Projitems,
-        Vcxitems
+        Vcxitems,
+        Vdproj
     }
 }

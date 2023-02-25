@@ -99,7 +99,7 @@ namespace SubSolution.Converters
                         if (context.Deploy)
                             properties.Add("Deploy");
 
-                        string line = $"{context.ConfigurationName}|{context.PlatformName}";
+                        string line = context.ConfigurationPlatformName;
                         if (properties.Count > 0)
                             line += $" ({string.Join(", ", properties)})";
 
@@ -130,13 +130,18 @@ namespace SubSolution.Converters
                         bool noBuild = project.CanBuild && !projectContext.Build;
                         bool noDeploy = project.CanDeploy && !projectContext.Deploy;
                         bool differentConfiguration = !projectContext.ConfigurationName.Equals(configurationPlatform.ConfigurationName, StringComparison.OrdinalIgnoreCase);
-                        bool differentPlatform = !projectContext.PlatformName.Equals(configurationPlatform.PlatformName, StringComparison.OrdinalIgnoreCase);
+                        bool differentPlatform = projectContext.PlatformName != null && !projectContext.PlatformName.Equals(configurationPlatform.PlatformName, StringComparison.OrdinalIgnoreCase);
 
                         if (noBuild || noDeploy || differentConfiguration || differentPlatform)
                         {
                             List<string> differences = new List<string>();
                             if (!noBuild && (differentConfiguration || differentPlatform))
-                                differences.Add($"{(differentConfiguration ? projectContext.ConfigurationName : "*")}|{(differentPlatform ? projectContext.PlatformName : "*")}");
+                            {
+                                differences.Add(projectContext.PlatformName is null
+                                    ? projectContext.ConfigurationName
+                                    : $"{(differentConfiguration ? projectContext.ConfigurationName : "*")}|{(differentPlatform ? projectContext.PlatformName : "*")}");
+                            }
+
                             if (noBuild)
                                 differences.Add("No build");
                             if (noDeploy)

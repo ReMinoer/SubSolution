@@ -45,6 +45,9 @@ namespace SubSolution
         Shared,
         [ProjectTypeName("Shared Items (C++)")]
         [ProjectTypeGuid("8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942")]
-        SharedItems
+        SharedItems,
+        [ProjectTypeName("Installer")]
+        [ProjectTypeGuid("54435603-DBB4-11D2-8724-00A0C9A8B90C")]
+        Installer
     }
 }

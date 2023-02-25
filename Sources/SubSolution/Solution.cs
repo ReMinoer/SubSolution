@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using SubSolution.Base;
 using SubSolution.FileSystems;
 
@@ -13,8 +13,8 @@ namespace SubSolution
         private readonly List<ConfigurationPlatform> _configurationPlatforms;
         protected override sealed IReadOnlyList<ISolutionConfigurationPlatform> ProtectedConfigurationPlatforms { get; }
 
-        private readonly Dictionary<string, string[]> _configurationMatches;
-        private readonly Dictionary<string, string[]> _platformMatches;
+        private readonly Dictionary<string, Regex[]> _configurationMatches;
+        private readonly Dictionary<string, Regex[]> _platformMatches;
 
         public Solution(string outputDirectoryPath, IFileSystem? fileSystem = null)
             : base(outputDirectoryPath, fileSystem)
@@ -24,35 +24,35 @@ namespace SubSolution
             _configurationPlatforms = new List<ConfigurationPlatform>();
             ProtectedConfigurationPlatforms = _configurationPlatforms.AsReadOnly();
 
-            _configurationMatches = new Dictionary<string, string[]>();
-            _platformMatches = new Dictionary<string, string[]>();
+            _configurationMatches = new Dictionary<string, Regex[]>();
+            _platformMatches = new Dictionary<string, Regex[]>();
         }
 
-        public void AddConfiguration(string configurationName, string[]? matchingProjectConfigurations = null)
+        public void AddConfiguration(string configurationName, Regex[]? matchingProjectConfigurations = null)
         {
-            matchingProjectConfigurations ??= new[] { configurationName };
+            matchingProjectConfigurations ??= new[] { new Regex(configurationName, RegexOptions.IgnoreCase) };
 
             _configurationMatches.Add(configurationName, matchingProjectConfigurations);
 
-            foreach ((string platformName, string[] matchingProjectPlatforms) in _platformMatches)
+            foreach ((string platformName, Regex[] matchingProjectPlatforms) in _platformMatches)
             {
                 AddConfigurationPlatform(configurationName, platformName, matchingProjectConfigurations, matchingProjectPlatforms);
             }
         }
 
-        public void AddPlatform(string platformName, string[]? matchingProjectPlatforms = null)
+        public void AddPlatform(string platformName, Regex[]? matchingProjectPlatforms = null)
         {
-            matchingProjectPlatforms ??= new[] { platformName };
+            matchingProjectPlatforms ??= new[] { new Regex(platformName, RegexOptions.IgnoreCase) };
 
             _platformMatches.Add(platformName, matchingProjectPlatforms);
 
-            foreach ((string configurationName, string[] matchingProjectConfigurations) in _configurationMatches)
+            foreach ((string configurationName, Regex[] matchingProjectConfigurations) in _configurationMatches)
             {
                 AddConfigurationPlatform(configurationName, platformName, matchingProjectConfigurations, matchingProjectPlatforms);
             }
         }
 
-        private void AddConfigurationPlatform(string configurationName, string platformName, string[] matchingProjectConfigurations, string[] matchingProjectPlatforms)
+        private void AddConfigurationPlatform(string configurationName, string platformName, Regex[] matchingProjectConfigurations, Regex[] matchingProjectPlatforms)
         {
             var configurationPlatform = new ConfigurationPlatform(_fileSystem, configurationName, platformName);
             configurationPlatform.MatchingProjectConfigurationNames.AddRange(matchingProjectConfigurations);
@@ -89,8 +89,8 @@ namespace SubSolution
             public string ConfigurationName { get; }
             public string PlatformName { get; }
             public string FullName => ConfigurationName + '|' + PlatformName;
-            public List<string> MatchingProjectConfigurationNames { get; }
-            public List<string> MatchingProjectPlatformNames { get; }
+            public List<Regex> MatchingProjectConfigurationNames { get; }
+            public List<Regex> MatchingProjectPlatformNames { get; }
 
             private readonly Dictionary<string, SolutionProjectContext> _projectContexts;
             public IReadOnlyDictionary<string, SolutionProjectContext> ProjectContexts { get; }
@@ -100,8 +100,8 @@ namespace SubSolution
                 ConfigurationName = configurationName;
                 PlatformName = platformName;
 
-                MatchingProjectConfigurationNames = new List<string>();
-                MatchingProjectPlatformNames = new List<string>();
+                MatchingProjectConfigurationNames = new List<Regex>();
+                MatchingProjectPlatformNames = new List<Regex>();
 
                 _projectContexts = new Dictionary<string, SolutionProjectContext>(fileSystem.PathComparer);
                 ProjectContexts = new ReadOnlyDictionary<string, SolutionProjectContext>(_projectContexts);
@@ -109,22 +109,36 @@ namespace SubSolution
 
             public void AddProjectContext(string projectPath, ISolutionProject project)
             {
-                if (project.Configurations.Count == 0 || project.Platforms.Count == 0)
-                    return;
+                SolutionProjectContext solutionProjectContext;
+                bool isCompleteMatch;
 
-                string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
-                string? matchingProjectPlatform = MatchNames(project.Platforms, MatchingProjectPlatformNames);
-                bool isCompleteMatch = matchingProjectConfiguration != null && matchingProjectPlatform != null;
-
-                string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
-                string? resolvedProjectPlatform = matchingProjectPlatform ?? project.Platforms[0];
-
-                var solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration, resolvedProjectPlatform)
+                if (project.NoPlatform)
                 {
-                    Build = project.CanBuild && isCompleteMatch,
-                    Deploy = project.AlwaysDeploy || (project.CanDeploy && isCompleteMatch)
-                };
+                    if (project.Configurations.Count == 0 )
+                        return;
 
+                    string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
+                    isCompleteMatch = matchingProjectConfiguration != null;
+
+                    string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
+                    solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration);
+                }
+                else
+                {
+                    if (project.Configurations.Count == 0 || project.Platforms.Count == 0)
+                        return;
+
+                    string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
+                    string? matchingProjectPlatform = MatchNames(project.Platforms, MatchingProjectPlatformNames);
+                    isCompleteMatch = matchingProjectConfiguration != null && matchingProjectPlatform != null;
+
+                    string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
+                    string? resolvedProjectPlatform = matchingProjectPlatform ?? project.Platforms[0];
+                    solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration, resolvedProjectPlatform);
+                }
+
+                solutionProjectContext.Build = project.CanBuild && isCompleteMatch;
+                solutionProjectContext.Deploy = project.AlwaysDeploy || (project.CanDeploy && isCompleteMatch);
                 _projectContexts.Add(projectPath, solutionProjectContext);
             }
 
@@ -139,11 +153,11 @@ namespace SubSolution
                 _projectContexts.Add(newProjectPath, projectContext);
             }
 
-            static private string? MatchNames(IReadOnlyList<string> names, IReadOnlyList<string> matches)
+            static private string? MatchNames(IReadOnlyList<string> names, IReadOnlyList<Regex> matches)
             {
-                foreach (string match in matches)
+                foreach (Regex match in matches)
                     foreach (string name in names)
-                        if (name.Contains(match, StringComparison.OrdinalIgnoreCase))
+                        if (match.IsMatch(name))
                             return name;
 
                 return null;

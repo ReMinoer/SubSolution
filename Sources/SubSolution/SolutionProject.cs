@@ -14,6 +14,7 @@ namespace SubSolution
         public bool CanBuild { get; set; }
         public bool CanDeploy { get; set; }
         public bool AlwaysDeploy { get; set; }
+        public bool NoPlatform { get; set; }
 
         private readonly IReadOnlyList<string> _readOnlyProjectDependencies;
         private readonly IReadOnlyList<string> _readOnlyConfigurations;
@@ -55,8 +56,10 @@ namespace SubSolution
             ProjectDependencies = project.ProjectDependencies.ToList();
             Configurations = project.Configurations.ToList();
             Platforms = project.Platforms.ToList();
+            NoPlatform = project.NoPlatform;
             CanBuild = project.CanBuild;
             CanDeploy = project.CanDeploy;
+            AlwaysDeploy = project.AlwaysDeploy;
 
             _readOnlyProjectDependencies = ProjectDependencies.AsReadOnly();
             _readOnlyConfigurations = Configurations.AsReadOnly();

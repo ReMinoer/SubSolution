@@ -271,7 +271,7 @@ namespace SubSolution.Converters
                 foreach ((string projectPath, SolutionProjectContext projectContext) in configurationPlatform.ProjectContexts)
                 {
                     string prefix = $"{projectGuidbyPath[projectPath].ToRawFormat()}.{solutionConfigurationFullName}.";
-                    string projectConfigurationFullName = projectContext.ConfigurationName + '|' + projectContext.PlatformName;
+                    string projectConfigurationFullName = projectContext.ConfigurationPlatformName;
 
                     if (addOrMove(projectConfigsSection, prefix + RawKeyword.ActiveCfg, projectConfigurationFullName))
                         Log(SolutionChangeType.Add, SolutionObjectType.ProjectContext, projectPath, solutionConfigurationFullName);
@@ -607,13 +607,25 @@ namespace SubSolution.Converters
                         // If project context configuration-platform don't match anymore, replace value.
                         string[] splitNames = projectConfigurationPlatformFullName.Split('|');
                         string projectConfigurationName = splitNames[0];
-                        string projectPlatformName = splitNames[1];
-
                         bool reconfigured = false;
-                        if (projectConfigurationName != projectContext.ConfigurationName && projectPlatformName != projectContext.PlatformName)
+
+                        if (splitNames.Length == 1)
                         {
-                            projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationName + '|' + projectContext.PlatformName);
-                            reconfigured = true;
+                            if (projectConfigurationName != projectContext.ConfigurationName)
+                            {
+                                projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationName);
+                                reconfigured = true;
+                            }
+                        }
+                        else
+                        {
+                            string projectPlatformName = splitNames[1];
+
+                            if (projectConfigurationName != projectContext.ConfigurationName && projectPlatformName != projectContext.PlatformName)
+                            {
+                                projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationPlatformName);
+                                reconfigured = true;
+                            }
                         }
 
                         string type = splitKey.Skip(2).Join('.');

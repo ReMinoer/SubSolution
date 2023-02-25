@@ -13,5 +13,6 @@ namespace SubSolution
         bool CanBuild { get; }
         bool CanDeploy { get; }
         bool AlwaysDeploy { get; }
+        bool NoPlatform { get; }
     }
 }

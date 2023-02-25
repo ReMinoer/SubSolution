@@ -66,6 +66,8 @@ namespace SubSolution
                     return ProjectType.Shared;
                 case ProjectFileExtension.Vcxitems:
                     return ProjectType.SharedItems;
+                case ProjectFileExtension.Vdproj:
+                    return ProjectType.Installer;
                 default:
                     return null;
             }
@@ -111,6 +113,8 @@ namespace SubSolution
                     return ProjectType.Shared;
                 case ProjectFileExtension.Vcxitems:
                     return ProjectType.SharedItems;
+                case ProjectFileExtension.Vdproj:
+                    return ProjectType.Installer;
                 default:
                     return null;
             }
