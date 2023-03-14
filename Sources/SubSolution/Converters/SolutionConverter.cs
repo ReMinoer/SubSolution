@@ -577,7 +577,8 @@ namespace SubSolution.Converters
             if (projectConfigsSection is null)
                 return;
 
-            List<string> removedConfigKeys = new List<string>();
+            var removedConfigKeys = new List<string>();
+            var reconfiguredConfigKeys = new List<(string, string)>();
             foreach ((string configKey, string projectConfigurationPlatformFullName) in projectConfigsSection.ValuesByKey)
             {
                 string[] splitKey = configKey.Split('.');
@@ -613,7 +614,7 @@ namespace SubSolution.Converters
                         {
                             if (projectConfigurationName != projectContext.ConfigurationName)
                             {
-                                projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationName);
+                                reconfiguredConfigKeys.Add((configKey, projectContext.ConfigurationName));
                                 reconfigured = true;
                             }
                         }
@@ -623,7 +624,7 @@ namespace SubSolution.Converters
 
                             if (projectConfigurationName != projectContext.ConfigurationName && projectPlatformName != projectContext.PlatformName)
                             {
-                                projectConfigsSection.ReplaceValue(configKey, projectContext.ConfigurationPlatformName);
+                                reconfiguredConfigKeys.Add((configKey, projectContext.ConfigurationPlatformName));
                                 reconfigured = true;
                             }
                         }
@@ -660,6 +661,9 @@ namespace SubSolution.Converters
 
                 removedConfigKeys.Add(configKey);
             }
+
+            foreach ((string configKey, string newValue) in reconfiguredConfigKeys)
+                projectConfigsSection.ReplaceValue(configKey, newValue);
 
             foreach (string removedConfigKey in removedConfigKeys)
                 projectConfigsSection.RemoveValue(removedConfigKey);
