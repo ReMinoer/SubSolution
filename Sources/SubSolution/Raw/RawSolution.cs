@@ -23,7 +23,29 @@ namespace SubSolution.Raw
 
         public Version SlnFormatVersion { get; set; } = new Version(0, 0);
         public int MajorVisualStudioVersion { get; set; }
-        public Version VisualStudioVersion { get; set; } = new Version(0, 0);
+
+        private Version _visualStudioVersion = new Version(0, 0);
+        public Version VisualStudioVersion
+        {
+            get => _visualStudioVersion;
+            set
+            {
+                _visualStudioVersion = value;
+                _visualStudioVersionName = value.ToString();
+            }
+        }
+
+        private string _visualStudioVersionName = string.Empty;
+        public string VisualStudioVersionName
+        {
+            get => _visualStudioVersionName;
+            set
+            {
+                _visualStudioVersionName = value;
+                _visualStudioVersion = Version.Parse(value.Split(' ', StringSplitOptions.RemoveEmptyEntries).First());
+            }
+        }
+
         public Version MinimumVisualStudioVersion { get; set; } = new Version(0, 0);
 
         public List<Project> Projects { get; }
@@ -68,7 +90,7 @@ namespace SubSolution.Raw
             else
                 await writer.WriteLineAsync(MajorVisualStudioVersionHeaderPrefixOld + MajorVisualStudioVersion);
 
-            await writer.WriteLineAsync(VisualStudioVersionHeaderPrefix + VisualStudioVersion);
+            await writer.WriteLineAsync(VisualStudioVersionHeaderPrefix + VisualStudioVersionName);
             await writer.WriteLineAsync(MinimumVisualStudioVersionHeaderPrefix + MinimumVisualStudioVersion);
 
             foreach (Project project in Projects)
@@ -117,7 +139,7 @@ namespace SubSolution.Raw
 
             solution.SlnFormatVersion = await ReadNextLineVersionAsync(reader, SlnFormatVersionHeaderPrefix);
             solution.MajorVisualStudioVersion = await ReadNextLineIntegerAsync(reader, MajorVisualStudioVersionHeaderPrefixOld);
-            solution.VisualStudioVersion = await ReadNextLineVersionAsync(reader, VisualStudioVersionHeaderPrefix);
+            solution.VisualStudioVersionName = await ReadNextLineValueAsync(reader, VisualStudioVersionHeaderPrefix);
             solution.MinimumVisualStudioVersion = await ReadNextLineVersionAsync(reader, MinimumVisualStudioVersionHeaderPrefix);
 
             Block? block = await ReadNextBlockAsync(reader);

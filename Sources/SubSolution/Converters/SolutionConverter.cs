@@ -46,8 +46,8 @@ namespace SubSolution.Converters
             RawSolution rawSolution = new RawSolution
             {
                 SlnFormatVersion = new Version(12, 0),
-                MajorVisualStudioVersion = 16,
-                VisualStudioVersion = new Version(16, 0, 31424, 327),
+                MajorVisualStudioVersion = 18,
+                VisualStudioVersionName = "18.3.11527.330 d18.3",
                 MinimumVisualStudioVersion = new Version(10, 0, 40219, 1)
             };
 
