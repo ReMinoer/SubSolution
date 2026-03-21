@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "linqtoxsdcore": {
-      "version": "3.2.1",
+      "version": "3.4.12",
       "commands": [
         "LinqToXsd"
       ]
