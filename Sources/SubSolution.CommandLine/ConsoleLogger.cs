@@ -49,6 +49,6 @@ namespace SubSolution.CommandLine
             }
         }
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => new Disposable();
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => new Disposable();
     }
 }

@@ -599,7 +599,7 @@ namespace SubSolution.Builders
 
                 if (solutionContentFiles.WhereProjects?.IgnoreAll == true)
                 {
-                    solution.Root.FilterProjects((_, __) => false);
+                    solution.Root.FilterProjects((_, _) => false);
                 }
                 else
                 {

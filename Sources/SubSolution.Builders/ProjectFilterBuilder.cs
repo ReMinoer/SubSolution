@@ -2,7 +2,6 @@
 using SubSolution.Builders.Base;
 using SubSolution.Builders.Configuration;
 using SubSolution.Builders.GlobPatterns;
-using SubSolution.ProjectReaders;
 
 namespace SubSolution.Builders
 {

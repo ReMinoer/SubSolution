@@ -56,11 +56,9 @@ namespace SubSolution.VisualStudio.Commands
                 }
             };
 
-            using XmlWriter xmlWriter = new XmlTextWriter(filePath, null)
-            {
-                Formatting = Formatting.Indented,
-                Indentation = 4
-            };
+            using var xmlWriter = new XmlTextWriter(filePath, null);
+            xmlWriter.Formatting = Formatting.Indented;
+            xmlWriter.Indentation = 4;
 
             configuration.Save(xmlWriter);
         }
