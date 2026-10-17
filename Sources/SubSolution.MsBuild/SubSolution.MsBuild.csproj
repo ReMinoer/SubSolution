@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>Library using MsBuild as dependency to implement SubSolution default project reader.</Description>
   </PropertyGroup>
@@ -14,6 +14,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SubSolution\SubSolution.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.402" />
   </ItemGroup>
 
 </Project>

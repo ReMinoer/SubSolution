@@ -11,19 +11,7 @@ jobs:
       project_folder: Sources/SubSolution.CommandLine
       target_framework: net5.0
       zip_prefix: subsln
-      dotnet_version: |
-        3.1
-        5
-  vsix-release-2019:
-    name: vsix
-    uses: ReMinoer/workflows/.github/workflows/vsix-release.yml@master
-    with:
-      solution_file: SubSolution.sln
-      project_folder: Plugins/SubSolution.VisualStudio16
-      vsix_name: SubSolution.VisualStudio16
-      dotnet_version: |
-        3.1
-        5
+      dotnet_version: 10
   vsix-release-2022:
     name: vsix
     uses: ReMinoer/workflows/.github/workflows/vsix-release.yml@master
@@ -31,9 +19,7 @@ jobs:
       solution_file: SubSolution.sln
       project_folder: Plugins/SubSolution.VisualStudio17
       vsix_name: SubSolution.VisualStudio17
-      dotnet_version: |
-        3.1
-        5
+      dotnet_version: 10
   dotnet-nuget:
     needs: dotnet-release
     name: dotnet
@@ -41,34 +27,17 @@ jobs:
     with:
       solution_file: SubSolution.Core.sln
       sources_folder: Sources
-      dotnet_version: |
-        3.1
-        5
+      dotnet_version: 10
     secrets:
       nuget_token: ${{ secrets.NUGET_TOKEN }}
-  vsix-publish-2019:
-    needs: [vsix-release-2019, vsix-release-2022]
-    name: vsix
-    uses: ReMinoer/workflows/.github/workflows/vsix-publish.yml@master
-    with:
-      solution_file: SubSolution.sln
-      project_folder: Plugins/SubSolution.VisualStudio16
-      vsix_name: SubSolution.VisualStudio16
-      dotnet_version: |
-        3.1
-        5
-    secrets:
-      marketplace_token: ${{ secrets.MARKETPLACE_TOKEN }}
   vsix-publish-2022:
-    needs: [vsix-release-2019, vsix-release-2022]
+    needs: vsix-release-2022
     name: vsix
     uses: ReMinoer/workflows/.github/workflows/vsix-publish.yml@master
     with:
       solution_file: SubSolution.sln
       project_folder: Plugins/SubSolution.VisualStudio17
       vsix_name: SubSolution.VisualStudio17
-      dotnet_version: |
-        3.1
-        5
+      dotnet_version: 10
     secrets:
       marketplace_token: ${{ secrets.MARKETPLACE_TOKEN }}

@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks>netstandard2.1;net462</TargetFrameworks>
+    <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>Library used to build solutions from SubSolution configurations (.subsln files).</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
-    <PackageReference Include="XObjectsCore" Version="3.2.0" />
+      <!-- Generated classes behavior changed starting 3.4.3. Probably linked to nillable support. -->
+      <PackageReference Include="XObjectsCore" Version="3.4.2" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +22,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.402" />
   </ItemGroup>
     
   <!-- Inspired from:  https://gist.github.com/KirillOsenkov/f20cb84d37a89b01db63f8aafe03f19b -->

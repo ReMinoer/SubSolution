@@ -34,6 +34,7 @@ namespace SubSolution.VisualStudio.Watchers
             VS.Events.DocumentEvents.Saved -= OnDocumentSaved;
         }
 
+        #pragma warning disable VSTHRD100
         private async void OnDocumentSaved(string filePath)
         {
             try
@@ -55,6 +56,7 @@ namespace SubSolution.VisualStudio.Watchers
                 await ex.LogAsync();
             }
         }
+        #pragma warning restore VSTHRD100
 
         private void OnActionBarClosed(object sender, EventArgs e)
         {

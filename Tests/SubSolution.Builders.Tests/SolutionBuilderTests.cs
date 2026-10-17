@@ -170,7 +170,7 @@ namespace SubSolution.Builders.Tests
             };
 
             string logMessage = solutionLogger.Convert(solution);
-            context.Logger.LogDebug(logMessage);
+            context.Logger?.LogDebug(logMessage);
 
             // Full pipe checks
             var rawSolutionConverter = new SolutionConverter(context.FileSystem!, context.ProjectReader, context.SolutionDirectoryPath)
@@ -570,13 +570,13 @@ namespace SubSolution.Builders.Tests
         [ExcludeFromCodeCoverage]
         private class ConsoleLogger : ILogger
         {
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
             {
                 Console.WriteLine($"[{logLevel.ToString().ToUpperInvariant()}] {state}");
             }
 
             public bool IsEnabled(LogLevel logLevel) => true;
-            public IDisposable BeginScope<TState>(TState state) => new Disposable();
+            public IDisposable BeginScope<TState>(TState state) where TState : notnull => new Disposable();
         }
     }
 }

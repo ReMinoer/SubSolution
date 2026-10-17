@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AssemblyName>subsln</AssemblyName>
     <PackAsTool>true</PackAsTool>
@@ -13,13 +13,13 @@ If you need the .NET libraries, use the others SubSolution NuGet packages.</Desc
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" />
   </ItemGroup>
 
   <!-- Required to use MSBuild binaries from Visual Studio. -->
   <ItemGroup>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +31,10 @@ If you need the .NET libraries, use the others SubSolution NuGet packages.</Desc
     <Folder Include="Runtime\" />
     <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.build\15.1.548\lib\netstandard1.5\Microsoft.Build.dll" Link="Runtime\Microsoft.Build.dll" />
     <EmbeddedResource Include="$(NuGetPackageRoot)\microsoft.build.framework\15.1.548\lib\netstandard1.3\Microsoft.Build.Framework.dll" Link="Runtime\Microsoft.Build.Framework.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.402" />
   </ItemGroup>
 
   <!-- New syntax with GeneratePathProperty not working

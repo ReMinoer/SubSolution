@@ -43,11 +43,13 @@ namespace SubSolution.VisualStudio.ActionBars.Base
             return true;
         }
 
+        #pragma warning disable VSTHRD100
         private async void OnActionClicked(object s, InfoBarActionItemEventArgs e)
         {
-            VisualStudioOutputLogger outputLogger = await VisualStudioOutputLogger.GetDefaultAsync();
+            VisualStudioOutputLogger? outputLogger = null;
             try
             {
+                outputLogger = await VisualStudioOutputLogger.GetDefaultAsync();
                 if (InfoBar is null)
                     return;
 
@@ -58,10 +60,11 @@ namespace SubSolution.VisualStudio.ActionBars.Base
             }
             catch (Exception ex)
             {
-                outputLogger.LogError(ex, "Failed to run a SubSolution info bar action.");
+                outputLogger?.LogError(ex, "Failed to run a SubSolution info bar action.");
                 CloseInfoBar();
             }
         }
+        #pragma warning restore VSTHRD100
 
         private void CloseInfoBar()
         {
