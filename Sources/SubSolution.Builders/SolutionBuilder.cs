@@ -703,9 +703,12 @@ namespace SubSolution.Builders
             {
                 IEnumerable<string> matchingProjects = _fileSystem.GetFilesMatchingGlobPattern(_workspaceDirectoryPath, fullGlobPattern);
 
-                // If globPattern was updated to include project file extension patterns, keep only known extensions.
+                // If globPattern was updated to include project file extension patterns, keep only valid extensions.
                 if (fullGlobPattern != globPattern)
+                {
+                    Log("Keep only matching files with a valid project extension.");
                     matchingProjects = matchingProjects.Where(ProjectFileExtensions.MatchAny);
+                }
 
                 foreach (string matchingProject in matchingProjects)
                     allMatchingProjects.Add(matchingProject);
