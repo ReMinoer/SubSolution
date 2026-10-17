@@ -9,7 +9,7 @@ jobs:
     with:
       solution_file: SubSolution.Core.sln
       project_folder: Sources/SubSolution.CommandLine
-      target_framework: net5.0
+      target_framework: net10.0
       zip_prefix: subsln
       dotnet_version: 10
   vsix-release-2022:
