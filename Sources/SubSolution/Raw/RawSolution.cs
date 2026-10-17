@@ -317,7 +317,7 @@ namespace SubSolution.Raw
         {
             while (true)
             {
-                string nextLine = await reader.ReadLineAsync();
+                string? nextLine = await reader.ReadLineAsync();
                 if (nextLine == null)
                     return null;
                 if (!string.IsNullOrWhiteSpace(nextLine))
@@ -425,7 +425,7 @@ namespace SubSolution.Raw
 
             public bool TryReplaceValue(string key, string value)
             {
-                if (!_valuesByKey.TryGetValue(key, out string currentValue))
+                if (!_valuesByKey.TryGetValue(key, out string? currentValue))
                     return false;
 
                 if (currentValue == value)
@@ -442,7 +442,7 @@ namespace SubSolution.Raw
 
             public void RemoveValue(string key)
             {
-                if (_valuesByKey.Remove(key, out string value))
+                if (_valuesByKey.Remove(key, out string? value))
                     _orderedValuePairs.Remove(FormatValue(key, value));
             }
 

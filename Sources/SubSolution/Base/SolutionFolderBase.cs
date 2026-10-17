@@ -64,7 +64,7 @@ namespace SubSolution.Base
 
         private bool AddEntry(string filePath, Action<TFolder> addPath, Action<TFolder> removePath, bool overwrite)
         {
-            if (overwrite && _knownPaths.Remove(filePath, out TFolder folder))
+            if (overwrite && _knownPaths.Remove(filePath, out TFolder? folder))
                 removePath(folder);
 
             if (!overwrite && _knownPaths.ContainsKey(filePath))
@@ -111,7 +111,7 @@ namespace SubSolution.Base
 
         public bool RemoveSubFolder(string subFolderName)
         {
-            if (!_subFolders.TryGetValue(subFolderName, out TFolder subFolder))
+            if (!_subFolders.TryGetValue(subFolderName, out TFolder? subFolder))
                 return false;
 
             foreach (string projectPath in subFolder.GetAllProjectPaths())
@@ -143,7 +143,7 @@ namespace SubSolution.Base
 
         public bool CollapseSubFolder(string subFolderName)
         {
-            if (!_subFolders.TryGetValue(subFolderName, out TFolder subFolder))
+            if (!_subFolders.TryGetValue(subFolderName, out TFolder? subFolder))
                 return false;
 
             PrepareFolderMove();
@@ -166,7 +166,7 @@ namespace SubSolution.Base
 
         public TFolder GetOrAddSubFolder(string folderName)
         {
-            if (!_subFolders.TryGetValue(folderName, out TFolder subFolder))
+            if (!_subFolders.TryGetValue(folderName, out TFolder? subFolder))
                 _subFolders[folderName] = subFolder = _folderCreator();
 
             return subFolder;

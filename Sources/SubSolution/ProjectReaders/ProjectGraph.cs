@@ -85,7 +85,7 @@ namespace SubSolution.ProjectReaders
 
             ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> dependentsDictionary = directOnly ? _directDependents : _dependents;
 
-            if (dependentsDictionary.TryGetValue(absoluteTargetPath, out ConcurrentDictionary<string, bool> dependents))
+            if (dependentsDictionary.TryGetValue(absoluteTargetPath, out ConcurrentDictionary<string, bool>? dependents))
                 return new ReadOnlyCollection<string>(dependents.Keys);
 
             return Array.Empty<string>();

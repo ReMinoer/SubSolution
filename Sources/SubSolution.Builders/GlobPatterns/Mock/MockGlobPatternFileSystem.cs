@@ -46,7 +46,7 @@ namespace SubSolution.Builders.GlobPatterns.Mock
             string[] directoryNames = SplitPath(absoluteDirectoryPath);
 
             string root = directoryNames[0];
-            if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase rootDirectoryInfo))
+            if (!_rootDirectories.TryGetValue(root, out DirectoryInfoBase? rootDirectoryInfo))
                 rootDirectoryInfo = new MockDirectoryInfo(this, root, Enumerable.Empty<string>());
 
             return directoryNames.Skip(1).Aggregate(rootDirectoryInfo, (x, directoryName) => x.GetDirectory(directoryName)!);

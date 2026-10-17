@@ -17,7 +17,7 @@ namespace SubSolution.ProjectReaders.Mock
 
         public Task<ISolutionProject> ReadAsync(string absoluteProjectPath)
         {
-            if (Projects.TryGetValue(absoluteProjectPath, out ISolutionProject project))
+            if (Projects.TryGetValue(absoluteProjectPath, out ISolutionProject? project))
                 return Task.FromResult(project);
 
             return Task.FromResult<ISolutionProject>(new SolutionProject(DefaultProject));

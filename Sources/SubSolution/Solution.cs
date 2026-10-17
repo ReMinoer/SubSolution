@@ -120,7 +120,7 @@ namespace SubSolution
                     string? matchingProjectConfiguration = MatchNames(project.Configurations, MatchingProjectConfigurationNames);
                     isCompleteMatch = matchingProjectConfiguration != null;
 
-                    string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
+                    string resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
                     solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration);
                 }
                 else
@@ -132,8 +132,8 @@ namespace SubSolution
                     string? matchingProjectPlatform = MatchNames(project.Platforms, MatchingProjectPlatformNames);
                     isCompleteMatch = matchingProjectConfiguration != null && matchingProjectPlatform != null;
 
-                    string? resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
-                    string? resolvedProjectPlatform = matchingProjectPlatform ?? project.Platforms[0];
+                    string resolvedProjectConfiguration = matchingProjectConfiguration ?? project.Configurations[0];
+                    string resolvedProjectPlatform = matchingProjectPlatform ?? project.Platforms[0];
                     solutionProjectContext = new SolutionProjectContext(resolvedProjectConfiguration, resolvedProjectPlatform);
                 }
 
@@ -149,8 +149,8 @@ namespace SubSolution
 
             public void RenameProjectContext(string previousProjectPath, string newProjectPath)
             {
-                _projectContexts.Remove(previousProjectPath, out SolutionProjectContext projectContext);
-                _projectContexts.Add(newProjectPath, projectContext);
+                _projectContexts.Remove(previousProjectPath, out SolutionProjectContext? projectContext);
+                _projectContexts.Add(newProjectPath, projectContext!);
             }
 
             static private string? MatchNames(IReadOnlyList<string> names, IReadOnlyList<Regex> matches)

@@ -144,7 +144,7 @@ namespace SubSolution.Converters
                     }
 
                     RawSolution.Section sharedProjectSection = GetOrAddGlobalSection(rawSolution, RawKeyword.SharedMSBuildProjectFiles);
-                    if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out string existingValue) || value != existingValue)
+                    if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out string? existingValue) || value != existingValue)
                         sharedProjectSection.SetOrAddValue(key, value);
 
                     string absoluteProjectPath = _fileSystem.MakeAbsolutePath(_solutionDirectoryPath, projectPath);
@@ -171,7 +171,7 @@ namespace SubSolution.Converters
                                 break;
                         }
                         
-                        if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out existingValue) || (existingValue != null && value != existingValue))
+                        if (!sharedProjectSection.ValuesByKey.TryGetValue(key, out existingValue) || value != existingValue)
                         {
                             Log(SolutionChangeType.Add, SolutionObjectType.SharedProject, projectPath, dependentProjectRelativePath);
                             sharedProjectSection.SetOrAddValue(key, value);
@@ -328,7 +328,7 @@ namespace SubSolution.Converters
 
                 if (parentGuid.HasValue)
                 {
-                    if (!folderProjectChildren.TryGetValue(parentGuid.Value, out List<RawSolution.Project> children))
+                    if (!folderProjectChildren.TryGetValue(parentGuid.Value, out List<RawSolution.Project>? children))
                         folderProjectChildren[parentGuid.Value] = children = new List<RawSolution.Project>();
                     children.Add(rawProject);
                 }
@@ -366,7 +366,7 @@ namespace SubSolution.Converters
 
                         CleanFiles(subFolderProject, subFolder);
 
-                        if (!folderProjectChildren.TryGetValue(subFolderProject.ProjectGuid, out List<RawSolution.Project> childFolderProjects))
+                        if (!folderProjectChildren.TryGetValue(subFolderProject.ProjectGuid, out List<RawSolution.Project>? childFolderProjects))
                             childFolderProjects = new List<RawSolution.Project>();
 
                         UpdateExistingSubFolders(subFolder, subFolderProject.ProjectGuid, childFolderProjects, subFolderPath);
@@ -409,7 +409,7 @@ namespace SubSolution.Converters
             void RemoveFolder(RawSolution.Project folderProject, string? folderPath)
             {
                 // Remove sub-folders
-                if (folderProjectChildren.TryGetValue(folderProject.ProjectGuid, out List<RawSolution.Project> childFolderProjects))
+                if (folderProjectChildren.TryGetValue(folderProject.ProjectGuid, out List<RawSolution.Project>? childFolderProjects))
                 {
                     foreach (RawSolution.Project childFolderProject in childFolderProjects)
                     {
@@ -504,7 +504,7 @@ namespace SubSolution.Converters
                 if (rawProject.TypeGuid == ProjectTypes.FolderGuid)
                     continue;
 
-                if (projects.TryGetValue(rawProject.Path, out ISolutionProject project))
+                if (projects.TryGetValue(rawProject.Path, out ISolutionProject? project))
                 {
                     projectGuidByPath.Add(rawProject.Path, rawProject.ProjectGuid);
                     projectPathByGuid.Add(rawProject.ProjectGuid, rawProject.Path);
@@ -601,9 +601,9 @@ namespace SubSolution.Converters
                     continue;
 
                 // If project and project context still exist...
-                if (projectPathByGuids.TryGetValue(projectGuid, out string projectPath))
+                if (projectPathByGuids.TryGetValue(projectGuid, out string? projectPath))
                 {
-                    if (solutionConfigurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
+                    if (solutionConfigurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext? projectContext))
                     {
                         // If project context configuration-platform don't match anymore, replace value.
                         string[] splitNames = projectConfigurationPlatformFullName.Split('|');
@@ -709,14 +709,14 @@ namespace SubSolution.Converters
                 }
                 
                 // If project is not existing anymore, remove the item.
-                if (!projectPathByGuids.TryGetValue(projectGuid, out string projectPath))
+                if (!projectPathByGuids.TryGetValue(projectGuid, out string? projectPath))
                 {
                     removedSharedProjectItems.Add(itemKey);
                     continue;
                 }
 
                 allProjectsByPath ??= solution.Root.GetAllProjects();
-                if (!allProjectsByPath.TryGetValue(projectPath, out ISolutionProject solutionProject))
+                if (!allProjectsByPath.TryGetValue(projectPath, out ISolutionProject? solutionProject))
                 {
                     removedSharedProjectItems.Add(itemKey);
                     continue;
@@ -803,7 +803,7 @@ namespace SubSolution.Converters
 
         static private Guid? GetParentGuid(RawSolution.Project rawProject, RawSolution.Section? nestedProjectsSection)
         {
-            if (nestedProjectsSection != null && nestedProjectsSection.ValuesByKey.TryGetValue(rawProject.ProjectGuid.ToRawFormat(), out string parentRawGuid))
+            if (nestedProjectsSection != null && nestedProjectsSection.ValuesByKey.TryGetValue(rawProject.ProjectGuid.ToRawFormat(), out string? parentRawGuid))
             {
                 if (!RawGuid.TryParse(parentRawGuid, out Guid parentGuid))
                     throw new FormatException($"Failed to parse GUID {{{parentRawGuid}}} of project \"{rawProject.Path}\" parent.");

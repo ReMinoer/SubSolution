@@ -23,8 +23,8 @@ namespace SubSolution
                 var value = (ProjectType)Enum.Parse(typeof(ProjectType), name);
                 MemberInfo memberInfo = enumType.GetMember(name)[0];
 
-                string displayName = memberInfo.GetCustomAttribute<ProjectTypeNameAttribute>().DisplayName;
-                Guid guid = memberInfo.GetCustomAttribute<ProjectTypeGuidAttribute>().Guid;
+                string displayName = memberInfo.GetCustomAttribute<ProjectTypeNameAttribute>()!.DisplayName;
+                Guid guid = memberInfo.GetCustomAttribute<ProjectTypeGuidAttribute>()!.Guid;
 
                 DisplayNames.Add(value, displayName);
                 Guids.Add(value, guid);

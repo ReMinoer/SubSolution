@@ -124,7 +124,7 @@ namespace SubSolution.Converters
                     var lines = new List<(string, string)>();
                     foreach ((string projectPath, ISolutionProject project) in solution.Root.GetAllProjects())
                     {
-                        if (!configurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext projectContext))
+                        if (!configurationPlatform.ProjectContexts.TryGetValue(projectPath, out SolutionProjectContext? projectContext))
                             continue;
 
                         bool noBuild = project.CanBuild && !projectContext.Build;

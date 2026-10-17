@@ -42,7 +42,7 @@ namespace SubSolution.FileSystems.Mock
 
         public override Stream OpenStream(string filePath)
         {
-            if (_fileContents.TryGetValue(NormalizePath(filePath), out byte[] content))
+            if (_fileContents.TryGetValue(NormalizePath(filePath), out byte[]? content))
                 return new MemoryStream(content);
 
             throw new FileNotFoundException($"\"{filePath}\" have no associated content.", filePath);

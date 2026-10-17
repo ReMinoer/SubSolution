@@ -22,7 +22,7 @@ namespace SubSolution.Utils
         public int Count => _dictionary.Count;
         public TValue this[TKey key] => _dictionary[key];
         public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
-        public bool TryGetValue(TKey key, out TValue value) => _dictionary.TryGetValue(key, out value);
+        public bool TryGetValue(TKey key, out TValue? value) => _dictionary.TryGetValue(key, out value);
 
         public IEnumerator<ICovariantKeyValuePair<TKey, TValue>> GetEnumerator() => Keys.Select(key => new Pair(key, this[key])).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 #if NETFRAMEWORK
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 #endif
 
@@ -64,7 +65,7 @@ namespace SubSolution
             value = pair.Value;
         }
 
-        static public bool Remove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out TValue value)
+        static public bool Remove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             if (dictionary.ContainsKey(key))
             {
@@ -72,11 +73,9 @@ namespace SubSolution
                 dictionary.Remove(key);
                 return true;
             }
-            else
-            {
-                value = default(TValue)!;
-                return false;
-            }
+
+            value = default(TValue)!;
+            return false;
         }
 
         static public string[] Split(this string value, char separator, StringSplitOptions options)

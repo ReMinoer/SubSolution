@@ -34,6 +34,6 @@ namespace SubSolution
 
         static private bool Match(string filePath, string extension) => filePath.EndsWith('.' + extension);
         static private bool Exclude(string filePath, ProjectFileExtension matchedExtension)
-            => ExcludedSuffixes.TryGetValue(matchedExtension, out string excludedSuffix) && filePath.EndsWith(excludedSuffix);
+            => ExcludedSuffixes.TryGetValue(matchedExtension, out string? excludedSuffix) && filePath.EndsWith(excludedSuffix);
     }
 }

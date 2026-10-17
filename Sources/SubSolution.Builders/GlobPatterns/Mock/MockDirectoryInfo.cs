@@ -87,7 +87,7 @@ namespace SubSolution.Builders.GlobPatterns.Mock
                 {
                     string subFolderName = normalizedPath[currentRoot.Length..nextSeparatorIndex];
 
-                    if (!subDirectoriesFilePaths.TryGetValue(subFolderName, out List<string> subDirectoryFilePaths))
+                    if (!subDirectoriesFilePaths.TryGetValue(subFolderName, out List<string>? subDirectoryFilePaths))
                         subDirectoriesFilePaths[subFolderName] = subDirectoryFilePaths = new List<string>();
 
                     subDirectoryFilePaths.Add(normalizedPath);
@@ -118,7 +118,7 @@ namespace SubSolution.Builders.GlobPatterns.Mock
                 return new MockDirectoryInfo(FileSystem, _parentDirectoryInfo._parentDirectoryInfo, "..", _parentDirectoryInfo._subDirectories, _parentDirectoryInfo._files);
             }
 
-            if (_subDirectories.TryGetValue(name, out MockDirectoryInfo directoryInfo))
+            if (_subDirectories.TryGetValue(name, out MockDirectoryInfo? directoryInfo))
                 return directoryInfo;
 
             return new MockDirectoryInfo(FileSystem, this, name);
@@ -126,7 +126,7 @@ namespace SubSolution.Builders.GlobPatterns.Mock
         
         public override FileInfoBase GetFile(string name)
         {
-            if (_files.TryGetValue(name, out MockFileInfo fileInfo))
+            if (_files.TryGetValue(name, out MockFileInfo? fileInfo))
                 return fileInfo;
 
             return new MockFileInfo(this, name);

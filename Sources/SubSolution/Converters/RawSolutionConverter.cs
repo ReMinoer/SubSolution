@@ -67,7 +67,7 @@ namespace SubSolution.Converters
 
                 parentGraph.Add(childGuid, parentGuid);
 
-                if (!childrenGraph.TryGetValue(parentGuid, out List<Guid> childrenGuids))
+                if (!childrenGraph.TryGetValue(parentGuid, out List<Guid>? childrenGuids))
                 {
                     childrenGuids = new List<Guid>();
                     childrenGraph.Add(parentGuid, childrenGuids);
@@ -105,7 +105,7 @@ namespace SubSolution.Converters
                     ManualSolution.Folder subFolder = folder.GetOrAddSubFolder(childProject.Name);
                     FillFolderFiles(subFolder, childProject);
 
-                    if (!childrenGraph.TryGetValue(childGuid, out List<Guid> subFolderChildrenGuid))
+                    if (!childrenGraph.TryGetValue(childGuid, out List<Guid>? subFolderChildrenGuid))
                         continue;
 
                     await FillSubFolderAsync(solution, subFolder, subFolderChildrenGuid, projectsByGuid, childrenGraph, skipProjectLoading);
@@ -190,7 +190,7 @@ namespace SubSolution.Converters
                 string projectConfigurationName = splitNames[0];
                 string projectPlatformName = splitNames[1];
 
-                if (!projectPathsByGuid.TryGetValue(projectGuid, out string projectPath))
+                if (!projectPathsByGuid.TryGetValue(projectGuid, out string? projectPath))
                 {
                     Issues.Add(new Issue(IssueLevel.Error, $"Failed to get project associated to GUID {projectGuid} found in {RawKeyword.ActiveCfg} key."));
                     continue;
@@ -215,7 +215,7 @@ namespace SubSolution.Converters
                 string solutionConfigurationPlatformFullName = splitKey[1];
                 string type = splitKey.Skip(2).Join('.');
 
-                if (!projectContextsByGuidAndSolutionConfigurationPlatforms.TryGetValue((projectGuid, solutionConfigurationPlatformFullName), out SolutionProjectContext projectContext))
+                if (!projectContextsByGuidAndSolutionConfigurationPlatforms.TryGetValue((projectGuid, solutionConfigurationPlatformFullName), out SolutionProjectContext? projectContext))
                 {
                     Issues.Add(new Issue(IssueLevel.Error, $"Failed to found {RawKeyword.ActiveCfg} associated to key {key}."));
                     continue;

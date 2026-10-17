@@ -1,0 +1,3 @@
+[*.xsd.cs]
+dotnet_diagnostic.CS0108.severity = none
+dotnet_diagnostic.CS0114.severity = none

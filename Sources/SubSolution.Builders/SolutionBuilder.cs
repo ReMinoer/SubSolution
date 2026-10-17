@@ -291,7 +291,7 @@ namespace SubSolution.Builders
 
         public async Task VisitAsync(Dependencies dependencies)
         {
-            ISet<string> targetPaths;
+            ISet<string>? targetPaths;
             if (dependencies.Target is null)
             {
                 targetPaths = GetDefaultTarget();
@@ -340,7 +340,7 @@ namespace SubSolution.Builders
 
         public async Task VisitAsync(Dependents dependents)
         {
-            ISet<string> targetPaths;
+            ISet<string>? targetPaths;
             if (dependents.Target is null)
             {
                 targetPaths = GetDefaultTarget();
@@ -351,7 +351,7 @@ namespace SubSolution.Builders
                 return;
             }
 
-            ISet<string> scopePaths;
+            ISet<string>? scopePaths;
             if (dependents.Scope is null)
             {
                 scopePaths = GetDefaultScope();
