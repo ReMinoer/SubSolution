@@ -47,7 +47,7 @@ namespace SubSolution.Converters
             {
                 SlnFormatVersion = new Version(12, 0),
                 MajorVisualStudioVersion = 18,
-                VisualStudioVersionName = "18.3.11527.330 d18.3",
+                VisualStudioVersionName = "18.3.11527.330",
                 MinimumVisualStudioVersion = new Version(10, 0, 40219, 1)
             };
 
